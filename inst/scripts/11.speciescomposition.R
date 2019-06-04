@@ -7,7 +7,7 @@
     year.assessment=lubridate::year(Sys.Date()) -1
   }
 
-  p = aegis::aegis_parameters( DS="speciescomposition", yrs=1999:year.assessment )
+  p = aegis.speciescomposition::speciescomposition_parameters( yrs=1999:year.assessment )
 
   speciescomposition.db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
   pca = speciescomposition.db( DS="pca", p=p )  # analsysis
@@ -30,7 +30,7 @@
 
   for ( vn in p$varstomodel) {
     print(vn)
-    p = aegis::aegis_parameters( DS="speciescomposition",
+    p = aegis.speciescomposition::speciescomposition_parameters(
       variables=list(Y=vn),
       yrs = c(1999:year.assessment),  # years for modelling and interpolation
       stmv_dimensionality="space-year",

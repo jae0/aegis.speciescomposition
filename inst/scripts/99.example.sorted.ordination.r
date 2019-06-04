@@ -1,5 +1,5 @@
 
-project.library( "aegis.base", "aegis" )
+project.library( "aegis", "aegis" )
 
 
 # load data of interest (annual time-series)
