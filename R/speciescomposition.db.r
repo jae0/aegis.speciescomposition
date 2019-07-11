@@ -37,10 +37,10 @@
       sc = sc[ , c("id", "zn","spec_bio" ) ]  # zscore-transformed into 0,1
 
       set = survey.db( DS="set", p=p) # trip/set loc information
-      
+
       set = set[ ,  c("id", "yr", "dyear", "sa", "lon", "lat", "t", "z", "timestamp" ) ]
       set = na.omit( set ) # all are required fields
-      
+
       # filter area
       igood = which( set$lon >= p$corners$lon[1] & set$lon <= p$corners$lon[2]
               &  set$lat >= p$corners$lat[1] & set$lat <= p$corners$lat[2] )
@@ -77,22 +77,22 @@
       corel = cor( m, use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
       corel[ is.na(corel) ] = 0
       s = svd(corel)  # eigenanalysis via singular value decomposition
-  
-      # matrix.multiply = function (x, y, nfac=2){ 
+
+      # matrix.multiply = function (x, y, nfac=2){
       #   ndat = dim(x)[1]
       #   z = matrix(0, nrow=ndat, ncol = nfac)
-      #   for (j in 1:nfac) { 
-      #     for (i in 1:ndat) { 
+      #   for (j in 1:nfac) {
+      #     for (i in 1:ndat) {
       #       z[i,j] = sum ( x[i,] * t(y[,j]), na.rm=T )
-      #     } 
+      #     }
       #   }
       #   return (z)
-      # }  
+      # }
 
       # scores = matrix.multiply (m, s$v)  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
-      m[which(!is.finite(m))] = 0 
+      m[which(!is.finite(m))] = 0
       scores = m %*% s$v  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
-    
+
       evec = s$v
       ev = s$d
       x = cbind( scores[,1] / sqrt(ev[1] ), scores[,2] / sqrt( ev[2]) )
@@ -152,12 +152,13 @@
         ii = which( duplicated( SC$id[yy] ) )
 
         if (length(ii) > 0) {
+          dd = which( SC$id[yy]  %in% SC$id[yy] [which(duplicated(SC$id[yy] ))])
           print( "The following sets have duplicated positions. The first only will be retained" )
-          print( SC[yy,] [ duplicates.toremove( SC$id[yy] ) ] )
+          print( SC[yy,] [dd ] )
           SC = SC[ - ii,]
         }
       }
-  
+
       save( SC, file=fn, compress=T )
 			return (fn)
 		}
