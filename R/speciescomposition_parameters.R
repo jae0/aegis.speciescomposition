@@ -43,12 +43,11 @@ speciescomposition_parameters = function( p=NULL, project.name=NULL, project.mod
 
   if (project.mode=="stmv") {
     p$libs = c( p$libs, project.library ( "stmv" ) )
-    p$DATA = 'aegis_db( p=p, DS="stmv_inputs" )'
     if (!exists("varstomodel", p) ) p$varstomodel = c( "pca1", "pca2", "ca1", "ca2" )
     if (!exists("variables", p)) p$variables = list()
     if (!exists("LOCS", p$variables)) p$variables$LOCS=c("plon", "plat")
     if (!exists("TIME", p$variables)) p$variables$TIME="tiyr"
-    p = aegis_parameters(p=p, DS="stmv_spatiotemporal_model", stmv_dimensionality="space-year" )
+    p = aegis_parameters(p=p, DS="stmv_spatiotemporal_model" )
     return(p)
   }
 

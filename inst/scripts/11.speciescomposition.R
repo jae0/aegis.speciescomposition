@@ -31,8 +31,12 @@
   for ( vn in p$varstomodel) {
     print(vn)
     p = aegis.speciescomposition::speciescomposition_parameters(
+      project.mode="stmv",
+      data_root = project.datadirectory( "aegis", "speciescomposition" ),
+      DATA = 'aegis_db( p=p, DS="stmv_inputs" )',
       variables=list(Y=vn),
       yrs = c(1999:year.assessment),  # years for modelling and interpolation
+      spatial.domain = "SSE",
       stmv_dimensionality="space-year",
       stmv_global_modelengine = "gam",
       stmv_global_family = gaussian(link="identity"),
@@ -44,21 +48,58 @@
 #        ' + s( log(z), log(dZ), log(ddZ), k=30, bs="ts")  ',
         ' + s( substrate.grainsize, k=3, bs="ts") ' )),  # no space
       stmv_local_modelengine ="twostep",
-      stmv_twostep_space = "fft",  # other possibilities: "fft", "tps"
       stmv_twostep_time = "gam",
-
+      stmv_twostep_space = "fft",  # other possibilities: "fft", "tps"
+      stmv_fft_filter="lowpass_matern_tapered",  #  matern, krige (very slow), lowpass, lowpass_matern
+      # stmv_fft_taper_fraction = sqrt(0.5),  # in local smoothing convolutions taper to this areal expansion factor sqrt( r=0.5 ) ~ 70% of variance in variogram
+      stmv_lowpass_nu = 0.1,
+      stmv_lowpass_phi = stmv::matern_distance2phi( distance=0.25, nu=0.1, cor=0.5 ), # default p$res = 0.5;
+      stmv_autocorrelation_fft_taper = 0.5,  # benchmark from which to taper
+      stmv_autocorrelation_localrange=0.1,
+      stmv_autocorrelation_interpolation = c(0.5, 0.1, 0.05, 0.01),
+      stmv_variogram_method = "fft",
+      stmv_variogram_nbreaks = 50,
+      depth.filter = 0, # the depth covariate is input as log(depth) so, choose stats locations with elevation > log(1 m) as being on land
+      stmv_local_model_distanceweighted = TRUE,
       stmv_rsquared_threshold = 0.2, # lower threshold
       stmv_distance_statsgrid = 4, # resolution (km) of data aggregation (i.e. generation of the ** statistics ** )
-      stmv_distance_scale = c(30, 40, 50), # km ... approx guess of 95% AC range .. data tends to be sprse realtive to pure space models
-      stmv_distance_prediction_fraction = 1, # stmv_distance_prediction = stmv_distance_statsgrid * XX ..this is a half window km (default is 0.75)
-      depth.filter = 0, # the depth covariate is input as log(depth) so, choose stats locations with elevation > log(1 m) as being on land
+      stmv_distance_scale = c(20, 30, 40, 50), # km ... approx guess of 95% AC range .. data tends to be sprse realtive to pure space models
+      stmv_distance_prediction_fraction = 0.95, # stmv_distance_prediction = stmv_distance_statsgrid * XX ..this is a half window km (default is 0.75)
       stmv_nmin = 8*(year.assessment-1999),# floor( 7 * p$ny ) # min number of data points req before attempting to model timeseries in a localized space
       stmv_nmax = 8*(year.assessment-1999)*11, # max( floor( 7 * p$ny ) * 11, 8000), # no real upper bound
-      stmv_clusters = list( scale=rep("localhost", ncpus), interpolate=rep("localhost", ncpus) ) # must have the same length as stmv_distance_scale
+      stmv_runmode = list(
+        globalmodel = TRUE,
+        scale = rep("localhost", scale_ncpus),
+        interpolate = list(
+            cor_0.5 = rep("localhost", interpolate_ncpus),
+            cor_0.1 = rep("localhost", interpolate_ncpus),
+            cor_0.05 = rep("localhost", max(1, interpolate_ncpus-1)),
+            cor_0.01 = rep("localhost", max(1, interpolate_ncpus-2))
+          ),  # ncpus for each runmode
+        interpolate_force_complete = rep("localhost", max(1, interpolate_ncpus-2)),
+        save_intermediate_results = FALSE,
+        save_completed_data = TRUE # just a dummy variable with the correct name
+      )  # ncpus for each runmode
     )
 
+    stmv( p=p )
 
-    stmv( p=p, runmode=c("globalmodel", "interpolate") )
+    if (0) {
+    # quick view
+      predictions = stmv_db( p=p, DS="stmv.prediction", ret="mean" )
+      statistics  = stmv_db( p=p, DS="stmv.stats" )
+      locations   = spatial_grid( p )
+
+      # comparisons
+      dev.new(); surface( as.image( Z=rowMeans(predictions), x=locations, nx=p$nplons, ny=p$nplats, na.rm=TRUE) )
+
+      # stats
+      (p$statsvars)
+      dev.new(); levelplot( predictions[,1] ~ locations[,1] + locations[,2], aspect="iso" )
+      dev.new(); levelplot( statistics[,match("nu", p$statsvars)]  ~ locations[,1] + locations[,2], aspect="iso" ) # nu
+      dev.new(); levelplot( statistics[,match("sdTot", p$statsvars)]  ~ locations[,1] + locations[,2], aspect="iso" ) #sd total
+      dev.new(); levelplot( statistics[,match("localrange", p$statsvars)]  ~ locations[,1] + locations[,2], aspect="iso" ) #localrange
+    }
 
     aegis_db( p=p, DS="predictions.redo" ) # warp predictions to other grids
     aegis_db( p=p, DS="stmv.stats.redo" ) # warp stats to other grids
@@ -75,6 +116,7 @@
     }
 
   }
+
 
 
 
