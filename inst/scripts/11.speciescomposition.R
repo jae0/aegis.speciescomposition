@@ -50,21 +50,19 @@
       stmv_local_modelengine ="twostep",
       stmv_twostep_time = "gam",
       stmv_twostep_space = "fft",  # other possibilities: "fft", "tps"
-      stmv_fft_filter="lowpass_matern_tapered",  #  matern, krige (very slow), lowpass, lowpass_matern
-      # stmv_fft_taper_fraction = sqrt(0.5),  # in local smoothing convolutions taper to this areal expansion factor sqrt( r=0.5 ) ~ 70% of variance in variogram
-      stmv_lowpass_nu = 0.1,
-      stmv_lowpass_phi = stmv::matern_distance2phi( distance=0.25, nu=0.1, cor=0.5 ), # default p$res = 0.5;
+      stmv_fft_filter="matern_tapered",  #  matern, krige (very slow), lowpass, lowpass_matern
+      # stmv_lowpass_nu = 0.1,
+      # stmv_lowpass_phi = stmv::matern_distance2phi( distance=0.25, nu=0.1, cor=0.5 ), # default p$res = 0.5;
       stmv_autocorrelation_fft_taper = 0.5,  # benchmark from which to taper
       stmv_autocorrelation_localrange=0.1,
       stmv_autocorrelation_interpolation = c(0.5, 0.1, 0.05, 0.01),
       stmv_variogram_method = "fft",
-      stmv_variogram_nbreaks = 50,
       depth.filter = 0, # the depth covariate is input as log(depth) so, choose stats locations with elevation > log(1 m) as being on land
       stmv_local_model_distanceweighted = TRUE,
       stmv_rsquared_threshold = 0.2, # lower threshold
       stmv_distance_statsgrid = 4, # resolution (km) of data aggregation (i.e. generation of the ** statistics ** )
       stmv_distance_scale = c(20, 30, 40, 50), # km ... approx guess of 95% AC range .. data tends to be sprse realtive to pure space models
-      stmv_distance_prediction_fraction = 0.95, # stmv_distance_prediction = stmv_distance_statsgrid * XX ..this is a half window km (default is 0.75)
+      stmv_distance_prediction_max = 4 * 1.25 , # upper limit in distnace to predict upon (just over the grid size of statsgrid) .. in timeseries can become very slow so try to be small
       stmv_nmin = 8*(year.assessment-1999),# floor( 7 * p$ny ) # min number of data points req before attempting to model timeseries in a localized space
       stmv_nmax = 8*(year.assessment-1999)*11, # max( floor( 7 * p$ny ) * 11, 8000), # no real upper bound
       stmv_runmode = list(
