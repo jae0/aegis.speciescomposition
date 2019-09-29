@@ -4,7 +4,7 @@
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
 
-    infix = paste( p$spatial.domain,  p$taxa, sep=".")
+    infix = paste( p$spatial_domain,  p$taxa, sep=".")
 
     if (DS %in% c( "speciescomposition.ordination", "speciescomposition.ordination.redo", "pca", "ca") ) {
 
@@ -139,7 +139,7 @@
 			}
 
       SC = speciescomposition.db( DS="speciescomposition.ordination", p=p )
-      SC = lonlat2planar( SC, proj.type=p$internal.crs )
+      SC = lonlat2planar( SC, proj.type=p$aegis_proj4string_planar_km )
       SC$lon = SC$lat = NULL
 
       oo = which(!is.finite( SC$plon+SC$plat ) )

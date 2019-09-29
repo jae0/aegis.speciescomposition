@@ -31,12 +31,12 @@
   for ( vn in p$varstomodel) {
     print(vn)
     p = aegis.speciescomposition::speciescomposition_parameters(
-      project.mode="stmv",
+      project_class="stmv",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
       DATA = 'aegis_db( p=p, DS="stmv_inputs" )',
       variables=list(Y=vn),
       yrs = c(1999:year.assessment),  # years for modelling and interpolation
-      spatial.domain = "SSE",
+      spatial_domain = "SSE",
       stmv_dimensionality="space-year",
       stmv_global_modelengine = "gam",
       stmv_global_family = gaussian(link="identity"),
@@ -55,14 +55,13 @@
       # stmv_lowpass_phi = stmv::matern_distance2phi( distance=0.25, nu=0.1, cor=0.5 ), # default p$res = 0.5;
       stmv_autocorrelation_fft_taper = 0.5,  # benchmark from which to taper
       stmv_autocorrelation_localrange=0.1,
-      stmv_autocorrelation_interpolation = c(0.5, 0.1, 0.05, 0.01),
+      stmv_autocorrelation_basis_interpolation = c(0.5, 0.1, 0.05, 0.01),
       stmv_variogram_method = "fft",
-      depth.filter = 0, # the depth covariate is input as log(depth) so, choose stats locations with elevation > log(1 m) as being on land
+      stmv_filter_depth_m = 0, # the depth covariate is input as log(depth) so, choose stats locations with elevation > log(1 m) as being on land
       stmv_local_model_distanceweighted = TRUE,
       stmv_rsquared_threshold = 0.2, # lower threshold
       stmv_distance_statsgrid = 4, # resolution (km) of data aggregation (i.e. generation of the ** statistics ** )
       stmv_distance_scale = c(20, 30, 40, 50), # km ... approx guess of 95% AC range .. data tends to be sprse realtive to pure space models
-      stmv_distance_prediction_max = 4 * 1.25 , # upper limit in distnace to predict upon (just over the grid size of statsgrid) .. in timeseries can become very slow so try to be small
       stmv_nmin = 8*(year.assessment-1999),# floor( 7 * p$ny ) # min number of data points req before attempting to model timeseries in a localized space
       stmv_nmax = 8*(year.assessment-1999)*11, # max( floor( 7 * p$ny ) * 11, 8000), # no real upper bound
       stmv_runmode = list(

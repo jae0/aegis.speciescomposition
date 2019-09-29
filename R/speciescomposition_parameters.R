@@ -1,6 +1,6 @@
 
 
-speciescomposition_parameters = function( p=NULL, project.name=NULL, project.mode="default", ... ) {
+speciescomposition_parameters = function( p=NULL, project_name=NULL, project_class="default", ... ) {
 
   # ---------------------
   # deal with additional passed parameters
@@ -17,17 +17,17 @@ speciescomposition_parameters = function( p=NULL, project.name=NULL, project.mod
     "maps", "mapdata", "maptools", "parallel",  "rgdal", "rgeos",  "sp", "splancs", "GADMTools" ) )
   p$libs = c( p$libs, project.library ( "aegis", "aegis.speciescomposition" ) )
 
-  p$project.name = ifelse ( !is.null(project.name), project.name, "speciescomposition" )
+  p$project_name = ifelse ( !is.null(project_name), project_name, "speciescomposition" )
 
-  if ( !exists("data_root", p) ) p$data_root = project.datadirectory( "aegis", p$project.name )
+  if ( !exists("data_root", p) ) p$data_root = project.datadirectory( "aegis", p$project_name )
   if ( !exists("datadir", p) )   p$datadir  = file.path( p$data_root, "data" )
   if ( !exists("modeldir", p) )  p$modeldir = file.path( p$data_root, "modelled" )
 
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=F, recursive=T )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=F, recursive=T )
 
-  if (!exists("spatial.domain", p) ) p$spatial.domain = "SSE"
-  if (!exists("spatial.domain.subareas", p)) p$spatial.domain.subareas = c( "snowcrab", "SSE.mpa" )
+  if (!exists("spatial_domain", p) ) p$spatial_domain = "SSE"
+  if (!exists("spatial_domain_subareas", p)) p$spatial_domain_subareas = c( "snowcrab", "SSE.mpa" )
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
@@ -36,12 +36,12 @@ speciescomposition_parameters = function( p=NULL, project.name=NULL, project.mod
   p$taxa =  "maxresolved"
 
 
-  if (project.mode=="default") {
+  if (project_class=="default") {
     return(p)
   }
 
 
-  if (project.mode=="stmv") {
+  if (project_class=="stmv") {
     p$libs = c( p$libs, project.library ( "stmv" ) )
     if (!exists("varstomodel", p) ) p$varstomodel = c( "pca1", "pca2", "ca1", "ca2" )
     if (!exists("variables", p)) p$variables = list()
@@ -53,7 +53,7 @@ speciescomposition_parameters = function( p=NULL, project.name=NULL, project.mod
 
 
 
-  if (project.mode=="carstm") {
+  if (project_class=="carstm") {
     p$libs = c( p$libs, project.library ( "carstm" ) )
 
     return(p)
