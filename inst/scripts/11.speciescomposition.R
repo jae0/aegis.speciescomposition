@@ -37,7 +37,7 @@
       variables=list(Y=vn),
       yrs = c(1999:year.assessment),  # years for modelling and interpolation
       spatial_domain = "SSE",
-      stmv_dimensionality="space-year",
+      aegis_dimensionality="space-year",
       stmv_global_modelengine = "gam",
       stmv_global_family = gaussian(link="identity"),
       stmv_global_modelformula = formula( paste(
