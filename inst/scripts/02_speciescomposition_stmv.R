@@ -1,5 +1,3 @@
-
-
   # -----------------------------
   # ordination
   if (!exists("year.assessment")) {
@@ -9,13 +7,7 @@
 
   p = aegis.speciescomposition::speciescomposition_parameters( yrs=1999:year.assessment )
 
-  speciescomposition.db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
-  pca = speciescomposition.db( DS="pca", p=p )  # analsysis
-  ca  = speciescomposition.db( DS="ca", p=p )  # analsysis
 
-  speciescomposition.db( DS="speciescomposition.redo", p=p ) # compute planar coords and remove dups
-
-  # -----------------------------
   # vn="pca1"  # ~ 8-10 hrs / variable
   # vn="pca2"
   ncpus = parallel::detectCores()
