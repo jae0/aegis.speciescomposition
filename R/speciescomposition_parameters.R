@@ -13,9 +13,9 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   # ---------------------
   # create/update library list
-  p$libs = c( p$libs, RLibrary ( "colorspace",  "fields", "geosphere", "lubridate",  "lattice",
-    "maps", "mapdata", "maptools", "parallel",  "rgdal", "rgeos",  "sp", "splancs", "GADMTools" ) )
-  p$libs = c( p$libs, project.library ( "aegis", "aegis.speciescomposition" ) )
+  p$libs = unique( c( p$libs, RLibrary ( "colorspace",  "fields", "geosphere", "lubridate",  "lattice",
+    "maps", "mapdata", "maptools", "parallel",  "rgdal", "rgeos",  "sp", "splancs", "GADMTools" ) ) )
+  p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.speciescomposition" ) ) )
 
   p$project_name = ifelse ( !is.null(project_name), project_name, "speciescomposition" )
 
@@ -28,13 +28,10 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   if (!exists("spatial_domain", p) ) p$spatial_domain = "SSE"
   if (!exists("spatial_domain_subareas", p)) p$spatial_domain_subareas = c( "snowcrab", "SSE.mpa" )
-
-
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
   if (!exists("yrs", p)) p$yrs = c(1999:lubridate::year(lubridate::now()))  # NOTE:: this is short as groundfish species id is inconsistent
-
   p = temporal_parameters(p=p, aegis_dimensionality="space-year")
 
   p$taxa =  "maxresolved"
@@ -48,7 +45,7 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
 
   if (project_class=="stmv") {
-    p$libs = c( p$libs, project.library ( "stmv" ) )
+    p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
     if (!exists("varstomodel", p) ) p$varstomodel = c( "pca1", "pca2", "ca1", "ca2" )
     if (!exists("variables", p)) p$variables = list()
     if (!exists("LOCS", p$variables)) p$variables$LOCS=c("plon", "plat")
@@ -65,16 +62,12 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   if (project_class=="carstm") {
 
-    p$libs = c( p$libs, project.library ( "carstm" ) )
-    p = aegis_parameters(p=p, DS="carstm" ) # generics:
-    p$libs = c( p$libs, project.library ( "spatialreg", "INLA", "raster", "mgcv",  "carstm" ) )
+    p$libs = unique( c( p$libs, project.library ( "spatialreg", "INLA", "raster", "mgcv",  "carstm" ) ) )
 
     if ( !exists("project_name", p)) p$project_name = "speciescomposition"
 
     p = aegis_parameters( p=p, DS="carstm" )  #generics
 
-    # if ( !exists("spatial_domain", p)) p$spatial_domain = "snowcrab"  # defines spatial area, currenty: "snowcrab" or "SSE"
-    if ( !exists("spatial_domain", p)) p$spatial_domain = "SSE"  # defines spatial area, currenty: "snowcrab" or "SSE"
     if ( !exists("areal_units_strata_type", p)) p$areal_units_strata_type = "lattice" # "stmv_lattice" to use ageis fields instead of carstm fields ... note variables are not the same
 
     if ( p$spatial_domain == "SSE" ) {
@@ -96,11 +89,10 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
     if ( !exists("carstm_modelengine", p)) p$carstm_modelengine = "inla.default"  # {model engine}.{label to use to store}
 
-    if (!exists("variabletomodel", p)) stop( "The dependnent variable, p$variabletomodel needs to be defined")
+    if (!exists("variabletomodel", p)) stop( "The dependent variable, p$variabletomodel needs to be defined")
 
     if ( !exists("carstm_modelcall", p)) {
       if ( grepl("inla", p$carstm_modelengine) ) {
-        p$libs = c( p$libs, RLibrary ( "INLA" ) )
         p$carstm_modelcall = paste(
           'inla( formula = ', p$variabletomodel,
           ' ~ 1
@@ -138,7 +130,6 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
       }
 
       if ( grepl("gam", p$carstm_modelengine) ) {
-        p$libs = c( p$libs, RLibrary ( "mgcv" ) )
         p$carstm_modelcall = paste(
           'gam( formula =',  p$variabletomodel,
           ' ~ 1 + StrataID + s(t) + s(z) + s(substrate.grainsize) + s(yr) + s(dyear),
