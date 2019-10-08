@@ -50,14 +50,16 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
     M = M[ which(is.finite(M$StrataID)),]
     M$StrataID = as.character( M$StrataID )  # match each datum to an area
 
-    M$t = M$speciescomposition.mean
-    M$tag = "observations"
+    M$StrataID = as.character( M$StrataID )  # match each datum to an area
+    M$tiyr = M$yr + M$dyear
+    M[,p$variabletomodel] = M$speciescomposition.mean
+    M$$tag = "observations"
 
     APS = as.data.frame(sppoly)
     APS$StrataID = as.character( APS$StrataID )
     APS$tag ="predictions"
-    APS$t = NA
-    APS$z = NA
+    APS$[,p$variabletomodel] = NA
+
 
     pb = aegis.bathymetry::bathymetry_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
     BI = bathymetry_carstm ( p=pb, DS="carstm_modelled" )  # unmodeled!
@@ -66,7 +68,21 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
     jj =NULL
     BI = NULL
 
-    vn = c("t", "tag", "StrataID", "z")
+    ps = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+    SI = substrate_carstm ( p=ps, DS="carstm_modelled" )  # unmodeled!
+    jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
+    APS$substrate.grainsize = SI$substrate.grainsize.predicted[jj]
+    jj =NULL
+    SI = NULL
+
+    pt = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+    TI = temperature_carstm ( p=pt, DS="carstm_modelled" )  # unmodeled!
+    jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
+    APS$temperature = TI$temperature.predicted[jj]
+    jj =NULL
+    TI = NULL
+
+    vn = c("t", "tag", "StrataID", "z", "substrate.grainsize", "temperature")
     APS = APS[, vn]
 
     # expand APS to all time slices
@@ -74,7 +90,6 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
     APS = cbind( APS[ rep.int(1:n_aps, p$nt), ], rep.int( p$prediction_ts, rep(n_aps, p$nt )) )
     names(APS) = c(vn, "tiyr")
 
-    M$speciescomposition = M$speciescomposition.mean
     M$tiyr = M$yr + M$dyear
     M = rbind( M[, names(APS)], APS )
     APS = NULL
@@ -123,8 +138,8 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
     if ( grepl("glm", p$carstm_modelengine) ) {
 
       assign("fit", eval(parse(text=paste( "try(", p$carstm_modelcall, ")" ) ) ))
-      if (is.null(fit)) error("model fit error")
-      if ("try-error" %in% class(fit) ) error("model fit error")
+      if (is.null(fit)) warning("model fit error")
+      if ("try-error" %in% class(fit) ) warning("model fit error")
       save( fit, file=fn_fit, compress=TRUE )
 
       # s = summary(fit)
@@ -142,8 +157,8 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
 
     if ( grepl("gam", p$carstm_modelengine) ) {
       assign("fit", eval(parse(text=paste( "try(", p$carstm_modelcall, ")" ) ) ))
-      if (is.null(fit)) error("model fit error")
-      if ("try-error" %in% class(fit) ) error("model fit error")
+      if (is.null(fit)) warning("model fit error")
+      if ("try-error" %in% class(fit) ) warning("model fit error")
       save( fit, file=fn_fit, compress=TRUE )
 
       s = summary(fit)
@@ -171,8 +186,8 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       M$iid_error = 1:nrow(M) # for inla indexing for set level variation
 
       assign("fit", eval(parse(text=paste( "try(", p$carstm_modelcall, ")" ) ) ))
-      if (is.null(fit)) error("model fit error")
-      if ("try-error" %in% class(fit) ) error("model fit error")
+      if (is.null(fit)) warning("model fit error")
+      if ("try-error" %in% class(fit) ) warning("model fit error")
       save( fit, file=fn_fit, compress=TRUE )
 
       s = summary(fit)
