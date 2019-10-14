@@ -129,9 +129,11 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
 
     # prediction surface
     sppoly = areal_units( p=p )  # will redo if not found
-    res = sppoly@data["StrataID"]  # init results data frame
+    res = list(StrataID = sppoly[["StrataID"]])  # init results list
+    res$strata = as.numeric(res$StrataID)
 
-    M = temperature_carstm ( p=p, DS="carstm_inputs" )  # 16 GB in RAM just to store!
+    M = speciescomposition_carstm ( p=p, DS="carstm_inputs" )  # 16 GB in RAM just to store!
+    M$strata  = as.numeric( M$StrataID)
 
     fit  = NULL
 
@@ -145,13 +147,13 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       # s = summary(fit)
       # AIC(fit)  # 104487274
       # reformat predictions into matrix form
-      ii = which( M$tag=="predictions" & M$StrataID %in% M[ which(M$tag=="observations"), "StrataID"] )
+      ii = which( M$tag=="predictions" & M$strata %in% M[ which(M$tag=="observations"), "strata"] )
       preds = predict( fit, newdata=M[ii,], type="link", na.action=na.omit, se.fit=TRUE )  # no/km2
 
-      res[,"speciescomposition.predicted"] = exp( preds$fit)
-      res[,"speciescomposition.predicted_se"] = exp( preds$se.fit)
-      res[,"speciescomposition.predicted_lb"] = exp( preds$fit - preds$se.fit )
-      res[,"speciescomposition.predicted_ub"] = exp( preds$fit + preds$se.fit )
+      res[,"speciescomposition.predicted"] =  preds$fit
+      res[,"speciescomposition.predicted_se"] =  preds$se.fit
+      res[,"speciescomposition.predicted_lb"] =  preds$fit - preds$se.fit
+      res[,"speciescomposition.predicted_ub"] =  preds$fit + preds$se.fit
       save( res, file=fn, compress=TRUE )
     }
 
@@ -164,12 +166,12 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       s = summary(fit)
       AIC(fit)  # 104487274
       # reformat predictions into matrix form
-      ii = which( M$tag=="predictions" & M$StrataID %in% M[ which(M$tag=="observations"), "StrataID"] )
+      ii = which( M$tag=="predictions" & M$strata %in% M[ which(M$tag=="observations"), "strata"] )
       preds = predict( fit, newdata=M[ii,], type="link", na.action=na.omit, se.fit=TRUE )  # no/km2
-      res[,"speciescomposition.predicted"] = exp( preds$fit)
-      res[,"speciescomposition.predicted_se"] = exp( preds$se.fit)
-      res[,"speciescomposition.predicted_lb"] = exp( preds$fit - preds$se.fit )
-      res[,"speciescomposition.predicted_ub"] = exp( preds$fit + preds$se.fit )
+      res[,"speciescomposition.predicted"] =  preds$fit
+      res[,"speciescomposition.predicted_se"] =  preds$se.fit
+      res[,"speciescomposition.predicted_lb"] =  preds$fit - preds$se.fit
+      res[,"speciescomposition.predicted_ub"] =  preds$fit + preds$se.fit
       save( res, file=fn, compress=TRUE )
     }
 
@@ -178,11 +180,11 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
 
       H = carstm_hyperparameters( sd(M$speciescomposition, na.rm=TRUE), alpha=0.5, median( M$speciescomposition, na.rm=TRUE) )
 
+      M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+
       M$zi = discretize_data( M$z, p$discretization$z )
-      M$tiyr2 = M$tiyr  # use a copy for "seasonal" models
       M$year = floor(M$tiyr)
       M$dyear  =  M$tiyr - M$year
-      M$strata  = as.numeric( M$StrataID)
       M$iid_error = 1:nrow(M) # for inla indexing for set level variation
 
       assign("fit", eval(parse(text=paste( "try(", p$carstm_modelcall, ")" ) ) ))
@@ -190,31 +192,111 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       if ("try-error" %in% class(fit) ) warning("model fit error")
       save( fit, file=fn_fit, compress=TRUE )
 
-      s = summary(fit)
-      s$dic$dic  # 31225
-      s$dic$p.eff # 5200
-
-      plot(fit, plot.prior=TRUE, plot.hyperparameters=TRUE, plot.fixed.effects=FALSE )
-
       # reformat predictions into matrix form
-      ii = which(M$tag=="predictions")
-      jj = match(M$StrataID[ii], res$StrataID)
+      ii = which(
+        M$tag=="predictions" &
+        M$strata %in% res$strata &
+        M$year %in% p$yrs
+      )  # filter by strata and years in case additional data in other areas and times are used in the input data
 
-      # reformat predictions into matrix form
-      ii = which(M$tag=="predictions")
-      res = reformat_to_array(
+      matchfrom = list( strata=M$strata[ii], year=as.character(M$year[ii]), dyear=M$dyear[ii] )
+      matchto   = list( strata=res$strata, year=as.character(p$yrs), dyear=factor(p$dyears) )
+
+      res$speciescomposition.predicted = reformat_to_array(
         input = fit$summary.fitted.values[ ii, "mean" ],
-        matchfrom = list( StrataID=M$StrataID[ii], yr_factor=M$yr_factor[ii], dyear=M$dyear[ii] ),
-        matchto   = list( StrataID=res$StrataID, yr_factor=factor(p$yrs), dyear=p$dyears )
+        matchfrom=matchfrom, matchto=matchto
       )
-      # res[ res>1e10] = NA
 
-      res$speciescomposition.predicted = exp( fit$summary.fitted.values[ ii[jj], "mean" ])
-      res$speciescomposition.predicted_lb = exp( fit$summary.fitted.values[ ii[jj], "0.025quant" ])
-      res$speciescomposition.predicted_ub = exp( fit$summary.fitted.values[ ii[jj], "0.975quant" ])
-      res$speciescomposition.random_strata_nonspatial = exp( fit$summary.random$strata[ jj, "mean" ])
-      res$speciescomposition.random_strata_spatial = exp( fit$summary.random$strata[ jj+max(jj), "mean" ])
-      res$speciescomposition.random_sample_iid = exp( fit$summary.random$iid_error[ ii[jj], "mean" ])
+      res$speciescomposition.predicted_lb = reformat_to_array(
+        input = fit$summary.fitted.values[ ii, "0.025quant" ],
+        matchfrom=matchfrom, matchto=matchto
+      )
+
+      res$speciescomposition.predicted_ub = reformat_to_array(
+        input =  fit$summary.fitted.values[ ii, "0.975quant" ],
+        matchfrom=matchfrom, matchto=matchto
+      )
+
+      # random effects results ..
+      if (exists("summary.random", fit)) {
+
+        nstrata = length(res$StrataID)
+
+        # reformat predictions into matrix form
+        ii = which(
+          M$tag=="predictions" &
+          M$strata %in% res$strata &
+          M$year %in% p$yrs
+        )  # filter by strata and years in case additional data in other areas and times are used in the input data
+
+
+        if (exists("iid_error", fit$summary.random)) {
+          # IID random effects
+          matchfrom = list( strata=M$strata[ii], year=M$year[ii], dyear=M$dyear[ii] )
+          matchto   = list( strata=res$strata, year=p$yrs, dyear=factor(p$dyears) )
+          res$speciescomposition.random_sample_iid = reformat_to_array(
+            input =  fit$summary.random$iid_error[ ii, "mean" ],
+            matchfrom=matchfrom, matchto=matchto
+          )
+          # carstm_plot( p=p, res=res, vn="speciescomposition.random_sample_iid", time_match=list(year="1950", dyear="0") )
+        }
+
+        if (exists("strata", fit$summary.random)) {
+
+          if (nrow(fit$summary.random$strata) == nstrata*2) {
+            # CAR random effects can be of variable length depending upon model construct:
+
+            # a single spatial and nonspatial effect (no grouping across time)
+            jj = 1:nstrata
+            matchfrom = list( strata=fit$summary.random$strata$ID[jj]  )
+            matchto   = list( strata=res$strata  )
+            res$speciescomposition.random_strata_nonspatial = reformat_to_array(
+              fit$summary.random$strata[ jj, "mean" ],
+              matchfrom=matchfrom, matchto=matchto
+            )
+            res$speciescomposition.random_strata_spatial =reformat_to_array(
+              fit$summary.random$strata[ jj+nstrata, "mean" ],
+              matchfrom=matchfrom, matchto=matchto
+            )
+            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_nonspatial"  )
+            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_spatial" )
+
+          } else if (nrow(fit$summary.random$strata) == nstrata*2 * p$ny ) {
+            # spatial and nonspatial effects grouped by year
+            matchfrom = list( strata=M$strata[ii], year=M$year[ii] )
+            matchto   = list( strata=res$strata, year=p$yrs )
+
+            res$speciescomposition.random_strata_nonspatial = reformat_to_array(
+              input =  fit$summary.random$strata[ ii, "mean" ],
+              matchfrom = matchfrom, matchto = matchto
+            )
+            res$speciescomposition.random_strata_spatial = reformat_to_array(
+              input = fit$summary.random$strata[ ii+max(ii), "mean" ],
+              matchfrom = matchfrom, matchto = matchto
+            )
+            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_nonspatial", time_match=list(year="2000" ) )
+            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_spatial", time_match=list(year="2000" ) )
+
+          } else if (nrow(fit$summary.random$strata) == nstrata*2 * p$nt ) {
+
+            # need to test/fix ...
+            matchfrom = list( StrataID=M$StrataID[ii], year=M$year[ii], dyear=M$dyear[ii] ),
+            matchto   = list( StrataID=res$StrataID, year=p$yrs, dyear=factor(p$dyears) )
+
+            res$speciescomposition.random_strata_nonspatial = reformat_to_array(
+              input = fit$summary.random$strata[ jj, "mean" ],
+              matchfrom = matchfrom,  matchto   = matchto
+            )
+            res$speciescomposition.random_strata_spatial = reformat_to_array(
+              input = fit$summary.random$strata[ ii+max(ii), "mean" ],
+              matchfrom = matchfrom, matchto   = matchto
+            )
+
+            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_nonspatial", time_match=list(year="2000", dyear="0.8" ) )
+            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_spatial", time_match=list(year="2000", dyear="0.8" ) )
+
+          }
+        }
       save( res, file=fn, compress=TRUE )
     }
 
