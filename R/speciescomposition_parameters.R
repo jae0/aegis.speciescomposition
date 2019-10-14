@@ -33,8 +33,6 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
 
   # ---------------------
-
-  # ---------------------
   # create/update library list
   p$libs = unique( c( p$libs, RLibrary ( "colorspace",  "fields", "geosphere", "lubridate",  "lattice",
     "maps", "mapdata", "maptools", "parallel",  "rgdal", "rgeos",  "sp", "splancs", "GADMTools" ) ) )
@@ -85,7 +83,7 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   if (project_class=="carstm") {
 
-    p$libs = unique( c( p$libs, project.library ( "spatialreg", "INLA", "raster", "mgcv",  "carstm" ) ) )
+    p$libs = unique( c( p$libs, project.library ( "carstm" ) ) )
 
     if ( !exists("project_name", p)) p$project_name = "speciescomposition"
 
@@ -116,6 +114,7 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
     if ( !exists("carstm_modelcall", p)) {
       if ( grepl("inla", p$carstm_modelengine) ) {
+        p$libs = unique( c( p$libs, project.library ( "INLA" ) ) )
         p$carstm_modelcall = paste(
           'inla( formula = ', p$variabletomodel,
           ' ~ 1
@@ -153,6 +152,7 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
       }
 
       if ( grepl("gam", p$carstm_modelengine) ) {
+        p$libs = unique( c( p$libs, project.library ( "mgcv" ) ) )
         p$carstm_modelcall = paste(
           'gam( formula =',  p$variabletomodel,
           ' ~ 1 + StrataID + s(t) + s(z) + s(substrate.grainsize) + s(yr) + s(dyear),

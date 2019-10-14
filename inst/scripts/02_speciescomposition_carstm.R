@@ -32,14 +32,13 @@ for ( variabletomodel in p$varstomodel)  {
       M = speciescomposition_carstm( p=p, DS="carstm_inputs", redo=TRUE )  # will redo if not found
       # to extract fits and predictions
 
-
       if (0) {
         # choose model:
 
         # basic model, single CAR effect across time
         p$carstm_modelcall = paste('
           inla(
-            formula =', variabletomodel, ' ~ 1
+            formula =', p$variabletomodel, ' ~ 1
               + f(tiyr, model="ar1", hyper=H$ar1 )
               + f(year, model="ar1", hyper=H$ar1 )
               + f(zi, model="rw2", scale.model=TRUE, diagonal=1e-6, hyper=H$rw2)
@@ -63,7 +62,7 @@ for ( variabletomodel in p$varstomodel)  {
         # CAR effect for each year
         p$carstm_modelcall = paste('
           inla(
-            formula =', variabletomodel, ' ~ 1
+            formula =', p$variabletomodel, ' ~ 1
               + f(tiyr, model="ar1", hyper=H$ar1 )
               + f(year, model="ar1", hyper=H$ar1 )
               + f(zi, model="rw2", scale.model=TRUE, diagonal=1e-6, hyper=H$rw2)
@@ -86,7 +85,7 @@ for ( variabletomodel in p$varstomodel)  {
         # CAR effect for each year, no year AC
         p$carstm_modelcall = paste('
           inla(
-            formula =', variabletomodel, ' ~ 1
+            formula =', p$variabletomodel, ' ~ 1
               + f(tiyr, model="ar1", hyper=H$ar1 )
               + f(zi, model="rw2", scale.model=TRUE, diagonal=1e-6, hyper=H$rw2)
               + f(strata, model="bym2", graph=sppoly@nb ,group= year,  scale.model=TRUE, constr=TRUE, hyper=H$bym2)
@@ -119,13 +118,12 @@ for ( variabletomodel in p$varstomodel)  {
       s$dic$p.eff
 
       # maps of some of the results
-      carstm_plot( p=p, res=res, vn="speciescomposition.predicted" )
+      carstm_plot( p=p, res=res, vn=paste(p$variabletomodel, "predicted", sep=".") )
 
-
-      vn = "speciescomposition.random_sample_iid"
+      vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
       if (exists(vn, res)) carstm_plot( p=p, res=res, vn=vn, time_match=list(year="1950", dyear="0") )
 
-      vn = "speciescomposition.random_strata_nonspatial"
+      vn = paste(p$variabletomodel, "random_strata_nonspatial", sep=".")
       if (exists(vn, res)) {
         res_dim = dim( res[[vn]] )
         if (res_dim == 1 ) time_match = NULL
@@ -134,7 +132,7 @@ for ( variabletomodel in p$varstomodel)  {
         carstm_plot( p=p, res=res, vn=vn, time_match=time_match )
       }
 
-      vn="speciescomposition.random_strata_spatial"
+      vn = paste(p$variabletomodel, "random_strata_spatial", sep=".")
       if (exists(vn, res)) {
         res_dim = dim( res[[vn]] )
         if (res_dim == 1 ) time_match = NULL
@@ -147,6 +145,3 @@ for ( variabletomodel in p$varstomodel)  {
 
 }
 # end
-
-
-

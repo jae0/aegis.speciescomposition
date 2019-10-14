@@ -36,7 +36,7 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
     crs_lonlat = sp::CRS(projection_proj4string("lonlat_wgs84"))
 
     # do this immediately to reduce storage for sppoly (before adding other variables)
-    M = speciescomposition.db( p=p, DS="aggregated_data", redo=TRUE )  # will redo if not found .. not used here but used for data matching/lookup in other aegis projects that use bathymetry
+    M = speciescomposition.db( p=p, DS="speciescomposition" )
 
     # reduce size
     M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
@@ -150,10 +150,10 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       ii = which( M$tag=="predictions" & M$strata %in% M[ which(M$tag=="observations"), "strata"] )
       preds = predict( fit, newdata=M[ii,], type="link", na.action=na.omit, se.fit=TRUE )  # no/km2
 
-      res[,"speciescomposition.predicted"] =  preds$fit
-      res[,"speciescomposition.predicted_se"] =  preds$se.fit
-      res[,"speciescomposition.predicted_lb"] =  preds$fit - preds$se.fit
-      res[,"speciescomposition.predicted_ub"] =  preds$fit + preds$se.fit
+      res[,paste(p$variabletomodel, "predicted", sep=".")] =  preds$fit
+      res[,paste(p$variabletomodel, "predicted_se", sep=".")] =  preds$se.fit
+      res[,paste(p$variabletomodel, "predicted_lb", sep=".")] =  preds$fit - preds$se.fit
+      res[,paste(p$variabletomodel, "predicted_ub", sep=".")] =  preds$fit + preds$se.fit
       save( res, file=fn, compress=TRUE )
     }
 
@@ -168,17 +168,20 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       # reformat predictions into matrix form
       ii = which( M$tag=="predictions" & M$strata %in% M[ which(M$tag=="observations"), "strata"] )
       preds = predict( fit, newdata=M[ii,], type="link", na.action=na.omit, se.fit=TRUE )  # no/km2
-      res[,"speciescomposition.predicted"] =  preds$fit
-      res[,"speciescomposition.predicted_se"] =  preds$se.fit
-      res[,"speciescomposition.predicted_lb"] =  preds$fit - preds$se.fit
-      res[,"speciescomposition.predicted_ub"] =  preds$fit + preds$se.fit
+      res[,paste(p$variabletomodel, "predicted", sep=".")] =  preds$fit
+      res[,paste(p$variabletomodel, "predicted_se", sep=".")] =  preds$se.fit
+      res[,paste(p$variabletomodel, "predicted_lb", sep=".")] =  preds$fit - preds$se.fit
+      res[,paste(p$variabletomodel, "predicted_ub", sep=".")] =  preds$fit + preds$se.fit
       save( res, file=fn, compress=TRUE )
     }
 
 
+
+
+
     if ( grepl("inla", p$carstm_modelengine) ) {
 
-      H = carstm_hyperparameters( sd(M$speciescomposition, na.rm=TRUE), alpha=0.5, median( M$speciescomposition, na.rm=TRUE) )
+      H = carstm_hyperparameters( sd(M[,p$variabletomodel], na.rm=TRUE), alpha=0.5, median( M[,p$variabletomodel], na.rm=TRUE) )
 
       M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
 
@@ -202,20 +205,14 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
       matchfrom = list( strata=M$strata[ii], year=as.character(M$year[ii]), dyear=M$dyear[ii] )
       matchto   = list( strata=res$strata, year=as.character(p$yrs), dyear=factor(p$dyears) )
 
-      res$speciescomposition.predicted = reformat_to_array(
-        input = fit$summary.fitted.values[ ii, "mean" ],
-        matchfrom=matchfrom, matchto=matchto
-      )
+      vn = paste( p$variabletomodel, "predicted", sep=".")
+      res[vn] = reformat_to_array( input=fit$summary.fitted.values[ ii, "mean" ], matchfrom=matchfrom, matchto=matchto )
 
-      res$speciescomposition.predicted_lb = reformat_to_array(
-        input = fit$summary.fitted.values[ ii, "0.025quant" ],
-        matchfrom=matchfrom, matchto=matchto
-      )
+      vn = paste( p$variabletomodel, "predicted_lb", sep=".")
+      res[vn] = reformat_to_array( input=fit$summary.fitted.values[ ii, "0.025quant" ], matchfrom=matchfrom, matchto=matchto )
 
-      res$speciescomposition.predicted_ub = reformat_to_array(
-        input =  fit$summary.fitted.values[ ii, "0.975quant" ],
-        matchfrom=matchfrom, matchto=matchto
-      )
+      vn = paste( p$variabletomodel, "predicted_ub", sep=".")
+      res[vn] = reformat_to_array( input=fit$summary.fitted.values[ ii, "0.975quant" ], matchfrom=matchfrom, matchto=matchto )
 
       # random effects results ..
       if (exists("summary.random", fit)) {
@@ -232,13 +229,11 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
 
         if (exists("iid_error", fit$summary.random)) {
           # IID random effects
+          vn = paste( p$variabletomodel, "random_sample_iid", sep=".")
           matchfrom = list( strata=M$strata[ii], year=M$year[ii], dyear=M$dyear[ii] )
           matchto   = list( strata=res$strata, year=p$yrs, dyear=factor(p$dyears) )
-          res$speciescomposition.random_sample_iid = reformat_to_array(
-            input =  fit$summary.random$iid_error[ ii, "mean" ],
-            matchfrom=matchfrom, matchto=matchto
-          )
-          # carstm_plot( p=p, res=res, vn="speciescomposition.random_sample_iid", time_match=list(year="1950", dyear="0") )
+          res[vn] = reformat_to_array( input=fit$summary.random$iid_error[ ii, "mean" ], matchfrom=matchfrom, matchto=matchto )
+          # carstm_plot( p=p, res=res, vn=vn, time_match=list(year="1950", dyear="0") )
         }
 
         if (exists("strata", fit$summary.random)) {
@@ -250,32 +245,25 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
             jj = 1:nstrata
             matchfrom = list( strata=fit$summary.random$strata$ID[jj]  )
             matchto   = list( strata=res$strata  )
-            res$speciescomposition.random_strata_nonspatial = reformat_to_array(
-              fit$summary.random$strata[ jj, "mean" ],
-              matchfrom=matchfrom, matchto=matchto
-            )
-            res$speciescomposition.random_strata_spatial =reformat_to_array(
-              fit$summary.random$strata[ jj+nstrata, "mean" ],
-              matchfrom=matchfrom, matchto=matchto
-            )
-            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_nonspatial"  )
-            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_spatial" )
+            vn = paste( p$variabletomodel, "random_strata_nonspatial", sep=".")
+            res[vn] = reformat_to_array( fit$summary.random$strata[ jj, "mean" ], matchfrom=matchfrom, matchto=matchto )
+
+            vn = paste( p$variabletomodel, "random_strata_spatial", sep=".")
+            res[vn] = reformat_to_array( fit$summary.random$strata[ jj+max(jj), "mean" ], matchfrom=matchfrom, matchto=matchto )
+            # carstm_plot( p=p, res=res, vn=vn  )
 
           } else if (nrow(fit$summary.random$strata) == nstrata*2 * p$ny ) {
             # spatial and nonspatial effects grouped by year
+
             matchfrom = list( strata=M$strata[ii], year=M$year[ii] )
             matchto   = list( strata=res$strata, year=p$yrs )
 
-            res$speciescomposition.random_strata_nonspatial = reformat_to_array(
-              input =  fit$summary.random$strata[ ii, "mean" ],
-              matchfrom = matchfrom, matchto = matchto
-            )
-            res$speciescomposition.random_strata_spatial = reformat_to_array(
-              input = fit$summary.random$strata[ ii+max(ii), "mean" ],
-              matchfrom = matchfrom, matchto = matchto
-            )
-            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_nonspatial", time_match=list(year="2000" ) )
-            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_spatial", time_match=list(year="2000" ) )
+            vn = paste( p$variabletomodel, "random_strata_nonspatial", sep=".")
+            res[vn] = reformat_to_array( fit$summary.random$strata[ ii, "mean" ], matchfrom=matchfrom, matchto=matchto )
+
+            vn = paste( p$variabletomodel, "random_strata_spatial", sep=".")
+            res[vn] = reformat_to_array( fit$summary.random$strata[ ii+max(ii), "mean" ], matchfrom=matchfrom, matchto=matchto )
+            # carstm_plot( p=p, res=res, vn=vn, time_match=list(year="2000" ) )
 
           } else if (nrow(fit$summary.random$strata) == nstrata*2 * p$nt ) {
 
@@ -283,17 +271,12 @@ speciescomposition_carstm = function( p=NULL, DS=NULL, sppoly=NULL, redo=FALSE, 
             matchfrom = list( StrataID=M$StrataID[ii], year=M$year[ii], dyear=M$dyear[ii] ),
             matchto   = list( StrataID=res$StrataID, year=p$yrs, dyear=factor(p$dyears) )
 
-            res$speciescomposition.random_strata_nonspatial = reformat_to_array(
-              input = fit$summary.random$strata[ jj, "mean" ],
-              matchfrom = matchfrom,  matchto   = matchto
-            )
-            res$speciescomposition.random_strata_spatial = reformat_to_array(
-              input = fit$summary.random$strata[ ii+max(ii), "mean" ],
-              matchfrom = matchfrom, matchto   = matchto
-            )
+            vn = paste( p$variabletomodel, "random_strata_nonspatial", sep=".")
+            res[vn] = reformat_to_array( fit$summary.random$strata[ ii, "mean" ], matchfrom=matchfrom, matchto=matchto )
 
-            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_nonspatial", time_match=list(year="2000", dyear="0.8" ) )
-            # carstm_plot( p=p, res=res, vn="speciescomposition.random_strata_spatial", time_match=list(year="2000", dyear="0.8" ) )
+            vn = paste( p$variabletomodel, "random_strata_spatial", sep=".")
+            res[vn] = reformat_to_array( fit$summary.random$strata[ ii+max(ii), "mean" ], matchfrom=matchfrom, matchto=matchto )
+            # carstm_plot( p=p, res=res, vn=vn, time_match=list(year="2000", dyear="0.8") )
 
           }
         }
