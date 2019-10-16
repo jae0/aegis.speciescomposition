@@ -163,6 +163,104 @@
 			return (fn)
 		}
 
+
+
+
+    if ( DS=="carstm_inputs") {
+
+      fn = file.path( p$modeldir, paste( "speciescomposition", "carstm_inputs", p$auid,
+        p$inputdata_spatial_discretization_planar_km,
+        round(p$inputdata_temporal_discretization_yr, 6),
+        "rdata", sep=".") )
+
+      if (!redo)  {
+        if (file.exists(fn)) {
+          load( fn)
+          return( M )
+        }
+      }
+      message( "Generating carstm_inputs ... ")
+
+      # prediction surface
+      sppoly = areal_units( p=p )  # will redo if not found
+
+      crs_lonlat = sp::CRS(projection_proj4string("lonlat_wgs84"))
+
+      # do this immediately to reduce storage for sppoly (before adding other variables)
+      M = speciescomposition.db( p=p, DS="speciescomposition" )
+
+      # reduce size
+      M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
+      # levelplot(z.mean~plon+plat, data=M, aspect="iso")
+
+      M$StrataID = over( SpatialPoints( M[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$StrataID # match each datum to an area
+      M$lon = NULL
+      M$lat = NULL
+      M$plon = NULL
+      M$plat = NULL
+      M = M[ which(is.finite(M$StrataID)),]
+      M$StrataID = as.character( M$StrataID )  # match each datum to an area
+
+      M$StrataID = as.character( M$StrataID )  # match each datum to an area
+      M$tiyr = M$yr + M$dyear
+      M[,p$variabletomodel] = M$speciescomposition.mean
+      M$$tag = "observations"
+
+      APS = as.data.frame(sppoly)
+      APS$StrataID = as.character( APS$StrataID )
+      APS$tag ="predictions"
+      APS$[,p$variabletomodel] = NA
+
+
+      pb = aegis.bathymetry::bathymetry_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      BI = bathymetry.db ( p=pb, DS="carstm_modelled" )  # unmodeled!
+      jj = match( as.character( APS$StrataID), as.character( BI$StrataID) )
+      APS$z = BI$z.predicted[jj]
+      jj =NULL
+      BI = NULL
+
+      ps = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      SI = substrate.db ( p=ps, DS="carstm_modelled" )  # unmodeled!
+      jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
+      APS$substrate.grainsize = SI$substrate.grainsize.predicted[jj]
+      jj =NULL
+      SI = NULL
+
+      pt = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      TI = temperature.db ( p=pt, DS="carstm_modelled" )  # unmodeled!
+      jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
+      APS$temperature = TI$temperature.predicted[jj]
+      jj =NULL
+      TI = NULL
+
+      vn = c("t", "tag", "StrataID", "z", "substrate.grainsize", "temperature")
+      APS = APS[, vn]
+
+      # expand APS to all time slices
+      n_aps = nrow(APS)
+      APS = cbind( APS[ rep.int(1:n_aps, p$nt), ], rep.int( p$prediction_ts, rep(n_aps, p$nt )) )
+      names(APS) = c(vn, "tiyr")
+
+      M$tiyr = M$yr + M$dyear
+      M = rbind( M[, names(APS)], APS )
+      APS = NULL
+
+      M$StrataID  = factor( as.character(M$StrataID), levels=levels( sppoly$StrataID ) ) # revert to factors
+
+      M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+
+      M$zi = discretize_data( M$z, p$discretization$z )
+      M$year = floor(M$tiyr)
+      M$dyear  =  M$tiyr - M$year
+      M$iid_error = 1:nrow(M) # for inla indexing for set level variation
+      M$strata  = as.numeric( M$StrataID)
+
+
+      save( M, file=fn, compress=TRUE )
+      return( M )
+    }
+
+
   } # end function
 
 
