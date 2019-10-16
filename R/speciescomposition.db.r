@@ -165,6 +165,9 @@
 
 
 
+    # -----------------------
+
+
 
     if ( DS=="carstm_inputs") {
 
@@ -245,16 +248,7 @@
       M = rbind( M[, names(APS)], APS )
       APS = NULL
 
-      M$StrataID  = factor( as.character(M$StrataID), levels=levels( sppoly$StrataID ) ) # revert to factors
-
-      M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
-
       M$zi = discretize_data( M$z, p$discretization$z )
-      M$year = floor(M$tiyr)
-      M$dyear  =  M$tiyr - M$year
-      M$iid_error = 1:nrow(M) # for inla indexing for set level variation
-      M$strata  = as.numeric( M$StrataID)
-
 
       save( M, file=fn, compress=TRUE )
       return( M )
