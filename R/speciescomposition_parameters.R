@@ -49,11 +49,14 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   if (!exists("spatial_domain", p) ) p$spatial_domain = "SSE"
   if (!exists("spatial_domain_subareas", p)) p$spatial_domain_subareas = c( "snowcrab", "SSE.mpa" )
+
+  if (!exists("aegis_dimensionality", p)) p$aegis_dimensionality="space-year"
+
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
   if (!exists("yrs", p)) p$yrs = c(1999:lubridate::year(lubridate::now()))  # NOTE:: this is short as groundfish species id is inconsistent
-  p = temporal_parameters(p=p, aegis_dimensionality="space-year")
+  p = temporal_parameters(p=p)
 
   p$taxa =  "maxresolved"
 
