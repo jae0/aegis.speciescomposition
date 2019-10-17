@@ -216,21 +216,21 @@
 
 
       pb = aegis.bathymetry::bathymetry_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      BI = bathymetry.db ( p=pb, DS="carstm_modelled" )  # unmodeled!
+      BI = carstm_model ( p=pb, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( BI$StrataID) )
       APS$z = BI$z.predicted[jj]
       jj =NULL
       BI = NULL
 
       ps = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      SI = substrate.db ( p=ps, DS="carstm_modelled" )  # unmodeled!
+      SI = carstm_model ( p=ps, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
       APS$substrate.grainsize = SI$substrate.grainsize.predicted[jj]
       jj =NULL
       SI = NULL
 
       pt = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      TI = temperature.db ( p=pt, DS="carstm_modelled" )  # unmodeled!
+      TI = carstm_model ( p=pt, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
       APS[, pt$variabletomodel] = TI$temperature.predicted[jj]
       jj =NULL
