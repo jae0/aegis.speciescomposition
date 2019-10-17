@@ -232,11 +232,11 @@
       pt = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
       TI = temperature.db ( p=pt, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
-      APS$temperature = TI$temperature.predicted[jj]
+      APS[, pt$variabletomodel] = TI$temperature.predicted[jj]
       jj =NULL
       TI = NULL
 
-      vn = c("t", "tag", "StrataID", "z", "substrate.grainsize", "temperature")
+      vn = c( p$variabletomodel, pb$variabletomodel,  ps$variabletomodel,  pt$variabletomodel, "tag", "StrataID" )
       APS = APS[, vn]
 
       # expand APS to all time slices
@@ -248,7 +248,14 @@
       M = rbind( M[, names(APS)], APS )
       APS = NULL
 
-      M$zi = discretize_data( M$z, p$discretization$z )
+      M$strata  = as.numeric( M$StrataID)
+      M$iid_error = 1:nrow(M) # for inla indexing for set level variation
+
+      M$zi = discretize_data( M[, pb$variabletomodel], p$discretization$z )
+
+      M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+      M$year = floor(M$tiyr)
+      M$dyear  =  factor( as.character( trunc(  (M$tiyr - M$year )/ p$tres )*p$tres), levels=p$dyears)
 
       save( M, file=fn, compress=TRUE )
       return( M )
