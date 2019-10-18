@@ -215,15 +215,15 @@
       APS$[,p$variabletomodel] = NA
 
 
-      pb = aegis.bathymetry::bathymetry_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      BI = carstm_model ( p=pb, DS="carstm_modelled" )  # unmodeled!
+    ~ pB = aegis.bathymetry::bathymetry_parameters( p=p, project_class="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      BI = carstm_model ( p=pB, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( BI$StrataID) )
       APS$z = BI$z.predicted[jj]
       jj =NULL
       BI = NULL
 
-      ps = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      SI = carstm_model ( p=ps, DS="carstm_modelled" )  # unmodeled!
+      pS = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      SI = carstm_model ( p=pS, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
       APS$substrate.grainsize = SI$substrate.grainsize.predicted[jj]
       jj =NULL
@@ -236,7 +236,7 @@
       jj =NULL
       TI = NULL
 
-      vn = c( p$variabletomodel, pb$variabletomodel,  ps$variabletomodel,  pt$variabletomodel, "tag", "StrataID" )
+      vn = c( p$variabletomodel, pB$variabletomodel,  pS$variabletomodel,  pt$variabletomodel, "tag", "StrataID" )
       APS = APS[, vn]
 
       # expand APS to all time slices
@@ -251,7 +251,7 @@
       M$strata  = as.numeric( M$StrataID)
       M$iid_error = 1:nrow(M) # for inla indexing for set level variation
 
-      M$zi = discretize_data( M[, pb$variabletomodel], p$discretization$z )
+      M$zi = discretize_data( M[, pB$variabletomodel], p$discretization$z )
 
       M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
       M$year = floor(M$tiyr)
