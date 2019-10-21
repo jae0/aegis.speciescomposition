@@ -128,7 +128,7 @@
 
 
 
-		if (DS %in% c( "speciescomposition", "speciescomposition.redo" ) ) {
+    if (DS %in% c( "speciescomposition", "speciescomposition.redo" ) ) {
       # remove dups and in planar coords
       fn = file.path( ddir, paste( "speciescomposition", infix, "rdata", sep=".") )
 
@@ -166,6 +166,93 @@
 
 
     # -----------------------
+
+
+  if ( DS=="aggregated_data") {
+    
+
+
+ 
+    # param list needs to be reset but keeping the relevent parts;
+    p = speciescomposition_parameters( yrs=p$yrs,
+      inputdata_spatial_discretization_planar_km=p$inputdata_spatial_discretization_planar_km,
+      inputdata_temporal_discretization_yr=p$inputdata_temporal_discretization_yr )
+
+    fn = file.path( ddir, paste( p$variabletomodel, infix, "aggregated_data", p$inputdata_spatial_discretization_planar_km, round(p$inputdata_temporal_discretization_yr,6), ".rdata", sep=".") )
+    
+    if (!redo)  {
+      if (file.exists(fn)) {
+        load( fn)
+        return( M )
+      }
+    }
+    warning( "Generating aggregated data ... ")
+
+    M = speciescomposition.db( p=p, DS="speciescomposition"  )
+    M = M[ which(M$yr %in% p$yrs), ]
+    M$tiyr = lubridate::decimal_date ( M$date )
+
+    # globally remove all unrealistic data
+#    keep = which( M$t >= -3 & M$t <= 25 ) # hard limits
+#    if (length(keep) > 0 ) M = M[ keep, ]
+    
+    TR = quantile(M$t, probs=c(0.0005, 0.9995), na.rm=TRUE ) # this was -1.7, 21.8 in 2015
+    keep = which( M$t >=  TR[1] & M$t <=  TR[2] )
+    if (length(keep) > 0 ) M = M[ keep, ]
+    keep = which( M$z >=  2 ) # ignore very shallow areas ..
+    if (length(keep) > 0 ) M = M[ keep, ]
+
+    M$plon = round(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+    M$plat = round(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+
+    M$dyear = M$tiyr - M$yr
+    M$dyear = discretize_data( M$dyear, seq(0, 1, by=p$inputdata_temporal_discretization_yr), digits=6 )
+
+    bb = as.data.frame( t( simplify2array(
+      tapply( X=M$t, INDEX=list(paste( M$plon, M$plat, M$yr, M$dyear, sep="_") ),
+        FUN = function(w) { c(
+          mean(w, na.rm=TRUE),
+          sd(w, na.rm=TRUE),
+          length( which(is.finite(w)) )
+        ) }, simplify=TRUE )
+    )))
+    colnames(bb) = paste( p$variabletomodel, c("mean", "sd", "n"), sep=".")
+    bb$id = rownames(bb)
+    out = bb
+
+    # keep depth at collection .. potentially the biochem data as well (at least until biochem is usable)
+    bb = as.data.frame( t( simplify2array(
+      tapply( X=M$z, INDEX=list(paste( M$plon, M$plat, M$yr, M$dyear, sep="_") ),
+        FUN = function(w) { c(
+          mean(w, na.rm=TRUE),
+          sd(w, na.rm=TRUE),
+          length( which(is.finite(w)) )
+        ) }, simplify=TRUE )
+    )))
+    colnames(bb) = c("z.mean", "z.sd", "z.n")
+    bb$id = rownames(bb)
+
+    ii = match( out$id, bb$id )
+    out$z = bb$z.mean[ii]
+
+    bb = NULL
+    labs = matrix( as.numeric( unlist(strsplit( rownames(out), "_", fixed=TRUE))), ncol=4, byrow=TRUE)
+
+    out$plon = labs[,1]
+    out$plat = labs[,2]
+    out$yr = labs[,3]
+    out$dyear = labs[,4]
+    labs = NULL
+
+    M = out[ which( is.finite( out$temperature.mean )) ,]
+    out =NULL
+    gc()
+    M = planar2lonlat( M, p$aegis_proj4string_planar_km)
+
+    save( M, file=fn, compress=TRUE )
+    return( M )
+  }
+
 
 
 
@@ -263,5 +350,6 @@
 
 
   } # end function
+
 
 

@@ -77,6 +77,7 @@ for ( variabletomodel in p$varstomodel)  {
             verbose=TRUE
         ) ' )
 
+
         # CAR effect for each year, no year AC
         p$carstm_modelcall = paste('
           inla(
@@ -108,7 +109,7 @@ for ( variabletomodel in p$varstomodel)  {
       M = speciescomposition.db( p=p, DS="carstm_inputs", redo=TRUE )  # will redo if not found
       # to extract fits and predictions
 
-        # run model and obtain predictions
+      # run model and obtain predictions
       res = carstm_model( p=p, M=M )
 
       res = carstm_model( p=p, DS="carstm_modelled" ) # to load currently saved res
