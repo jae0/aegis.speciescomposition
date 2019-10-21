@@ -207,12 +207,12 @@
       M$StrataID = as.character( M$StrataID )  # match each datum to an area
       M$tiyr = M$yr + M$dyear
       M[,p$variabletomodel] = M$speciescomposition.mean
-      M$$tag = "observations"
+      M$tag = "observations"
 
       APS = as.data.frame(sppoly)
       APS$StrataID = as.character( APS$StrataID )
       APS$tag ="predictions"
-      APS$[,p$variabletomodel] = NA
+      APS[,p$variabletomodel] = NA
 
 
     ~ pB = aegis.bathymetry::bathymetry_parameters( p=p, project_class="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
@@ -225,18 +225,18 @@
       pS = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
       SI = carstm_model ( p=pS, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
-      APS$substrate.grainsize = SI$substrate.grainsize.predicted[jj]
+      APS[,pS$variabletomodel] = SI$substrate.grainsize.predicted[jj]
       jj =NULL
       SI = NULL
 
-      pt = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      TI = carstm_model ( p=pt, DS="carstm_modelled" )  # unmodeled!
+      pT = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      TI = carstm_model ( p=pT, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
-      APS[, pt$variabletomodel] = TI$temperature.predicted[jj]
+      APS[, pT$variabletomodel] = TI$temperature.predicted[jj]
       jj =NULL
       TI = NULL
 
-      vn = c( p$variabletomodel, pB$variabletomodel,  pS$variabletomodel,  pt$variabletomodel, "tag", "StrataID" )
+      vn = c( p$variabletomodel, pB$variabletomodel,  pS$variabletomodel,  pT$variabletomodel, "tag", "StrataID" )
       APS = APS[, vn]
 
       # expand APS to all time slices
