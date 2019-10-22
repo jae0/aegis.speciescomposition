@@ -200,15 +200,14 @@
   #    keep = which( M[,p$variabletomodel] >= -3 & M[,p$variabletomodel] <= 25 ) # hard limits
   #    if (length(keep) > 0 ) M = M[ keep, ]
 
-      TR = quantile(M[,p$variabletomodel], probs=c(0.0005, 0.9995), na.rm=TRUE ) # this was -1.7, 21.8 in 2015
-      keep = which( M[,p$variabletomodel] >=  TR[1] & M[,p$variabletomodel] <=  TR[2] )
-      if (length(keep) > 0 ) M = M[ keep, ]
-      keep = which( M$z >=  2 ) # ignore very shallow areas ..
-      if (length(keep) > 0 ) M = M[ keep, ]
-
+      # p$quantile_bounds_data = c(0.0005, 0.9995)
+      if (exists("quantile_bounds_data", p)) {
+        TR = quantile(M[,p$variabletomodel], probs=p$quantile_bounds, na.rm=TRUE ) # this was -1.7, 21.8 in 2015
+        keep = which( M[,p$variabletomodel] >=  TR[1] & M[,p$variabletomodel] <=  TR[2] )
+        if (length(keep) > 0 ) M = M[ keep, ]
+      }
 
       M$dyear = M$tiyr - M$yr
-
       M$dyear = discretize_data( M$dyear, seq(0, 1, by=p$inputdata_temporal_discretization_yr), digits=6 )
 
       # reduce size
@@ -218,8 +217,6 @@
       M$StrataID = over( SpatialPoints( M[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$StrataID # match each datum to an area
       M$lon = NULL
       M$lat = NULL
-      M$plon = NULL
-      M$plat = NULL
       M = M[ which(is.finite(M$StrataID)),]
       M$StrataID = as.character( M$StrataID )  # match each datum to an area
 
@@ -233,21 +230,47 @@
       APS[,p$variabletomodel] = NA
 
 
-    ~ pB = aegis.bathymetry::bathymetry_parameters( p=p, project_class="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      pB = aegis.bathymetry::bathymetry_parameters( p=p, project_class="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      pS = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
+      pT = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load       TI = carstm_model ( p=pT, DS="carstm_modelled" )  # unmodeled!
+     
+    
+      M$plon = round(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+      M$plat = round(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+
+      BI = carstm_model ( p=pB, DS="aggregated_data" )  # unmodeled!
+      jj = match( as.character( M$StrataID), as.character( BI$StrataID) )
+      M[, pB$variabletomodel] = BI[jj, paste(pB$variabletomodel,"predicted",sep="." )]
+      jj =NULL
+      BI = NULL
+
+      SI = carstm_model ( p=pS, DS="aggregated_data" )  # unmodeled!
+      jj = match( as.character( M$StrataID), as.character( SI$StrataID) )
+      M[, pS$variabletomodel] = SI[jj, paste(pS$variabletomodel,"predicted",sep="." )]
+      jj =NULL
+      SI = NULL
+
+      TI = carstm_model ( p=pT, DS="aggregated_data" )  # unmodeled!
+      jj = match( as.character( M$StrataID), as.character( TI$StrataID) )
+      M[, pT$variabletomodel] = TI[jj, paste(pT$variabletomodel,"predicted",sep="." )]
+      jj =NULL
+      TI = NULL
+
+
+
       BI = carstm_model ( p=pB, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( BI$StrataID) )
       APS[, pB$variabletomodel] = BI[jj, paste(pB$variabletomodel,"predicted",sep="." )]
       jj =NULL
       BI = NULL
 
-      pS = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
       SI = carstm_model ( p=pS, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
       APS[, pS$variabletomodel] = SI[jj, paste(pS$variabletomodel,"predicted",sep="." )]
       jj =NULL
       SI = NULL
 
-      pT = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load       TI = carstm_model ( p=pT, DS="carstm_modelled" )  # unmodeled!
+      TI = carstm_model ( p=pT, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
       APS[, pT$variabletomodel] = TI[jj, paste(pT$variabletomodel,"predicted",sep="." )]
       jj =NULL
