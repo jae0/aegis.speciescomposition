@@ -168,92 +168,6 @@
     # -----------------------
 
 
-  if ( DS=="aggregated_data") {
-    
-
-
- 
-    # param list needs to be reset but keeping the relevent parts;
-    p = speciescomposition_parameters( yrs=p$yrs,
-      inputdata_spatial_discretization_planar_km=p$inputdata_spatial_discretization_planar_km,
-      inputdata_temporal_discretization_yr=p$inputdata_temporal_discretization_yr )
-
-    fn = file.path( ddir, paste( p$variabletomodel, infix, "aggregated_data", p$inputdata_spatial_discretization_planar_km, round(p$inputdata_temporal_discretization_yr,6), ".rdata", sep=".") )
-    
-    if (!redo)  {
-      if (file.exists(fn)) {
-        load( fn)
-        return( M )
-      }
-    }
-    warning( "Generating aggregated data ... ")
-
-    M = speciescomposition.db( p=p, DS="speciescomposition"  )
-    M = M[ which(M$yr %in% p$yrs), ]
-    M$tiyr = lubridate::decimal_date ( M$date )
-
-    # globally remove all unrealistic data
-#    keep = which( M$t >= -3 & M$t <= 25 ) # hard limits
-#    if (length(keep) > 0 ) M = M[ keep, ]
-    
-    TR = quantile(M$t, probs=c(0.0005, 0.9995), na.rm=TRUE ) # this was -1.7, 21.8 in 2015
-    keep = which( M$t >=  TR[1] & M$t <=  TR[2] )
-    if (length(keep) > 0 ) M = M[ keep, ]
-    keep = which( M$z >=  2 ) # ignore very shallow areas ..
-    if (length(keep) > 0 ) M = M[ keep, ]
-
-    M$plon = round(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
-    M$plat = round(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
-
-    M$dyear = M$tiyr - M$yr
-    M$dyear = discretize_data( M$dyear, seq(0, 1, by=p$inputdata_temporal_discretization_yr), digits=6 )
-
-    bb = as.data.frame( t( simplify2array(
-      tapply( X=M$t, INDEX=list(paste( M$plon, M$plat, M$yr, M$dyear, sep="_") ),
-        FUN = function(w) { c(
-          mean(w, na.rm=TRUE),
-          sd(w, na.rm=TRUE),
-          length( which(is.finite(w)) )
-        ) }, simplify=TRUE )
-    )))
-    colnames(bb) = paste( p$variabletomodel, c("mean", "sd", "n"), sep=".")
-    bb$id = rownames(bb)
-    out = bb
-
-    # keep depth at collection .. potentially the biochem data as well (at least until biochem is usable)
-    bb = as.data.frame( t( simplify2array(
-      tapply( X=M$z, INDEX=list(paste( M$plon, M$plat, M$yr, M$dyear, sep="_") ),
-        FUN = function(w) { c(
-          mean(w, na.rm=TRUE),
-          sd(w, na.rm=TRUE),
-          length( which(is.finite(w)) )
-        ) }, simplify=TRUE )
-    )))
-    colnames(bb) = c("z.mean", "z.sd", "z.n")
-    bb$id = rownames(bb)
-
-    ii = match( out$id, bb$id )
-    out$z = bb$z.mean[ii]
-
-    bb = NULL
-    labs = matrix( as.numeric( unlist(strsplit( rownames(out), "_", fixed=TRUE))), ncol=4, byrow=TRUE)
-
-    out$plon = labs[,1]
-    out$plat = labs[,2]
-    out$yr = labs[,3]
-    out$dyear = labs[,4]
-    labs = NULL
-
-    M = out[ which( is.finite( out$temperature.mean )) ,]
-    out =NULL
-    gc()
-    M = planar2lonlat( M, p$aegis_proj4string_planar_km)
-
-    save( M, file=fn, compress=TRUE )
-    return( M )
-  }
-
-
 
 
     if ( DS=="carstm_inputs") {
@@ -279,6 +193,23 @@
       # do this immediately to reduce storage for sppoly (before adding other variables)
       M = speciescomposition.db( p=p, DS="speciescomposition" )
 
+      M = M[ which(M$yr %in% p$yrs), ]
+      M$tiyr = lubridate::decimal_date ( M$date )
+
+      # globally remove all unrealistic data
+  #    keep = which( M[,p$variabletomodel] >= -3 & M[,p$variabletomodel] <= 25 ) # hard limits
+  #    if (length(keep) > 0 ) M = M[ keep, ]
+
+      TR = quantile(M[,p$variabletomodel], probs=c(0.0005, 0.9995), na.rm=TRUE ) # this was -1.7, 21.8 in 2015
+      keep = which( M[,p$variabletomodel] >=  TR[1] & M[,p$variabletomodel] <=  TR[2] )
+      if (length(keep) > 0 ) M = M[ keep, ]
+      keep = which( M$z >=  2 ) # ignore very shallow areas ..
+      if (length(keep) > 0 ) M = M[ keep, ]
+
+
+      M$dyear = M$tiyr - M$yr
+      M$dyear = discretize_data( M$dyear, seq(0, 1, by=p$inputdata_temporal_discretization_yr), digits=6 )
+
       # reduce size
       M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
       # levelplot(z.mean~plon+plat, data=M, aspect="iso")
@@ -291,9 +222,8 @@
       M = M[ which(is.finite(M$StrataID)),]
       M$StrataID = as.character( M$StrataID )  # match each datum to an area
 
-      M$StrataID = as.character( M$StrataID )  # match each datum to an area
-      M$tiyr = M$yr + M$dyear
-      M[,p$variabletomodel] = M$speciescomposition.mean
+      names(M)[which(names(M)==paste(p$variabletomodel, "mean", sep=".") )] = p$variabletomodel
+
       M$tag = "observations"
 
       APS = as.data.frame(sppoly)
@@ -312,7 +242,7 @@
       pS = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
       SI = carstm_model ( p=pS, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
-      APS[,pS$variabletomodel] = SI$substrate.grainsize.predicted[jj]
+      APS[,pS$variabletomodel] = SI[ jj, paste(pS$variabletomodel, "predicted", sep=".") ]
       jj =NULL
       SI = NULL
 
@@ -338,7 +268,7 @@
       M$strata  = as.numeric( M$StrataID)
       M$iid_error = 1:nrow(M) # for inla indexing for set level variation
 
-      M$zi = discretize_data( M[, pB$variabletomodel], p$discretization$z )
+      M$zi = discretize_data( M[, pB$variabletomodel], p$discretization[[pB$variabletomodel]] )
 
       M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
       M$year = floor(M$tiyr)
