@@ -208,6 +208,7 @@
 
 
       M$dyear = M$tiyr - M$yr
+
       M$dyear = discretize_data( M$dyear, seq(0, 1, by=p$inputdata_temporal_discretization_yr), digits=6 )
 
       # reduce size
@@ -235,21 +236,20 @@
     ~ pB = aegis.bathymetry::bathymetry_parameters( p=p, project_class="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
       BI = carstm_model ( p=pB, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( BI$StrataID) )
-      APS$z = BI$z.predicted[jj]
+      APS[, pB$variabletomodel] = BI[jj, paste(pB$variabletomodel,"predicted",sep="." )]
       jj =NULL
       BI = NULL
 
       pS = aegis.substrate::substrate_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
       SI = carstm_model ( p=pS, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( SI$StrataID) )
-      APS[,pS$variabletomodel] = SI[ jj, paste(pS$variabletomodel, "predicted", sep=".") ]
+      APS[, pS$variabletomodel] = SI[jj, paste(pS$variabletomodel,"predicted",sep="." )]
       jj =NULL
       SI = NULL
 
-      pT = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load bathymetry
-      TI = carstm_model ( p=pT, DS="carstm_modelled" )  # unmodeled!
+      pT = aegis.temperature::temperature_parameters( p=p, project_class =="carstm_auid" ) # transcribes relevant parts of p to load       TI = carstm_model ( p=pT, DS="carstm_modelled" )  # unmodeled!
       jj = match( as.character( APS$StrataID), as.character( TI$StrataID) )
-      APS[, pT$variabletomodel] = TI$temperature.predicted[jj]
+      APS[, pT$variabletomodel] = TI[jj, paste(pT$variabletomodel,"predicted",sep="." )]
       jj =NULL
       TI = NULL
 
@@ -268,9 +268,13 @@
       M$strata  = as.numeric( M$StrataID)
       M$iid_error = 1:nrow(M) # for inla indexing for set level variation
 
-      M$zi = discretize_data( M[, pB$variabletomodel], p$discretization[[pB$variabletomodel]] )
+      M$zi  = discretize_data( M[, pB$variabletomodel], p$discretization[[pB$variabletomodel]] )
+      M$ti  = discretize_data( M[, pT$variabletomodel], p$discretization[[pT$variabletomodel]] )
+      M$gsi = discretize_data( M[, pS$variabletomodel], p$discretization[[pS$variabletomodel]] )
 
       M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+      M$tiyr2 = M$tiyr  # a copy
+
       M$year = floor(M$tiyr)
       M$dyear  =  factor( as.character( trunc(  (M$tiyr - M$year )/ p$tres )*p$tres), levels=p$dyears)
 
