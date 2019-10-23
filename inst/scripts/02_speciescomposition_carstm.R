@@ -12,7 +12,9 @@ p = aegis.speciescomposition::speciescomposition_parameters( yrs=1999:year.asses
 # and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
 for ( variabletomodel in p$varstomodel)  {
 
-    p = aegis.speciescomposition::speciescomposition_parameters(
+    p = aegis.speciescomposition::speciescomposition_carstm(
+      DS="parameters",
+      p=p,
       project_class = "carstm", # defines which parameter set to load
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
       variabletomodel = variabletomodel,
@@ -105,7 +107,7 @@ for ( variabletomodel in p$varstomodel)  {
 
       # to recreate the underlying data
       sppoly = areal_units( p=p, redo=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
-      M = speciescomposition.db( p=p, DS="carstm_inputs", redo=TRUE )  # will redo if not found
+      M = speciescomposition_carstm( p=p, DS="carstm_inputs", redo=TRUE )  # will redo if not found
       # to extract fits and predictions
 
       # run model and obtain predictions
