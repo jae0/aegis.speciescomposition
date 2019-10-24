@@ -26,7 +26,8 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=F, recursive=T )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=F, recursive=T )
 
-  if (!exists("variabletomodel", p)) warning( "The dependent variable, p$variabletomodel needs to be defined")
+   if (!exists("variabletomodel", p)) warning( "The dependent variable, p$variabletomodel needs to be defined")
+   if (!exists("varstomodel", p) ) p$varstomodel = c( "pca1", "pca2", "ca1", "ca2" )
 
   if (!exists("spatial_domain", p) ) p$spatial_domain = "SSE"
   if (!exists("spatial_domain_subareas", p)) p$spatial_domain_subareas = c( "snowcrab", "SSE.mpa" )
@@ -52,7 +53,6 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   if (project_class=="stmv") {
     p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
-    if (!exists("varstomodel", p) ) p$varstomodel = c( "pca1", "pca2", "ca1", "ca2" )
     if (!exists("variables", p)) p$variables = list()
     if (!exists("LOCS", p$variables)) p$variables$LOCS=c("plon", "plat")
     if (!exists("TIME", p$variables)) p$variables$TIME="tiyr"
