@@ -5,6 +5,9 @@
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
 
     infix = paste( p$spatial_domain,  p$taxa, sep=".")
+    if (p$spatial_domain == "snowcrab" ) {
+      infix = paste( "SSE",  p$taxa, sep=".")  # just one domain for now
+    }
 
     if (DS %in% c( "speciescomposition.ordination", "speciescomposition.ordination.redo", "pca", "ca") ) {
 
