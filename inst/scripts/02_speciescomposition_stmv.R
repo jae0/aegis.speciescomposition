@@ -26,7 +26,7 @@
       project_class="stmv",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
       DATA = 'aegis_db( p=p, DS="stmv_inputs" )',
-      variables=list(Y=vn),
+      stmv_variables=list(Y=vn),
       yrs = c(1999:year.assessment),  # years for modelling and interpolation
       spatial_domain = "SSE",
       aegis_dimensionality="space-year",

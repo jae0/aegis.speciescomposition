@@ -53,9 +53,9 @@ speciescomposition_parameters = function( p=NULL, project_name=NULL, project_cla
 
   if (project_class=="stmv") {
     p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
-    if (!exists("variables", p)) p$variables = list()
-    if (!exists("LOCS", p$variables)) p$variables$LOCS=c("plon", "plat")
-    if (!exists("TIME", p$variables)) p$variables$TIME="tiyr"
+    if (!exists("stmv_variables", p)) p$stmv_variables = list()
+    if (!exists("LOCS", p$stmv_variables)) p$stmv_variables$LOCS=c("plon", "plat")
+    if (!exists("TIME", p$stmv_variables)) p$stmv_variables$TIME="tiyr"
 
     p = aegis_parameters(p=p, DS="stmv" ) # generics:
     p$inputdata_spatial_discretization_planar_km = 1  # 1 km .. requires 32 GB RAM and limit of speed -- controls resolution of data prior to modelling to reduce data set and speed up modelling
