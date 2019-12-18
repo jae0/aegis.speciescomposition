@@ -65,7 +65,15 @@
             cor_0.05 = rep("localhost", max(1, interpolate_ncpus-1)),
             cor_0.01 = rep("localhost", max(1, interpolate_ncpus-2))
           ),  # ncpus for each runmode
-        interpolate_predictions = TRUE,
+        interpolate_predictions = list(
+          c1 = rep("localhost", max(1, interpolate_ncpus-1)),  # ncpus for each runmode
+          c2 = rep("localhost", max(1, interpolate_ncpus-1)),  # ncpus for each runmode
+          c3 = rep("localhost", max(1, interpolate_ncpus-2)),
+          c4 = rep("localhost", max(1, interpolate_ncpus-3)),
+          c5 = rep("localhost", max(1, interpolate_ncpus-4)),
+          c6 = rep("localhost", max(1, interpolate_ncpus-4)),
+          c7 = rep("localhost", max(1, interpolate_ncpus-5))
+        ),
         save_intermediate_results = FALSE,
         save_completed_data = TRUE # just a dummy variable with the correct name
       )  # ncpus for each runmode
