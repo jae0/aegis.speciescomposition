@@ -2,10 +2,7 @@
 
   # -----------------------------
   # ordination
-  if (!exists("year.assessment")) {
-    year.assessment=lubridate::year(Sys.Date())
-    year.assessment=lubridate::year(Sys.Date()) -1
-  }
+  year.assessment = 2020
 
   p = aegis.speciescomposition::speciescomposition_parameters( yrs=1999:year.assessment )
 
