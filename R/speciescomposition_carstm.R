@@ -16,7 +16,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
       p = aegis.speciescomposition::speciescomposition_parameters(p=p, ...)
     }
 
-    p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.bathymetry", "aegis.substrate", "aegis.coastline", "aegis.polygons", "aegis.speciescomposition", "aegis.survey", "carstm" ) ) )
+    p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.bathymetry", "aegis.substrate", "aegis.coastline", "aegis.polygons", "aegis.temperature", "aegis.speciescomposition", "aegis.survey", "carstm" ) ) )
 
 
     if ( !exists("areal_units_source", p)) p$areal_units_source = "lattice" # "stmv_lattice" to use ageis fields instead of carstm fields ... note variables are not the same
