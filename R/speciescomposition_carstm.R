@@ -173,7 +173,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     if (length(kk) > 0 ) M[kk, pB$variabletomodel] = bathymetry_lookup( p=p, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
 
     kk = which(!is.finite(M[, pS$variabletomodel]))
-    if (length(kk) > 0 ) M[kk, pS$variabletomodel] = lookup_substrate_from_surveys(  p=p, locs=M[kk, c("lon", "lat")] )
+    if (length(kk) > 0 ) M[kk, pS$variabletomodel] = substrate_lookup(  p=p, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
 
     kk = which(!is.finite(M[, pT$variabletomodel]))
     if (length(kk) > 0 ) M[kk, pT$variabletomodel] = lookup_temperature_from_surveys(  p=p, locs=M[kk, c("lon", "lat")], timestamp=M$timestamp )
