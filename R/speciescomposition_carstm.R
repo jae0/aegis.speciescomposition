@@ -157,8 +157,8 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
 
     # reduce size
     # levelplot(z.mean~plon+plat, data=M, aspect="iso")
-    # M$plon = round(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
-    # M$plat = round(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+    # M$plon = floor(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+    # M$plat = floor(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
 
 
     pB = bathymetry_carstm( p=p, DS="parameters", variabletomodel="z" )
@@ -176,7 +176,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     if (length(kk) > 0 ) M[kk, pS$variabletomodel] = substrate_lookup(  p=p, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
 
     kk = which(!is.finite(M[, pT$variabletomodel]))
-    if (length(kk) > 0 ) M[kk, pT$variabletomodel] = lookup_temperature_from_surveys(  p=p, locs=M[kk, c("lon", "lat")], timestamp=M$timestamp )
+    if (length(kk) > 0 ) M[kk, pT$variabletomodel] = temperature_lookup(  p=p, locs=M[kk, c("lon", "lat")], timestamp=M$timestamp, source_data_class="aggregated_rawdata" )
 
 
     # if any still missing then use a mean depth by AUID
@@ -303,9 +303,9 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     M$ti  = discretize_data( M[, pT$variabletomodel], p$discretization[[pT$variabletomodel]] )
     M$gsi = discretize_data( M[, pS$variabletomodel], p$discretization[[pS$variabletomodel]] )
 
-    M$tiyr  = trunc( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+    M$tiyr  = floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
 
-    M$year = trunc( M$tiyr)
+    M$year = floor( M$tiyr)
     M$year_factor = as.numeric( factor( M$year, levels=p$yrs))
     M = M[ is.finite(M$year_factor), ]
     M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
