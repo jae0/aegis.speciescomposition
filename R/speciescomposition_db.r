@@ -1,5 +1,5 @@
 
-  speciescomposition.db = function( DS="", p=NULL ) {
+  speciescomposition_db = function( DS="", p=NULL ) {
 
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
@@ -141,7 +141,7 @@
         return ( SC )
 			}
 
-      SC = speciescomposition.db( DS="speciescomposition.ordination", p=p )
+      SC = speciescomposition_db( DS="speciescomposition.ordination", p=p )
       SC = lonlat2planar( SC, proj.type=p$aegis_proj4string_planar_km )
       SC$lon = SC$lat = NULL
 

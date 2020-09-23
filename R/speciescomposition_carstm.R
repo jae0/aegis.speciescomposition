@@ -131,7 +131,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
 
     # do this immediately to reduce storage for sppoly (before adding other variables)
 
-    M = speciescomposition.db( p=p, DS="speciescomposition"  )
+    M = speciescomposition_db( p=p, DS="speciescomposition"  )
 
     # globally remove all unrealistic data
       # p$quantile_bounds_data = c(0.0005, 0.9995)
@@ -194,7 +194,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     # if any still missing then use a mean substrate by AUID
     kk =  which( !is.finite(M[, pS$variabletomodel]))
     if (length(kk) > 0) {
-      AD = substrate.db ( p=pS, DS="aggregated_data"  )  # 16 GB in RAM just to store!
+      AD = substrate_db ( p=pS, DS="aggregated_data"  )  # 16 GB in RAM just to store!
       AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
       # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
       AD$AUID = over( SpatialPoints( AD[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$AUID # match each datum to an area
@@ -216,7 +216,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     # if any still missing then use a mean temp by AUID
     kk =  which( !is.finite(M[, pT$variabletomodel]))
     if (length(kk) > 0) {
-      AD = temperature.db ( p=pT, DS="aggregated_data"  )  # 16 GB in RAM just to store!
+      AD = temperature_db ( p=pT, DS="aggregated_data"  )  # 16 GB in RAM just to store!
       AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
       # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
 

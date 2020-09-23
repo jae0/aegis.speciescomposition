@@ -3,10 +3,10 @@
 testing = FALSE
 if ( testing)  {
 
-ca = speciescomposition.db(DS="ca", p=p)
+ca = speciescomposition_db(DS="ca", p=p)
 ca$variance
 
-pca =  speciescomposition.db(DS="pca", p=p)
+pca =  speciescomposition_db(DS="pca", p=p)
 
 toplot = pca$cscores
 spec = as.numeric( as.character( rownames( toplot )))
@@ -20,7 +20,7 @@ plot.ordination (X=toplot)
 require(gstat)
 drange = 150
 nmax = 200
-SC = speciescomposition.db( DS="speciescomposition.merged", p=p )
+SC = speciescomposition_db( DS="speciescomposition.merged", p=p )
 sc = SC[ SC$yr==2011,]
 g = gstat(id="sc", formula=pca1~1, loc=~plon+plat, data=sc, maxdist=drange, nmax=nmax )
 g.e  = variogram(g, cutoff=drange, cressie=T)
