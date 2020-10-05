@@ -157,8 +157,8 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
 
     # reduce size
     # levelplot(z.mean~plon+plat, data=M, aspect="iso")
-    # M$plon = floor(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
-    # M$plat = floor(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+    # M$plon = aegis_floor(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
+    # M$plat = aegis_floor(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
 
 
     pB = bathymetry_carstm( p=p, DS="parameters", variabletomodel="z" )
@@ -275,7 +275,7 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     n_aps = nrow(APS)
     APS = cbind( APS[ rep.int(1:n_aps, p$nt), ], rep.int( p$prediction_ts, rep(n_aps, p$nt )) )
     names(APS) = c(vn, "tiyr")
-    APS$year = floor( APS$tiyr)
+    APS$year = aegis_floor( APS$tiyr)
     APS$dyear = APS$tiyr - APS$year
 
 
@@ -303,9 +303,9 @@ speciescomposition_carstm = function( p=NULL, DS="parameters", redo=FALSE, ... )
     M$ti  = discretize_data( M[, pT$variabletomodel], p$discretization[[pT$variabletomodel]] )
     M$gsi = discretize_data( M[, pS$variabletomodel], p$discretization[[pS$variabletomodel]] )
 
-    M$tiyr  = floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+    M$tiyr  = aegis_floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
 
-    M$year = floor( M$tiyr)
+    M$year = aegis_floor( M$tiyr)
     M$year_factor = as.numeric( factor( M$year, levels=p$yrs))
     M = M[ is.finite(M$year_factor), ]
     M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
