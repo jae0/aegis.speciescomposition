@@ -14,8 +14,8 @@ p$varstomodel = c("pca1", "pca2")
 
 for ( variabletomodel in p$varstomodel)  {
     # variabletomodel = "pca1"
-    p = aegis.speciescomposition::speciescomposition_carstm(
-      DS="parameters",
+    p = aegis.speciescomposition::speciescomposition_parameters(
+      project_class="carstm",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
       variabletomodel = variabletomodel,
       carstm_model_label = "production",
@@ -32,7 +32,7 @@ for ( variabletomodel in p$varstomodel)  {
 
     # to recreate the underlying data
     sppoly = areal_units( p=p, redo=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
-    M = speciescomposition_carstm( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
+    M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
     # to extract fits and predictions
 
     # run model and obtain predictions

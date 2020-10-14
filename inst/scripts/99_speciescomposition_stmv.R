@@ -107,7 +107,7 @@
     gc()
 
     if (0) {
-      global_model = stmv_db( p=p, DS="global_model")
+      global_model = stmv_global_model( p=p, DS="global_model")
       summary( global_model )
       plot(global_model)
     }
