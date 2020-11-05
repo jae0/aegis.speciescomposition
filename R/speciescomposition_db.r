@@ -173,8 +173,9 @@
     if ( DS=="carstm_inputs") {
 
       # prediction surface
-      crs_lonlat = sp::CRS(projection_proj4string("lonlat_wgs84"))
+      crs_lonlat = st_crs(projection_proj4string("lonlat_wgs84"))
       sppoly = areal_units( p=p )  # will redo if not found
+      sppoly = st_transform(sppoly, crs=crs_lonlat )
       areal_units_fn = attributes(sppoly)[["areal_units_fn"]]
 
       fn = carstm_filenames( p=p, projectname="speciescomposition", projecttype="carstm_inputs", areal_units_fn=areal_units_fn )
@@ -205,9 +206,11 @@
 
       M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
       M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
-
-
-      M$AUID = over( SpatialPoints( M[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$AUID # match each datum to an area
+      M$AUID = st_points_in_polygons(
+        pts = st_as_sf( M, coords=c("lon","lat"), crs=crs_lonlat ),
+        polys = sppoly[, "AUID"],
+        varname = "AUID"
+      )
       M = M[ which(!is.na(M$AUID)),]
 
       names(M)[which(names(M)=="yr") ] = "year"
@@ -221,9 +224,9 @@
       # M$plon = aegis_floor(M$plon / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
       # M$plat = aegis_floor(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
 
-      pB = bathymetry_parameters( p=p, project_class="carstm", reset_data_location=TRUE )
-      pS = substrate_parameters( p=p, project_class="carstm", reset_data_location=TRUE )
-      pT = temperature_parameters( p=p, project_class="carstm", reset_data_location=TRUE )
+      pB = bathymetry_parameters( p=parameters_reset(p), project_class="carstm"  )
+      pS = substrate_parameters( p=parameters_reset(p), project_class="carstm"  )
+      pT = temperature_parameters( p=parameters_reset(p), project_class="carstm"  )
 
       if (!(exists(pB$variabletomodel, M ))) M[,pB$variabletomodel] = NA
       if (!(exists(pS$variabletomodel, M ))) M[,pS$variabletomodel] = NA
@@ -245,7 +248,12 @@
         AD = bathymetry_db ( p=pB, DS="aggregated_data"   )  # 16 GB in RAM just to store!
         AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
         # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-        AD$AUID = over( SpatialPoints( AD[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$AUID # match each datum to an area
+        AD$AUID = st_points_in_polygons(
+          pts = st_as_sf( AD, coords=c("lon","lat"), crs=crs_lonlat ),
+          polys = sppoly[, "AUID"],
+          varname="AUID"
+        )
+
         oo = tapply( AD[, paste(pB$variabletomodel, "mean", sep="." )], AD$AUID, FUN=median, na.rm=TRUE )
         jj = match( as.character( M$AUID[kk]), as.character( names(oo )) )
         M[kk, pB$variabletomodel] = oo[jj ]
@@ -257,7 +265,11 @@
         AD = substrate_db ( p=pS, DS="aggregated_data"  )  # 16 GB in RAM just to store!
         AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
         # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-        AD$AUID = over( SpatialPoints( AD[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$AUID # match each datum to an area
+        AD$AUID = st_points_in_polygons(
+          pts = st_as_sf( AD, coords=c("lon","lat"), crs=crs_lonlat ),
+          polys = sppoly[, "AUID"],
+          varname="AUID"
+        )
         oo = tapply( AD[, paste(pS$variabletomodel, "mean", sep="." )], AD$AUID, FUN=median, na.rm=TRUE )
         jj = match( as.character( M$AUID[kk]), as.character( names(oo )) )
         M[kk, pS$variabletomodel] = oo[jj ]
@@ -280,7 +292,12 @@
         AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
         # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
 
-        AD$AUID = over( SpatialPoints( AD[, c("lon", "lat")], crs_lonlat ), spTransform(sppoly, crs_lonlat ) )$AUID # match each datum to an area
+        AD$AUID = st_points_in_polygons(
+          pts = st_as_sf( AD, coords=c("lon","lat"), crs=crs_lonlat ),
+          polys = sppoly[, "AUID"],
+          varname="AUID"
+        )
+
         AD$uid = paste(AD$AUID, AD$year, AD$dyear, sep=".")
 
         M_dyear_discret = discretize_data( M$dyear, p$discretization$dyear )  # AD$dyear is discretized. . match discretization
@@ -308,7 +325,10 @@
       M$tag = "observations"
 
 
-      APS = as.data.frame(sppoly)
+      region.id = slot( slot(sppoly, "nb"), "region.id" )
+      APS = st_drop_geometry(sppoly)
+      sppoly = NULL
+
       APS$AUID = as.character( APS$AUID )
       APS$tag ="predictions"
       APS[,p$variabletomodel] = NA
@@ -357,7 +377,7 @@
       M = rbind( M[, names(APS)], APS )
       APS = NULL
 
-      M$auid  = as.numeric( factor(M$AUID) )
+      M$auid = match( M$AUID, region.id )
 
       M$zi  = discretize_data( M[, pB$variabletomodel], p$discretization[[pB$variabletomodel]] )
       M$ti  = discretize_data( M[, pT$variabletomodel], p$discretization[[pT$variabletomodel]] )
