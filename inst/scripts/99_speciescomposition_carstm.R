@@ -18,7 +18,7 @@ for ( variabletomodel in p$varstomodel)  {
       project_class="carstm",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
       variabletomodel = variabletomodel,
-      carstm_model_label = "production",
+      carstm_model_label = "default",
       inputdata_spatial_discretization_planar_km = 1,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
       inputdata_temporal_discretization_yr = 24/365,  # ie., every 2 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
       yrs = 1999:2019,

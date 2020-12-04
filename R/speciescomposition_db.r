@@ -310,7 +310,7 @@
       }
 
 
-      if( exists("spatial_domain", p)) M = geo_subset( spatial_domain=p$spatial_domain, Z=M ) # need to be careful with extrapolation ...  filter depths
+      if( exists("spatial_domain", p)) M = M[ geo_subset( spatial_domain=p$spatial_domain, Z=M ) , ]# need to be careful with extrapolation ...  filter depths
 
 
       M$lon = NULL

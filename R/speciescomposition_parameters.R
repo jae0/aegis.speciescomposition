@@ -1,6 +1,6 @@
 
 
-speciescomposition_parameters = function( p=list(), project_name="speciescomposition", project_class="default", ... ) {
+speciescomposition_parameters = function( p=list(), project_name="speciescomposition", project_class="core", workflow_decentralized=FALSE, ... ) {
 
 
   # ---------------------
@@ -22,6 +22,11 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = parameters_add_without_overwriting( p, data_root = project.datadirectory( "aegis", p$project_name ) )
   p = parameters_add_without_overwriting( p, datadir  = file.path( p$data_root, "data" ) )
   p = parameters_add_without_overwriting( p, modeldir = file.path( p$data_root, "modelled" ) )
+
+  # for projects that require access to default data and local data, a switch is needed to force use of default data
+  if ( p$workflow_decentralized )  {
+    if (exists( "modeldir_override", p)) p$modeldir = p$modeldir_override  # must also specify p$workflow_decentralized =TRUE  for override to work
+  }
 
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=FALSE, recursive=TRUE )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=FALSE, recursive=TRUE )
@@ -52,7 +57,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
   # ---------------------
 
-  if (project_class=="default")  return(p)
+  if (project_class=="core")  return(p)
 
   # ---------------------
 
@@ -109,15 +114,86 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
   # ---------------------
 
-  if (project_class=="stmv") {
-    p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
-    if (!exists("stmv_variables", p)) p$stmv_variables = list()
-    if (!exists("LOCS", p$stmv_variables)) p$stmv_variables$LOCS=c("plon", "plat")
-    if (!exists("TIME", p$stmv_variables)) p$stmv_variables$TIME="tiyr"
+  if (project_class %in% c("stmv")) {
 
-    p = aegis_parameters(p=p, DS="stmv" ) # generics:
-    p$inputdata_spatial_discretization_planar_km = 1  # 1 km .. requires 32 GB RAM and limit of speed -- controls resolution of data prior to modelling to reduce data set and speed up modelling
-    p$inputdata_temporal_discretization_yr = 1/12  # ie., monthly .. controls resolution of data prior to modelling to reduce data set and speed up modelling }
+    p = parameters_add_without_overwriting( p,
+      project_class="stmv",
+      stmv_model_label="default",
+      stmv_variables = list(
+        LOCS=c("plon", "plat"),
+        TIME="tiyr"
+      ),  # required as fft has no formulae
+      inputdata_spatial_discretization_planar_km = p$pres / 4, # controls resolution of data prior to modelling (km .. ie 100 linear units smaller than the final discretization pres)
+      inputdata_temporal_discretization_yr = 1/12,  # ie., weekly .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+      stmv_global_modelengine = "none",  # only marginally useful .. consider removing it and use "none",
+      stmv_local_modelengine="fft",
+      stmv_nmin = 90, # min number of data points req before attempting to model in a localized space
+      stmv_nmax = 1000, # no real upper bound.. just speed /RAM
+      stmv_runmode = list(
+        carstm = rep("localhost", 1),
+        globalmodel = FALSE,
+        save_intermediate_results = TRUE,
+        save_completed_data = TRUE
+      )  # ncpus for each runmode
+
+      p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
+
+
+     p = aegis_parameters(p=p, DS="stmv" ) # generics for aegis.* projects
+
+    return(p)
+  }
+
+
+  # ---------------------
+
+  if (project_class %in% c("hybrid", "default")) {
+
+    p = parameters_add_without_overwriting( p,
+      project_class="stmv",
+      stmv_model_label="default",
+      stmv_variables = list(
+        LOCS=c("plon", "plat"),
+        TIME="tiyr"
+      ),  # required as fft has no formulae
+      inputdata_spatial_discretization_planar_km = p$pres / 4, # controls resolution of data prior to modelling (km .. ie 100 linear units smaller than the final discretization pres)
+      inputdata_temporal_discretization_yr = 1/12,  # ie., weekly .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+      stmv_global_modelengine = "none",  # only marginally useful .. consider removing it and use "none",
+      stmv_local_modelengine="carstm",
+      stmv_local_covariates_carstm = "",  # only model covariates
+      stmv_local_all_carstm = "",  # ignoring au
+      stmv_local_modelcall = paste(
+        'inla(
+          formula = z ~ 1
+            + f(auid, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE, hyper=H$bym2),
+          family = "normal",
+          data= dat,
+          control.compute=list(dic=TRUE, waic=TRUE, cpo=FALSE, config=FALSE),  # config=TRUE if doing posterior simulations
+          control.results=list(return.marginals.random=TRUE, return.marginals.predictor=TRUE ),
+          control.predictor=list(compute=FALSE, link=1 ),
+          control.fixed=H$fixed,  # priors for fixed effects, generic is ok
+          verbose=FALSE
+        ) '
+      ),   # NOTE:: this is a local model call
+      stmv_filter_depth_m = TRUE,
+      stmv_local_model_distanceweighted = TRUE,
+      stmv_rsquared_threshold = 0.01, # lower threshold  .. ignore
+      stmv_distance_statsgrid = 5, # resolution (km) of data aggregation (i.e. generation of the ** statistics ** )
+      stmv_distance_prediction_limits =c( 3, 25 ), # range of permissible predictions km (i.e 1/2 stats grid to upper limit based upon data density)
+      stmv_distance_basis_interpolation = c(  2.5 , 5, 10, 15, 20, 40, 80, 150, 200 ) , # range of permissible predictions km (i.e 1/2 stats grid to upper limit) .. in this case 5, 10, 20
+      stmv_nmin = 90, # min number of data points req before attempting to model in a localized space
+      stmv_nmax = 1000, # no real upper bound.. just speed /RAM
+      stmv_runmode = list(
+        carstm = rep("localhost", 1),
+        globalmodel = FALSE,
+        save_intermediate_results = TRUE,
+        save_completed_data = TRUE
+      )  # ncpus for each runmode
+
+      p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
+
+
+    p = aegis_parameters(p=p, DS="stmv" ) # generics for aegis.* projects
 
     return(p)
   }
