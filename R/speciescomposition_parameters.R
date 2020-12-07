@@ -186,8 +186,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         save_intermediate_results = TRUE,
         save_completed_data = TRUE
       )  # ncpus for each runmode
-
-      p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
+    )
+    p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
 
 
     p = aegis_parameters(p=p, DS="stmv" ) # generics for aegis.* projects
