@@ -1,6 +1,6 @@
 
 
-speciescomposition_parameters = function( p=list(), project_name="speciescomposition", project_class="core", workflow_decentralized=FALSE, ... ) {
+speciescomposition_parameters = function( p=list(), project_name="speciescomposition", project_class="core",  ... ) {
 
 
   # ---------------------
@@ -18,15 +18,13 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.speciescomposition" ) ) )
 
 
+  p$project_class = project_class
+
   p = parameters_add_without_overwriting( p, project_name = project_name )
   p = parameters_add_without_overwriting( p, data_root = project.datadirectory( "aegis", p$project_name ) )
   p = parameters_add_without_overwriting( p, datadir  = file.path( p$data_root, "data" ) )
   p = parameters_add_without_overwriting( p, modeldir = file.path( p$data_root, "modelled" ) )
 
-  # for projects that require access to default data and local data, a switch is needed to force use of default data
-  if ( p$workflow_decentralized )  {
-    if (exists( "modeldir_override", p)) p$modeldir = p$modeldir_override  # must also specify p$workflow_decentralized =TRUE  for override to work
-  }
 
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=FALSE, recursive=TRUE )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=FALSE, recursive=TRUE )
@@ -117,7 +115,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if (project_class %in% c("stmv")) {
 
     p = parameters_add_without_overwriting( p,
-      project_class="stmv",
       stmv_model_label="default",
       stmv_variables = list(
         LOCS=c("plon", "plat"),
@@ -135,8 +132,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         save_intermediate_results = TRUE,
         save_completed_data = TRUE
       )  # ncpus for each runmode
+    )
 
-      p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
+    p$libs = unique( c( p$libs, project.library ( "stmv" ) ) )
 
 
      p = aegis_parameters(p=p, DS="stmv" ) # generics for aegis.* projects
@@ -150,7 +148,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if (project_class %in% c("hybrid", "default")) {
 
     p = parameters_add_without_overwriting( p,
-      project_class="stmv",
       stmv_model_label="default",
       stmv_variables = list(
         LOCS=c("plon", "plat"),

@@ -233,13 +233,13 @@
       if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
 
       kk = which(!is.finite(M[, pB$variabletomodel]))
-      if (length(kk) > 0 ) M[kk, pB$variabletomodel] = bathymetry_lookup( p=p, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
+      if (length(kk) > 0 ) M[kk, pB$variabletomodel] = bathymetry_lookup( p=pB, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
 
       kk = which(!is.finite(M[, pS$variabletomodel]))
-      if (length(kk) > 0 ) M[kk, pS$variabletomodel] = substrate_lookup(  p=p, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
+      if (length(kk) > 0 ) M[kk, pS$variabletomodel] = substrate_lookup(  p=pS, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
 
       kk = which(!is.finite(M[, pT$variabletomodel]))
-      if (length(kk) > 0 ) M[kk, pT$variabletomodel] = temperature_lookup(  p=p, locs=M[kk, c("lon", "lat")], timestamp=M$timestamp, source_data_class="aggregated_rawdata" )
+      if (length(kk) > 0 ) M[kk, pT$variabletomodel] = temperature_lookup(  p=pT, locs=M[kk, c("lon", "lat")], timestamp=M$timestamp, source_data_class="aggregated_rawdata" )
 
 
       # if any still missing then use a mean depth by AUID
