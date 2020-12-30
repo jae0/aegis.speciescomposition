@@ -296,7 +296,7 @@
         locs = M[kk, c("plon", "plat")]
         timestamp = M$timestamp[kk]
         if (! "POSIXct" %in% class(timestamp)  ) timestamp = as.POSIXct( timestamp, tz=tz, origin=lubridate::origin  )
-        BS = temperature_db ( p=p, year.assessment=max(p$yrs) ), DS="aggregated_data" )  # raw data
+        BS = temperature_db ( p=p, year.assessment=max(p$yrs), DS="aggregated_data" )  # raw data
         BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
         BT_map = array_map( "ts->1", BS[,c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
         BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=gridparams )
