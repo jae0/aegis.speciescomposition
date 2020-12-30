@@ -47,7 +47,7 @@
       # stmv_lowpass_phi = stmv::matern_distance2phi( distance=0.25, nu=0.1, cor=0.5 ), # default p$res = 0.5;
       stmv_autocorrelation_fft_taper = 0.5,  # benchmark from which to taper
       stmv_autocorrelation_localrange=0.1,
-      stmv_autocorrelation_basis_interpolation = c(0.5, 0.1, 0.05, 0.01),
+      stmv_autocorrelation_interpolation = c(0.5, 0.1, 0.05, 0.01),
       stmv_variogram_method = "fft",
       stmv_filter_depth_m = 0, # the depth covariate is input as log(depth) so, choose stats locations with elevation > log(1 m) as being on land
       stmv_local_model_distanceweighted = TRUE,

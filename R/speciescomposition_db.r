@@ -233,85 +233,99 @@
       if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
 
       kk = which(!is.finite(M[, pB$variabletomodel]))
-      if (length(kk) > 0 ) M[kk, pB$variabletomodel] = bathymetry_lookup( p=pB, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
+      if (length(kk) > 0 ) {
+        BS = bathymetry_db ( p=pB, DS="aggregated_data" )  # raw data
+        BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
+        BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=p$gridparams )
+        M_map  = array_map( "xy->1", M[kk, c("plon","plat")], gridparams=p$gridparams )
+        M[kk, pB$variabletomodel] = BS[ match( M_map, BS_map ), "z.mean" ]
+
+        # if any still missing then use a mean depth by AUID
+        ll =  which( !is.finite(M[, pB$variabletomodel]))
+        if (length(ll) > 0) {
+          # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
+          BS$AUID = st_points_in_polygons(
+            pts = st_as_sf( BS, coords=c("lon","lat"), crs=crs_lonlat ),
+            polys = sppoly[, "AUID"],
+            varname="AUID"
+          )
+          oo = tapply( BS[, paste(pB$variabletomodel, "mean", sep="." )], BS$AUID, FUN=median, na.rm=TRUE )
+          jj = match( as.character( M$AUID[ll]), as.character( names(oo )) )
+          M[ll, pB$variabletomodel] = oo[jj ]
+        }
+        BS = NULL
+        BS_map = NULL
+        M_map = NULL
+      }
 
       kk = which(!is.finite(M[, pS$variabletomodel]))
-      if (length(kk) > 0 ) M[kk, pS$variabletomodel] = substrate_lookup(  p=pS, locs=M[kk, c("lon", "lat")], source_data_class="aggregated_rawdata" )
+      if (length(kk) > 0 ) {
+        BS = substrate_db ( p=substrate_parameters( spatial_domain=p$spatial_domain, project_class="core"  ), DS="aggregated_data" )  # raw data
+        BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
+        # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
+        BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=p$gridparams )
+        M_map  = array_map( "xy->1", M[kk, c("plon","plat")], gridparams=p$gridparams )
+        M[kk, pS$variabletomodel] = BS[ match( M_map, BS_map ), "z.mean" ]
+        BS_map = NULL
+        M_map = NULL
+              # if any still missing then use a mean substrate by AUID
+        ll =  which( !is.finite(M[, pS$variabletomodel]))
+        if (length(ll) > 0) {
+          BS$AUID = st_points_in_polygons(
+            pts = st_as_sf( BS, coords=c("lon","lat"), crs=crs_lonlat ),
+            polys = sppoly[, "AUID"],
+            varname="AUID"
+          )
+          oo = tapply( BS[, paste(pS$variabletomodel, "mean", sep="." )], BS$AUID, FUN=median, na.rm=TRUE )
+          jj = match( as.character( M$AUID[ll]), as.character( names(oo )) )
+          M[ll, pS$variabletomodel] = oo[jj ]
+          # substrate coverage poor .. add from modelled results
+          mm =  which( !is.finite(M[, pS$variabletomodel]))
+          if (length(mm) > 0) {
+            SI = carstm_summary( p=pS )
+            jj = match( as.character( M$AUID[mm]), as.character( SI$AUID) )
+            M[mm, pS$variabletomodel] = SI[[ paste(pS$variabletomodel,"predicted",sep="." )]] [jj]
+          }
+        }
+      }
 
       kk = which(!is.finite(M[, pT$variabletomodel]))
-      if (length(kk) > 0 ) M[kk, pT$variabletomodel] = temperature_lookup(  p=pT, locs=M[kk, c("lon", "lat")], timestamp=M$timestamp, source_data_class="aggregated_rawdata" )
+      if (length(kk) > 0 ) {
 
+        tz = "America/Halifax"
+        locs = M[kk, c("plon", "plat")]
+        timestamp = M$timestamp[kk]
+        if (! "POSIXct" %in% class(timestamp)  ) timestamp = as.POSIXct( timestamp, tz=tz, origin=lubridate::origin  )
+        BS = temperature_db ( p=p, year.assessment=max(p$yrs) ), DS="aggregated_data" )  # raw data
+        BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
+        BT_map = array_map( "ts->1", BS[,c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
+        BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=gridparams )
+        tstamp = data.frame( yr = lubridate::year(timestamp) )
+        tstamp$dyear = lubridate::decimal_date( timestamp ) - tstamp$yr
+        timestamp_map = array_map( "ts->1", tstamp[, c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
+        locs_map = array_map( "xy->1", locs[,c("plon","plat")], gridparams=gridparams )
+        locs_index = match( paste(locs_map, timestamp_map, sep="_"), paste(BS_map, BT_map, sep="_") )
+        M$t[kk] = BS[locs_index, vnames]
+        BS = BT_map = BS_map = tstamp = timestamp_map = locs_map = locs_index = NULL
 
-      # if any still missing then use a mean depth by AUID
-      kk =  which( !is.finite(M[, pB$variabletomodel]))
-      if (length(kk) > 0) {
-        AD = bathymetry_db ( p=pB, DS="aggregated_data"   )  # 16 GB in RAM just to store!
-        AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
-        # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-        AD$AUID = st_points_in_polygons(
-          pts = st_as_sf( AD, coords=c("lon","lat"), crs=crs_lonlat ),
-          polys = sppoly[, "AUID"],
-          varname="AUID"
-        )
+        ll =  which( !is.finite(M[, pT$variabletomodel]))
+        if (length(ll) > 0) {
+          BS$AUID = st_points_in_polygons(
+            pts = st_as_sf( BS, coords=c("lon","lat"), crs=crs_lonlat ),
+            polys = sppoly[, "AUID"],
+            varname="AUID"
+          )
+          BS$uid = paste(BS$AUID, BS$year, BS$dyear, sep=".")
+          M_dyear_discret = discretize_data( M$dyear, p$discretization$dyear )  # BS$dyear is discretized. . match discretization
+          M$uid =  paste(M$AUID, M$year, M_dyear_discret, sep=".")
+          oo = tapply( BS[, paste(pT$variabletomodel, "mean", sep="." )], BS$uid, FUN=median, na.rm=TRUE )
+          jj = match( as.character( M$uid[ll]), as.character( names(oo )) )
+          M[ll, pT$variabletomodel] = oo[jj ]
+        }
 
-        oo = tapply( AD[, paste(pB$variabletomodel, "mean", sep="." )], AD$AUID, FUN=median, na.rm=TRUE )
-        jj = match( as.character( M$AUID[kk]), as.character( names(oo )) )
-        M[kk, pB$variabletomodel] = oo[jj ]
       }
-
-      # if any still missing then use a mean substrate by AUID
-      kk =  which( !is.finite(M[, pS$variabletomodel]))
-      if (length(kk) > 0) {
-        AD = substrate_db ( p=pS, DS="aggregated_data"  )  # 16 GB in RAM just to store!
-        AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
-        # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-        AD$AUID = st_points_in_polygons(
-          pts = st_as_sf( AD, coords=c("lon","lat"), crs=crs_lonlat ),
-          polys = sppoly[, "AUID"],
-          varname="AUID"
-        )
-        oo = tapply( AD[, paste(pS$variabletomodel, "mean", sep="." )], AD$AUID, FUN=median, na.rm=TRUE )
-        jj = match( as.character( M$AUID[kk]), as.character( names(oo )) )
-        M[kk, pS$variabletomodel] = oo[jj ]
-      }
-
-
-      # substrate coverage poor .. add from modelled results
-      kk =  which( !is.finite(M[, pS$variabletomodel]))
-      if (length(kk) > 0) {
-        SI = carstm_summary( p=pS )
-        jj = match( as.character( M$AUID[kk]), as.character( SI$AUID) )
-        M[kk, pS$variabletomodel] = SI[[ paste(pS$variabletomodel,"predicted",sep="." )]] [jj]
-      }
-
-
-      # if any still missing then use a mean temp by AUID
-      kk =  which( !is.finite(M[, pT$variabletomodel]))
-      if (length(kk) > 0) {
-        AD = temperature_db ( p=pT, DS="aggregated_data"  )  # 16 GB in RAM just to store!
-        AD = AD[ which( AD$lon > p$corners$lon[1] & AD$lon < p$corners$lon[2]  & AD$lat > p$corners$lat[1] & AD$lat < p$corners$lat[2] ), ]
-        # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-
-        AD$AUID = st_points_in_polygons(
-          pts = st_as_sf( AD, coords=c("lon","lat"), crs=crs_lonlat ),
-          polys = sppoly[, "AUID"],
-          varname="AUID"
-        )
-
-        AD$uid = paste(AD$AUID, AD$year, AD$dyear, sep=".")
-
-        M_dyear_discret = discretize_data( M$dyear, p$discretization$dyear )  # AD$dyear is discretized. . match discretization
-        M$uid =  paste(M$AUID, M$year, M_dyear_discret, sep=".")
-
-        oo = tapply( AD[, paste(pT$variabletomodel, "mean", sep="." )], AD$uid, FUN=median, na.rm=TRUE )
-
-        jj = match( as.character( M$uid[kk]), as.character( names(oo )) )
-        M[kk, pT$variabletomodel] = oo[jj ]
-      }
-
 
       if( exists("spatial_domain", p)) M = M[ geo_subset( spatial_domain=p$spatial_domain, Z=M ) , ]# need to be careful with extrapolation ...  filter depths
-
 
       M$lon = NULL
       M$lat = NULL
