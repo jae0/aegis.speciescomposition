@@ -178,9 +178,7 @@
       sppoly = st_transform(sppoly, crs=crs_lonlat )
       areal_units_fn = attributes(sppoly)[["areal_units_fn"]]
 
-      fn = carstm_filenames( p=p, projectname="speciescomposition", projecttype="carstm_inputs", areal_units_fn=areal_units_fn )
-
-      fn = file.path( p$modeldir, fn)
+      fn = file.path( p$modeldir, carstm_filenames( p=p, projectname="speciescomposition", projecttype="carstm_inputs", areal_units_fn=areal_units_fn ) )
 
       if (!redo)  {
         if (file.exists(fn)) {
@@ -204,14 +202,18 @@
           # this was -1.7, 21.8 in 2015
       }
 
-      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
       M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
+      
       M$AUID = st_points_in_polygons(
         pts = st_as_sf( M, coords=c("lon","lat"), crs=crs_lonlat ),
         polys = sppoly[, "AUID"],
         varname = "AUID"
       )
       M = M[ which(!is.na(M$AUID)),]
+      M$AUID = as.character( M$AUID )  # match each datum to an area
+ 
+      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
+
 
       names(M)[which(names(M)=="yr") ] = "year"
       M = M[ which(M$year %in% p$yrs), ]
@@ -225,107 +227,116 @@
       # M$plat = aegis_floor(M$plat / p$inputdata_spatial_discretization_planar_km + 1 ) * p$inputdata_spatial_discretization_planar_km
 
       pB = bathymetry_parameters( p=parameters_reset(p), project_class="carstm"  )
-      pS = substrate_parameters( p=parameters_reset(p), project_class="carstm"  )
-      pT = temperature_parameters( p=parameters_reset(p), project_class="carstm"  )
-
-      if (!(exists(pB$variabletomodel, M ))) M[,pB$variabletomodel] = NA
-      if (!(exists(pS$variabletomodel, M ))) M[,pS$variabletomodel] = NA
-      if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
-
-      kk = which(!is.finite(M[, pB$variabletomodel]))
-      if (length(kk) > 0 ) {
-        BS = bathymetry_db ( p=pB, DS="aggregated_data" )  # raw data
-        BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
-        BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=p$gridparams )
-        M_map  = array_map( "xy->1", M[kk, c("plon","plat")], gridparams=p$gridparams )
-        M[kk, pB$variabletomodel] = BS[ match( M_map, BS_map ), "z.mean" ]
+      vnmod = pB$variabletomodel
+      if (!(exists(vnmod, M ))) M[,vnmod] = NA
+         # already has depth .. but in case some are missing data
+     
+      iM = which(!is.finite( M[, vnmod] ))
+      if (length(iM > 0)) {
+        LU = bathymetry_db ( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class="core"  ), DS="aggregated_data" )  # raw data
+        LU_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=p$gridparams )
+        M_map = array_map( "xy->1", M[,c("plon","plat")], gridparams=p$gridparams )
+        M[iM, vnmod] = LU[match( M_map, LU_map ), "z.mean"]
 
         # if any still missing then use a mean depth by AUID
-        ll =  which( !is.finite(M[, pB$variabletomodel]))
-        if (length(ll) > 0) {
-          # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-          BS$AUID = st_points_in_polygons(
-            pts = st_as_sf( BS, coords=c("lon","lat"), crs=crs_lonlat ),
+        iM = NULL
+        iM =  which( !is.finite(M[, vnmod]))
+        if (length(iM) > 0) {
+          LU$AUID = st_points_in_polygons(
+            pts = st_as_sf( LU, coords=c("lon","lat"), crs=crs_lonlat ),
             polys = sppoly[, "AUID"],
             varname="AUID"
           )
-          oo = tapply( BS[, paste(pB$variabletomodel, "mean", sep="." )], BS$AUID, FUN=median, na.rm=TRUE )
-          jj = match( as.character( M$AUID[ll]), as.character( names(oo )) )
-          M[ll, pB$variabletomodel] = oo[jj ]
+          oo = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$AUID, FUN=median, na.rm=TRUE )
+          jj = match( as.character( M$AUID[iM]), as.character( names(oo )) )
+          M[iM, vnmod] = oo[jj ]
         }
-        BS = NULL
-        BS_map = NULL
-        M_map = NULL
+      }
+      M = M[ is.finite(M[ , vnmod]  ) , ]
+
+      if (p$carstm_inputs_aggregated) {
+        if ( exists("spatial_domain", p)) {
+          M = M[ geo_subset( spatial_domain=p$spatial_domain, Z=M ) , ] # need to be careful with extrapolation ...  filter depths
+        }
       }
 
-      kk = which(!is.finite(M[, pS$variabletomodel]))
-      if (length(kk) > 0 ) {
-        BS = substrate_db ( p=substrate_parameters( spatial_domain=p$spatial_domain, project_class="core"  ), DS="aggregated_data" )  # raw data
-        BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
-        # levelplot( eval(paste(p$variabletomodel, "mean", sep="."))~plon+plat, data=M, aspect="iso")
-        BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=p$gridparams )
-        M_map  = array_map( "xy->1", M[kk, c("plon","plat")], gridparams=p$gridparams )
-        M[kk, pS$variabletomodel] = BS[ match( M_map, BS_map ), "z.mean" ]
-        BS_map = NULL
+
+      # substrate observations
+    
+      pS = substrate_parameters( p=parameters_reset(p), project_class="carstm"  )
+      vnmod = pS$variabletomodel
+      if (!(exists(vnmod, M ))) M[,vnmod] = NA
+    
+      iM = which(!is.finite(M[, vnmod]))
+      if (length(iM) > 0 ) {
+        LU = substrate_db ( p=substrate_parameters( spatial_domain=p$spatial_domain, project_class="core"  ), DS="aggregated_data" )  # raw data
+        LU = LU[ which( LU$lon > p$corners$lon[1] & LU$lon < p$corners$lon[2]  & LU$lat > p$corners$lat[1] & LU$lat < p$corners$lat[2] ), ]
+        # levelplot( eval(paste(vnmod, "mean", sep="."))~plon+plat, data=M, aspect="iso")
+        LU_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=p$gridparams )
+        M_map  = array_map( "xy->1", M[iM, c("plon","plat")], gridparams=p$gridparams )
+        M[iM, vnmod] = LU[ match( M_map, LU_map ), "z.mean" ]
+        LU_map = NULL
         M_map = NULL
-              # if any still missing then use a mean substrate by AUID
-        ll =  which( !is.finite(M[, pS$variabletomodel]))
-        if (length(ll) > 0) {
-          BS$AUID = st_points_in_polygons(
-            pts = st_as_sf( BS, coords=c("lon","lat"), crs=crs_lonlat ),
+        iM = NULL
+
+        # if any still missing then use a mean substrate by AUID
+        iM =  which( !is.finite(M[, vnmod]))
+        if (length(iM) > 0) {
+          LU$AUID = st_points_in_polygons(
+            pts = st_as_sf( LU, coords=c("lon","lat"), crs=crs_lonlat ),
             polys = sppoly[, "AUID"],
             varname="AUID"
           )
-          oo = tapply( BS[, paste(pS$variabletomodel, "mean", sep="." )], BS$AUID, FUN=median, na.rm=TRUE )
-          jj = match( as.character( M$AUID[ll]), as.character( names(oo )) )
-          M[ll, pS$variabletomodel] = oo[jj ]
-          # substrate coverage poor .. add from modelled results
-          mm =  which( !is.finite(M[, pS$variabletomodel]))
-          if (length(mm) > 0) {
-            SI = carstm_summary( p=pS )
-            jj = match( as.character( M$AUID[mm]), as.character( SI$AUID) )
-            M[mm, pS$variabletomodel] = SI[[ paste(pS$variabletomodel,"predicted",sep="." )]] [jj]
-          }
+          LU = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$AUID, FUN=median, na.rm=TRUE )
+          iML = match( as.character( M$AUID[iM]), as.character( names(LU )) )
+          M[iM, vnmod] = LU[iML ]
         }
+        iM = NULL
+        LU = NULL
+        iML = NULL
       }
 
-      kk = which(!is.finite(M[, pT$variabletomodel]))
-      if (length(kk) > 0 ) {
+
+      # temperature observations
+      pT = temperature_parameters( p=parameters_reset(p), project_class="carstm"  )
+      vnmod = pT$variabletomodel
+      if (!(exists(vnmod, M ))) M[,vnmod] = NA
+
+      iM = which(!is.finite(M[, vnmod]))
+      if (length(iM) > 0 ) {
 
         tz = "America/Halifax"
-        locs = M[kk, c("plon", "plat")]
-        timestamp = M$timestamp[kk]
-        if (! "POSIXct" %in% class(timestamp)  ) timestamp = as.POSIXct( timestamp, tz=tz, origin=lubridate::origin  )
-        BS = temperature_db ( p=p, year.assessment=max(p$yrs), DS="aggregated_data" )  # raw data
-        BS = BS[ which( BS$lon > p$corners$lon[1] & BS$lon < p$corners$lon[2]  & BS$lat > p$corners$lat[1] & BS$lat < p$corners$lat[2] ), ]
-        BT_map = array_map( "ts->1", BS[,c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
-        BS_map = array_map( "xy->1", BS[,c("plon","plat")], gridparams=gridparams )
-        tstamp = data.frame( yr = lubridate::year(timestamp) )
-        tstamp$dyear = lubridate::decimal_date( timestamp ) - tstamp$yr
-        timestamp_map = array_map( "ts->1", tstamp[, c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
-        locs_map = array_map( "xy->1", locs[,c("plon","plat")], gridparams=gridparams )
-        locs_index = match( paste(locs_map, timestamp_map, sep="_"), paste(BS_map, BT_map, sep="_") )
-        M$t[kk] = BS[locs_index, vnames]
-        BS = BT_map = BS_map = tstamp = timestamp_map = locs_map = locs_index = NULL
+        T = data.frame( timestamp = M$timestamp[iM] )
+        if (! "POSIXct" %in% class(T$timestamp)  ) T$timestamp = as.POSIXct( T$timestamp, tz=tz, origin=lubridate::origin  )
+        T$yr = lubridate::year(T$timestamp)        
+        T$dyear = lubridate::decimal_date( T$timestamp ) - T$yr
+        LU = temperature_db ( p=p, year.assessment=max(p$yrs), DS="aggregated_data" )  # raw data
+        LU = LU[ which( LU$lon > p$corners$lon[1] & LU$lon < p$corners$lon[2]  & LU$lat > p$corners$lat[1] & LU$lat < p$corners$lat[2] ), ]
+        LUT_map = array_map( "ts->1", LU[,c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
+        LUS_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=gridparams )
+        T_map = array_map( "ts->1", T[, c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
+        M_map = array_map( "xy->1", M[iM, c("plon","plat")], gridparams=gridparams )
+        iLM = match( paste(M_map, T_map, sep="_"), paste(LUS_map, LUT_map, sep="_") )
+        M[ iM, vnmod ] = LU[ iLM, paste(vnmod, "mean", sep="." ) ]
+        LU = LUT_map = LUS_map = T = T_map = M_map = iLM = NULL
 
-        ll =  which( !is.finite(M[, pT$variabletomodel]))
-        if (length(ll) > 0) {
-          BS$AUID = st_points_in_polygons(
-            pts = st_as_sf( BS, coords=c("lon","lat"), crs=crs_lonlat ),
+        iM =  which( !is.finite(M[, vnmod]))
+        if (length(iM) > 0) {
+          LU$AUID = st_points_in_polygons(
+            pts = st_as_sf( LU, coords=c("lon","lat"), crs=crs_lonlat ),
             polys = sppoly[, "AUID"],
             varname="AUID"
           )
-          BS$uid = paste(BS$AUID, BS$year, BS$dyear, sep=".")
-          M_dyear_discret = discretize_data( M$dyear, p$discretization$dyear )  # BS$dyear is discretized. . match discretization
+          LU$uid = paste(LU$AUID, LU$year, LU$dyear, sep=".")
+          M_dyear_discret = discretize_data( M$dyear, p$discretization$dyear )  # LU$dyear is discretized. . match discretization
           M$uid =  paste(M$AUID, M$year, M_dyear_discret, sep=".")
-          oo = tapply( BS[, paste(pT$variabletomodel, "mean", sep="." )], BS$uid, FUN=median, na.rm=TRUE )
-          jj = match( as.character( M$uid[ll]), as.character( names(oo )) )
-          M[ll, pT$variabletomodel] = oo[jj ]
+          LU = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$uid, FUN=median, na.rm=TRUE )
+          iLM = match( as.character( M$uid[iM]), as.character( names(LU )) )
+          M[iM, vnmod] = LU[iLM ]
         }
 
       }
 
-      if( exists("spatial_domain", p)) M = M[ geo_subset( spatial_domain=p$spatial_domain, Z=M ) , ]# need to be careful with extrapolation ...  filter depths
 
       M$lon = NULL
       M$lat = NULL
@@ -339,25 +350,123 @@
       M$tag = "observations"
 
 
+      # end observations
+      # ----------
+
+      # predicted locations (APS)
+
+
       region.id = slot( slot(sppoly, "nb"), "region.id" )
       APS = st_drop_geometry(sppoly)
-      sppoly = NULL
-
+ 
       APS$AUID = as.character( APS$AUID )
       APS$tag ="predictions"
       APS[,p$variabletomodel] = NA
 
-      BI = carstm_summary( p=pB )
-      jj = match( as.character( APS$AUID), as.character( BI$AUID) )
-      APS[, pB$variabletomodel] = BI[[ paste(pB$variabletomodel,"predicted",sep="." ) ]] [jj]
-      jj =NULL
-      BI = NULL
+      
+      if (p$carstm_inputadata_model_source=="carstm") {
+        LU = carstm_summary( p=pB ) # to load exact sppoly, if present
+        LU_sppoly = areal_units( p=pB )  # default poly
+        vnmod = pB$variabletomodel
+        vnp = paste(vnmod, "predicted", sep=".")
+        # vnps = paste(vnmod, "predicted_se", sep=".")
 
-      SI = carstm_summary( p=pS )
-      jj = match( as.character( APS$AUID), as.character( SI$AUID) )
-      APS[, pS$variabletomodel] = SI[[ paste(pS$variabletomodel,"predicted",sep="." )]] [jj]
+        if (is.null(LU)) {
+          message("Exactly modelled surface not found, estimating from default run...")
+          pBD = bathymetry_parameters( project_class="carstm" ) # choose "default" full bathy carstm run and re-estimate:
+          LU = carstm_summary( p=pBD )
+          LU_sppoly = areal_units( p=pBD )  # default poly
+        }
+      
+        bm = match( LU_sppoly$AUID, LU$AUID )
+        
+        LU_sppoly[[ vnp ]] = LU[[ vnp ]] [ bm ]
+        # LU_sppoly[[ vnps ]] = LU[[ vnps ]] [ bm ]
+        bm = NULL
+        LU = NULL
+      
+        # now rasterize and estimate
+        raster_template = raster( sppoly, res=p$areal_units_resolution_km, crs=st_crs( sppoly ) ) # +1 to increase the area
+        # transfer the coordinate system to the raster
+        LU_sppoly = sf::st_transform( as( LU_sppoly, "sf" ), crs=st_crs(LU_sppoly) )  # B is a carstm LU
+        LU_sppoly = fasterize::fasterize( LU_sppoly, raster_template, field=vnp )
+        sppoly[[ vnp ]] = sp::over( sppoly, LU_sppoly[, vnp ], fn=mean, na.rm=TRUE )
+        # sppoly[[ vnp s]] = sp::over( sppoly, LU_sppoly[, vnp ], fn=sd, na.rm=TRUE )
+        LU_sppoly = NULL
+        raster_template = NULL
+      }
+
+
+      if (p$carstm_inputadata_model_source %in% c("stmv", "hybrid")) {
+        pBD = bathymetry_parameters( project_class=p$carstm_inputadata_model_source )  # full default
+        vnmod = pBD$variabletomodel
+        vnp = paste(vnmod, "predicted", sep=".")
+        # vnps = paste(vnmod, "predicted_se", sep=".")
+
+        LU = bathymetry_db( p=pBD, DS="baseline", varnames=c(vnmod, "plon", "plat") )
+        LU = planar2lonlat(LU, pBD$aegis_proj4string_planar_km)
+        LU = sf::st_as_sf( LU[, c( vnmod, "lon", "lat")], coords=c("lon", "lat") )
+        st_crs(LU) = st_crs( projection_proj4string("lonlat_wgs84") )
+        LU = sf::st_transform( LU, crs=st_crs(sppoly) )
+        sppoly[[ vnp ]] = aggregate( LU[, vnmod], sppoly, mean, na.rm=TRUE )[[vnmod]]
+        # sppoly[[ vnps ]] = aggregate( LU[, vnmod], sppoly, sd, na.rm=TRUE )[[vnmod]]
+      }
+
+      iAS = match( as.character( APS$AUID), as.character( sppoly$AUID ) )
+      APS[, pB$variabletomodel] = sppoly[[ paste(pB$variabletomodel, "predicted", sep=".") ]] [iAS]
+      iAS =NULL
+      sppoly = NULL
+      gc()
+
+
+      if (p$carstm_inputadata_model_source=="carstm") {
+        LU = carstm_summary( p=pS ) # to load exact sppoly, if present
+        # sppoly = areal_units( p=pS )  # default poly no need to reload
+
+        if (is.null(LU)) {
+          message("Exactly modelled surface not found, estimating from default run... not fully tested")
+          pSD = substrate_parameters( project_class="carstm" ) # choose "default" full bathy carstm run and re-estimate:
+          vnmod = pSD$variabletomodel
+          vnp = paste(vnmod, "predicted", sep=".")
+          # vnps = paste(vnmod, "predicted_se", sep=".")
+
+          LU = carstm_summary( p=pSD )
+          LU_sppoly = areal_units( p=pSD )  # default poly
+          iLU = match( LU_sppoly$AUID, LU$AUID )
+          LU_sppoly[[vnp]] = LU[[vnp]][ iLU ]
+         
+          # LU_sppoly[[vnps]] = LU[[vnps]][ iLU ]
+          # now rasterize and restimate to desired sppoly
+          raster_template = raster( sppoly, res=p$areal_units_resolution_km, crs=st_crs( sppoly ) ) # +1 to increase the area
+          # transfer the coordinate system to the raster
+          LU = sf::st_transform( as(LU, "sf"), crs=st_crs(sppoly) )  # B is a carstm sppoly
+          LU = fasterize::fasterize( LU, raster_template, field=vnp )
+          sppoly[[vnp]] = sp::over( sppoly, LU[, vnp ], fn=mean, na.rm=TRUE )
+          # sppoly[[vnps]] = sp::over( sppoly, LU[, vnp ], fn=sd, na.rm=TRUE )
+        }
+      }     
+
+      if (p$carstm_inputadata_model_source %in% c("stmv", "hybrid")) {
+        pSD = substrate_parameters( project_class=p$carstm_inputadata_model_source )  # full default
+        vnmod = pSD$variabletomodel
+        vnp = paste(vnmod, "predicted", sep=".")
+        # vnps = paste(vnmod, "predicted_se", sep=".")
+
+        LU = substrate_db( p=pSD, DS="complete"  )
+        LU_coords = bathymetry_db( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class=p$carstm_inputadata_model_source  ), DS="baseline"  )
+        LU = cbind(LU, LU_coords)
+        LU = planar2lonlat(LU, pSD$aegis_proj4string_planar_km)
+        LU = sf::st_as_sf(  LU[,  c(vnmod, "lon", "lat") ], coords=c("lon", "lat") )
+        st_crs(LU) = st_crs( projection_proj4string("lonlat_wgs84") )
+        LU = sf::st_transform( LU, crs=st_crs(sppoly) )
+        sppoly[[ vnp ]] = aggregate( LU[, vnmod], sppoly, mean, na.rm=TRUE )[[vnmod]]
+        # sppoly$[[ vnps ]] = aggregate( LU[, vnmod], sppoly, sd, na.rm=TRUE )[[vnmod]]
+      }
+   
+      jj = match( as.character( APS$AUID), as.character( LU$AUID) )
+      APS[, pS$variabletomodel] = LU[[ paste(pS$variabletomodel,"predicted",sep="." )]] [jj]
       jj =NULL
-      SI = NULL
+      LU = NULL
 
       # to this point APS is static, now add time dynamics (teperature)
       # ---------------------
@@ -372,21 +481,89 @@
       APS$year = aegis_floor( APS$tiyr)
       APS$dyear = APS$tiyr - APS$year
 
+      if (p$carstm_inputadata_model_source=="carstm") {
+       
+        LU = carstm_summary( p=pT ) # to load exact sppoly, if present
+        LU_sppoly = areal_units( p=pT )  # default poly
 
-      TI = carstm_summary( p=pT )
-      TI = TI[[ paste(pT$variabletomodel,"predicted",sep="." )]]
+        if (is.null(LU)) {
+          message("Exactly modelled surface not found, estimating from default run...")
+          pTD = temperature_parameters( project_class="carstm" ) # choose "default" full bathy carstm run and re-estimate:
+          LU = carstm_summary( p=pTD )
+          LU_sppoly = areal_units( p=pTD )  # default poly
+        }
+        
+        bm = match( LU_sppoly$AUID, LU$AUID )
+        LU_sppoly$t.predicted = LU$t.predicted[ bm ]
+        # LU_sppoly$t.predicted_se = LU$t.predicted_se[ bm ]
+        bm = NULL
+        LU = NULL
+    
+          if (! "POSIXct" %in% class(timestamp)  ) timestamp = as.POSIXct( timestamp, tz=tz, origin=lubridate::origin  )
+          tstamp = data.frame( yr = lubridate::year(timestamp) )
+          tstamp$dyear = lubridate::decimal_date( timestamp ) - tstamp$yr
+          timestamp_map = array_map( "ts->2", tstamp[, c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
+    # TODO
+    stop("not finished ... must addd time lookup")  # TODO
+    # TODO
+  
+          dindex = cbind(locs_index, timestamp_map ) # check this
 
-      auid_map = match( APS$AUID, dimnames(TI)$AUID )
-      year_map = match( as.character(APS$year), dimnames(TI)$year )
+          # convert to raster then match
+          require(raster)
+          raster_template = raster(extent(locs)) # +1 to increase the area
+          res(raster_template) = p$areal_units_resolution_km  # crs usually in meters, but aegis's crs is in km
+          crs(raster_template) = projection(locs) # transfer the coordinate system to the raster
+          Bsf = sf::st_transform( as(LU_sppoly, "sf"), crs=CRS(proj4string(locs)) )  # LU_sppoly is a carstm sppoly
+          Boo = as(LU_sppoly, "SpatialPolygonsDataFrame")
+          for (vn in Bnames) {
+            # Bf = fasterize::fasterize( Bsf, raster_template, field=vn )
+  #          vn2 = paste(vn, "sd", sep="." )
+            locs[,vn] = st_polygons_in_polygons( locs, Bf[,vn], fn=mean, na.rm=TRUE )
+  #          locs[,vn2] = st_polygons_in_polygons( locs, Bf[,vn], fn=sd, na.rm=TRUE )
+          }
+          vnames = intersect( names(LU_sppoly), vnames )
+          if ( length(vnames) ==0 ) vnames=names(LU_sppoly) # no match returns all
+          return(locs[,vnames])
+ 
+      }
+
+      if (p$carstm_inputadata_model_source %in% c("stmv", "hybrid")) {
+        pTD = temperature_parameters( project_class=p$carstm_inputadata_model_source )  # full default
+        vnmod = pTD$variabletomodel
+        vnp = paste(vnmod, "predicted", sep=".")
+        # vnps = paste(vnmod, "predicted_se", sep=".")
+
+for (ti in p$nt){
+
+}
+
+        LU = temperature_db( p=pTD, DS="complete"  )
+        LU_coords = bathymetry_db( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class=p$carstm_inputadata_model_source  ), DS="baseline"  )
+        
+        LU = cbind(LU, LU_coords)
+        LU = planar2lonlat(LU, pTD$aegis_proj4string_planar_km)
+        LU = sf::st_as_sf(  LU[,  c(vnmod, "lon", "lat") ], coords=c("lon", "lat") )
+        st_crs(LU) = st_crs( projection_proj4string("lonlat_wgs84") )
+        LU = sf::st_transform( LU, crs=st_crs(sppoly) )
+        sppoly[[ vnp ]] = aggregate( LU[, vnmod], sppoly, mean, na.rm=TRUE )[[vnmod]]
+        # sppoly$[[ vnps ]] = aggregate( LU[, vnmod], sppoly, sd, na.rm=TRUE )[[vnmod]]
+      }
+   
+
+      LU = LU[[ paste(pT$variabletomodel,"predicted",sep="." )]]
+
+      auid_map = match( APS$AUID, dimnames(LU)$AUID )
+      year_map = match( as.character(APS$year), dimnames(LU)$year )
 
       dyear_breaks = c(p$dyears, p$dyears[length(p$dyears)]+ diff(p$dyears)[1] )
       dyear_map = as.numeric( cut( APS$dyear, breaks=dyear_breaks, include.lowest=TRUE, ordered_result=TRUE, right=FALSE ) )
 
       dindex = cbind(auid_map, year_map, dyear_map )
 
-      APS[, pT$variabletomodel] = TI[ dindex]
+      APS[, pT$variabletomodel] = LU[ dindex]
       jj =NULL
-      TI = NULL
+      LU = NULL
 
       M = rbind( M[, names(APS)], APS )
       APS = NULL
