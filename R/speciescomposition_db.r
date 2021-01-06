@@ -202,6 +202,7 @@
           # this was -1.7, 21.8 in 2015
       }
 
+      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
       M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
       
       M$AUID = st_points_in_polygons(
@@ -212,7 +213,6 @@
       M = M[ which(!is.na(M$AUID)),]
       M$AUID = as.character( M$AUID )  # match each datum to an area
  
-      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
 
 
       names(M)[which(names(M)=="yr") ] = "year"
@@ -234,8 +234,9 @@
       iM = which(!is.finite( M[, vnmod] ))
       if (length(iM > 0)) {
         LU = bathymetry_db ( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class="core"  ), DS="aggregated_data" )  # raw data
+        LU = lonlat2planar(LU, proj.type=p$aegis_proj4string_planar_km)
         LU_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=p$gridparams )
-        M_map = array_map( "xy->1", M[,c("plon","plat")], gridparams=p$gridparams )
+        M_map = array_map( "xy->1", M[iM,c("plon","plat")], gridparams=p$gridparams )
         M[iM, vnmod] = LU[match( M_map, LU_map ), "z.mean"]
 
         # if any still missing then use a mean depth by AUID
@@ -247,9 +248,9 @@
             polys = sppoly[, "AUID"],
             varname="AUID"
           )
-          oo = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$AUID, FUN=median, na.rm=TRUE )
-          jj = match( as.character( M$AUID[iM]), as.character( names(oo )) )
-          M[iM, vnmod] = oo[jj ]
+          LU = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$AUID, FUN=median, na.rm=TRUE )
+          jj = match( as.character( M$AUID[iM]), as.character( names(LU )) )
+          M[iM, vnmod] = LU[jj ]
         }
       }
       M = M[ is.finite(M[ , vnmod]  ) , ]
@@ -271,10 +272,11 @@
       if (length(iM) > 0 ) {
         LU = substrate_db ( p=substrate_parameters( spatial_domain=p$spatial_domain, project_class="core"  ), DS="aggregated_data" )  # raw data
         LU = LU[ which( LU$lon > p$corners$lon[1] & LU$lon < p$corners$lon[2]  & LU$lat > p$corners$lat[1] & LU$lat < p$corners$lat[2] ), ]
+        LU = lonlat2planar(LU, proj.type=p$aegis_proj4string_planar_km)
         # levelplot( eval(paste(vnmod, "mean", sep="."))~plon+plat, data=M, aspect="iso")
         LU_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=p$gridparams )
         M_map  = array_map( "xy->1", M[iM, c("plon","plat")], gridparams=p$gridparams )
-        M[iM, vnmod] = LU[ match( M_map, LU_map ), "z.mean" ]
+        M[iM, vnmod] = LU[ match( M_map, LU_map ), paste(vnmod, "mean", sep=".") ]
         LU_map = NULL
         M_map = NULL
         iM = NULL
@@ -310,12 +312,14 @@
         if (! "POSIXct" %in% class(T$timestamp)  ) T$timestamp = as.POSIXct( T$timestamp, tz=tz, origin=lubridate::origin  )
         T$yr = lubridate::year(T$timestamp)        
         T$dyear = lubridate::decimal_date( T$timestamp ) - T$yr
-        LU = temperature_db ( p=p, year.assessment=max(p$yrs), DS="aggregated_data" )  # raw data
+        LU = temperature_db ( p=temperature_parameters( spatial_domain=p$spatial_domain, project_class="core" ), year.assessment=max(p$yrs), DS="aggregated_data" )  # raw data
+        names(LU)[ which(names(LU) =="temperature.mean") ] = vnmod
         LU = LU[ which( LU$lon > p$corners$lon[1] & LU$lon < p$corners$lon[2]  & LU$lat > p$corners$lat[1] & LU$lat < p$corners$lat[2] ), ]
+        LU = lonlat2planar(LU, proj.type=p$aegis_proj4string_planar_km)
         LUT_map = array_map( "ts->1", LU[,c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
-        LUS_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=gridparams )
+        LUS_map = array_map( "xy->1", LU[,c("plon","plat")], gridparams=p$gridparams )
         T_map = array_map( "ts->1", T[, c("yr", "dyear")], dims=c(p$ny, p$nw), res=c( 1, 1/p$nw ), origin=c( min(p$yrs), 0) )
-        M_map = array_map( "xy->1", M[iM, c("plon","plat")], gridparams=gridparams )
+        M_map = array_map( "xy->1", M[iM, c("plon","plat")], gridparams=p$gridparams )
         iLM = match( paste(M_map, T_map, sep="_"), paste(LUS_map, LUT_map, sep="_") )
         M[ iM, vnmod ] = LU[ iLM, paste(vnmod, "mean", sep="." ) ]
         LU = LUT_map = LUS_map = T = T_map = M_map = iLM = NULL
@@ -327,9 +331,10 @@
             polys = sppoly[, "AUID"],
             varname="AUID"
           )
-          LU$uid = paste(LU$AUID, LU$year, LU$dyear, sep=".")
+          LU_dyear_discret = discretize_data( LU$dyear, p$discretization$dyear ) 
           M_dyear_discret = discretize_data( M$dyear, p$discretization$dyear )  # LU$dyear is discretized. . match discretization
-          M$uid =  paste(M$AUID, M$year, M_dyear_discret, sep=".")
+          LU$uid = paste(LU$AUID, LU$yr, LU_dyear_discret, sep=".")
+          M$uid =  paste(M$AUID, M$yr, M_dyear_discret, sep=".")
           LU = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$uid, FUN=median, na.rm=TRUE )
           iLM = match( as.character( M$uid[iM]), as.character( names(LU )) )
           M[iM, vnmod] = LU[iLM ]
@@ -337,11 +342,7 @@
 
       }
 
-
-      M$lon = NULL
-      M$lat = NULL
-      M$plon = NULL
-      M$plat = NULL
+      M$lon = M$lat = M$plon = M$plat = NULL
 
       M = M[ which(is.finite(M[, pB$variabletomodel] )),]
       M = M[ which(is.finite(M[, pS$variabletomodel] )),]
@@ -364,12 +365,13 @@
       APS[,p$variabletomodel] = NA
 
       
+      vnmod = pB$variabletomodel
+      vnp = paste(vnmod, "predicted", sep=".")
+      # vnps = paste(vnmod, "predicted_se", sep=".")
+
       if (p$carstm_inputadata_model_source=="carstm") {
         LU = carstm_summary( p=pB ) # to load exact sppoly, if present
         LU_sppoly = areal_units( p=pB )  # default poly
-        vnmod = pB$variabletomodel
-        vnp = paste(vnmod, "predicted", sep=".")
-        # vnps = paste(vnmod, "predicted_se", sep=".")
 
         if (is.null(LU)) {
           message("Exactly modelled surface not found, estimating from default run...")

@@ -26,7 +26,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=FALSE, recursive=TRUE )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=FALSE, recursive=TRUE )
 
-  if (!exists("variabletomodel", p)) stop( "The dependent variable, p$variabletomodel needs to be defined")
 
   p = parameters_add_without_overwriting( p,
     spatial_domain = "SSE",  # canada.east.highres and canada.east.superhighres result in memory overflow
@@ -65,6 +64,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     #   and one that is called secondarily specific to a local project's polygons (eg. snow crab)
     p$libs = c( p$libs, project.library ( "carstm", "INLA"  ) )
     p$project_class = "carstm"
+
+    if (!exists("variabletomodel", p)) stop( "The dependent variable, p$variabletomodel needs to be defined")
 
 
     # defaults in case not provided ...
@@ -214,6 +215,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   # ---------------------
 
   if (project_class %in% c("hybrid")) {
+
+    if (!exists("variabletomodel", p)) stop( "The dependent variable, p$variabletomodel needs to be defined")
 
     p = parameters_add_without_overwriting( p,
       stmv_model_label="default",

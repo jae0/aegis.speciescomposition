@@ -6,22 +6,21 @@ if (!exists("year.assessment")) {
   year.assessment=lubridate::year(Sys.Date()) -1
 }
 
-p = aegis.speciescomposition::speciescomposition_parameters( yrs=1999:year.assessment ) # to get var names
+require( aegis.speciescomposition )
 
 # construct basic parameter list defining the main characteristics of the study
 # and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
-p$varstomodel = c("pca1", "pca2")
 
-for ( variabletomodel in p$varstomodel)  {
+for ( variabletomodel in c("pca1", "pca2"))  {
     # variabletomodel = "pca1"
-    p = aegis.speciescomposition::speciescomposition_parameters(
+    p = speciescomposition_parameters(
       project_class="carstm",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
       variabletomodel = variabletomodel,
       carstm_model_label = "default",
       inputdata_spatial_discretization_planar_km = 1,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
       inputdata_temporal_discretization_yr = 24/365,  # ie., every 2 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
-      yrs = 1999:2019,
+      yrs = 1999:year.assessment,
       aegis_dimensionality="space-year",
       spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
       areal_units_resolution_km = 25, # km dim of lattice ~ 1 hr
