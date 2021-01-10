@@ -82,9 +82,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
 
     if ( !exists("carstm_inputadata_model_source", p))  p$carstm_inputadata_model_source = list()
-    if ( !exists("bathymetry", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$bathymetry = "stmv",  # "stmv", "hybrid", "carstm"
-    if ( !exists("substrate", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$substrate = "stmv",  # "stmv", "hybrid", "carstm"
-    if ( !exists("temperature", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$temperature = "carstm",  # "stmv", "hybrid", "carstm"
+    if ( !exists("bathymetry", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$bathymetry = "stmv"  # "stmv", "hybrid", "carstm"
+    if ( !exists("substrate", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$substrate = "stmv"  # "stmv", "hybrid", "carstm"
+    if ( !exists("temperature", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$temperature = "carstm"  # "stmv", "hybrid", "carstm"
 
 
     if ( !exists("carstm_model_call", p)) {
