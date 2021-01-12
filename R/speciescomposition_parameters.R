@@ -75,12 +75,18 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_proj4string_planar_km =  p$aegis_proj4string_planar_km,  # coord system to use for areal estimation and gridding for carstm
       # areal_units_proj4string_planar_km = projection_proj4string("omerc_nova_scotia")  # coord system to use for areal estimation and gridding for carstm
       areal_units_overlay = "none",
+      areal_units_timeperiod = "none",
+      tus="yr", 
+      fraction_cv = 1.0, 
+      fraction_good_bad = 0.8, 
+      nAU_min = 5,  
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
       carstm_inputs_aggregated = FALSE
     )
 
 
+  
     if ( !exists("carstm_inputadata_model_source", p))  p$carstm_inputadata_model_source = list()
     if ( !exists("bathymetry", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$bathymetry = "stmv"  # "stmv", "hybrid", "carstm"
     if ( !exists("substrate", p$carstm_inputadata_model_source ))  p$carstm_inputadata_model_source$substrate = "stmv"  # "stmv", "hybrid", "carstm"
