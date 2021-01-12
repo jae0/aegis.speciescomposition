@@ -402,7 +402,7 @@
       vnp = paste(vnmod, "predicted", sep=".")
       # vnps = paste(vnmod, "predicted_se", sep=".")
 
-      if (p$carstm_inputadata_model_source$bathymetry=="carstm") {
+      if (p$carstm_inputdata_model_source$bathymetry=="carstm") {
         LU = carstm_summary( p=pB ) # to load exact sppoly, if present
         LU_sppoly = areal_units( p=pB )  # default poly
 
@@ -432,8 +432,8 @@
       }
 
 
-      if (p$carstm_inputadata_model_source$bathymetry %in% c("stmv", "hybrid")) {
-        pBD = bathymetry_parameters( project_class=p$carstm_inputadata_model_source$bathymetry )  # full default
+      if (p$carstm_inputdata_model_source$bathymetry %in% c("stmv", "hybrid")) {
+        pBD = bathymetry_parameters( project_class=p$carstm_inputdata_model_source$bathymetry )  # full default
         vnmod = pBD$variabletomodel
         vnp = paste(vnmod, "predicted", sep=".")
         # vnps = paste(vnmod, "predicted_se", sep=".")
@@ -454,7 +454,7 @@
       gc()
 
 
-      if (p$carstm_inputadata_model_source$substrate=="carstm") {
+      if (p$carstm_inputdata_model_source$substrate=="carstm") {
         LU = carstm_summary( p=pS ) # to load exact sppoly, if present
         # sppoly = areal_units( p=pS )  # default poly no need to reload
 
@@ -481,14 +481,14 @@
         }
       }     
 
-      if (p$carstm_inputadata_model_source$substrate %in% c("stmv", "hybrid")) {
-        pSD = substrate_parameters( project_class=p$carstm_inputadata_model_source$substrate )  # full default
+      if (p$carstm_inputdata_model_source$substrate %in% c("stmv", "hybrid")) {
+        pSD = substrate_parameters( project_class=p$carstm_inputdata_model_source$substrate )  # full default
         vnmod = pSD$variabletomodel
         vnp = paste(vnmod, "predicted", sep=".")
         # vnps = paste(vnmod, "predicted_se", sep=".")
 
         LU = substrate_db( p=pSD, DS="complete"  )
-        LU_coords = bathymetry_db( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class=p$carstm_inputadata_model_source$substrate  ), DS="baseline"  )
+        LU_coords = bathymetry_db( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class=p$carstm_inputdata_model_source$substrate  ), DS="baseline"  )
         LU = cbind(LU, LU_coords)
         LU = planar2lonlat(LU, pSD$aegis_proj4string_planar_km)
         LU = sf::st_as_sf(  LU[,  c(vnmod, "lon", "lat") ], coords=c("lon", "lat") )
@@ -516,7 +516,7 @@
       APS$year = aegis_floor( APS$tiyr)
       APS$dyear = APS$tiyr - APS$year
 
-      if (p$carstm_inputadata_model_source$temperature=="carstm") {
+      if (p$carstm_inputdata_model_source$temperature=="carstm") {
        
         LU = carstm_summary( p=pT ) # to load exact sppoly, if present
         LU_sppoly = areal_units( p=pT )  # default poly
@@ -563,8 +563,8 @@
  
       }
 
-      if (p$carstm_inputadata_model_source$temperature %in% c("stmv", "hybrid")) {
-        pTD = temperature_parameters( project_class=p$carstm_inputadata_model_source$temperature )  # full default
+      if (p$carstm_inputdata_model_source$temperature %in% c("stmv", "hybrid")) {
+        pTD = temperature_parameters( project_class=p$carstm_inputdata_model_source$temperature )  # full default
         vnmod = pTD$variabletomodel
         vnp = paste(vnmod, "predicted", sep=".")
         # vnps = paste(vnmod, "predicted_se", sep=".")
@@ -574,7 +574,7 @@ for (ti in p$nt){
 }
 
         LU = temperature_db( p=pTD, DS="complete"  )
-        LU_coords = bathymetry_db( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class=p$carstm_inputadata_model_source$temperature  ), DS="baseline"  )
+        LU_coords = bathymetry_db( p=bathymetry_parameters( spatial_domain=p$spatial_domain, project_class=p$carstm_inputdata_model_source$temperature  ), DS="baseline"  )
         
         LU = cbind(LU, LU_coords)
         LU = planar2lonlat(LU, pTD$aegis_proj4string_planar_km)
