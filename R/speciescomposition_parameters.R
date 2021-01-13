@@ -94,29 +94,18 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if ( !exists("temperature", p$carstm_inputdata_model_source ))  p$carstm_inputdata_model_source$temperature = "carstm"  # "stmv", "hybrid", "carstm"
 
 
-    if ( !exists("carstm_model_call", p)) {
-      if ( grepl("inla", p$carstm_modelengine) ) {
-        p$carstm_model_call = paste(
-          'inla( formula = ', p$variabletomodel,
-          ' ~ 1
-            + f( dyri, model="ar1", hyper=H$ar1 )
-            + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)
-            + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)
-            + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)
-            + f( auid, model="bym2", graph=slot(sppoly, "nb"), group=year_factor, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group)),
-            family = "normal",
-            data= M,
-            control.compute = list(dic=TRUE, waic=TRUE, cpo=TRUE, config=TRUE),
-            control.results = list(return.marginals.random=TRUE, return.marginals.predictor=TRUE ),
-            control.predictor = list(compute=FALSE, link=1 ),
-            control.fixed = H$fixed,  # priors for fixed effects, generic is ok
-            control.inla = list( cmin = 0, h=1e-4, tolerance=1e-9, strategy="adaptive", optimise.strategy="smart"), # restart=3), # restart a few times in case posteriors are poorly defined
-            verbose=TRUE
-          )'
-        )
+    if ( grepl("inla", p$carstm_modelengine) ) {
+      if ( !exists("carstm_model_formula", p)  ) {
+        p$carstm_model_formula = as.formula( paste(
+         p$variabletomodel, ' ~ 1',
+            ' + f( dyri, model="ar1", hyper=H$ar1 )', 
+            ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)', 
+            ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)', 
+            ' + f( auid, model="bym2", graph=slot(sppoly, "nb"), group=year_factor, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
+          ) )
       }
-        #    + f(tiyr, model="ar1", hyper=H$ar1 )
-        # + f(year,  model="ar1", hyper=H$ar1 )
+      if ( !exists("carstm_model_family", p)  )  p$carstm_model_family = "normal"
     }
 
     p = carstm_parameters( p=p )  #generics
