@@ -8,6 +8,11 @@ if (!exists("year.assessment")) {
 
 require( aegis.speciescomposition )
 
+# adjust based upon RAM requirements and ncores
+inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
+inla.setOption(blas.num.threads= 2 )
+
+
 # construct basic parameter list defining the main characteristics of the study
 # and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
 

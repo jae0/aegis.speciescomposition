@@ -78,6 +78,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
       tus="yr", 
+      fraction_todrop = 1/5,
       fraction_cv = 1.0, 
       fraction_good_bad = 0.8, 
       nAU_min = 5,  
@@ -86,12 +87,13 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       carstm_inputs_aggregated = FALSE
     )
 
-
   
     if ( !exists("carstm_inputdata_model_source", p))  p$carstm_inputdata_model_source = list()
-    if ( !exists("bathymetry", p$carstm_inputdata_model_source ))  p$carstm_inputdata_model_source$bathymetry = "stmv"  # "stmv", "hybrid", "carstm"
-    if ( !exists("substrate", p$carstm_inputdata_model_source ))  p$carstm_inputdata_model_source$substrate = "stmv"  # "stmv", "hybrid", "carstm"
-    if ( !exists("temperature", p$carstm_inputdata_model_source ))  p$carstm_inputdata_model_source$temperature = "carstm"  # "stmv", "hybrid", "carstm"
+    p$carstm_inputdata_model_source = parameters_add_without_overwriting( p$carstm_inputdata_model_source,
+      bathymetry = "stmv",  # "stmv", "hybrid", "carstm"
+      substrate = "stmv",  # "stmv", "hybrid", "carstm"
+      temperature = "carstm"  # "stmv", "hybrid", "carstm"
+    )
 
 
     if ( grepl("inla", p$carstm_modelengine) ) {
