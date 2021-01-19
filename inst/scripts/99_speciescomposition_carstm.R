@@ -40,7 +40,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     # to extract fits and predictions
 
     # run model and obtain predictions
-    fit = carstm_model( p=p, M=M )
+    fit = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
     fit =  carstm_model( p=p, DS="carstm_modelled_fit" )  # extract currently saved model fit
     res = carstm_summary( p=p ) # to load currently saved sppoly
 
@@ -54,7 +54,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     carstm_plot( p=p, res=res, vn=paste(p$variabletomodel, "predicted", sep=".") )
 
     vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
-    if (exists(vn, res)) carstm_plot( p=p, res=res, vn=vn, time_match=list(year="1950", dyear="0") )
+    if (exists(vn, res)) carstm_plot( p=p, res=res, vn=vn, time_match=list(year="2000", dyear="0") )
 
     vn = paste(p$variabletomodel, "random_auid_nonspatial", sep=".")
     if (exists(vn, res)) {

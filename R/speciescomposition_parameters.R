@@ -12,8 +12,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   # create/update library list
   p$libs = unique( c( p$libs, RLibrary ( "colorspace",  "lubridate",  "lattice",
     "parallel", "sf", "GADMTools", "INLA" ) ) )
-  
-  p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.bathymetry", "aegis.coastline", 
+
+  p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.bathymetry", "aegis.coastline",
     "aegis.polygons", "aegis.substrate", "aegis.temperature", "aegis.survey", "aegis.speciescomposition" ) ) )
 
 
@@ -54,7 +54,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if (project_class=="core") {
     p$project_class = "core"
     return(p)
-  } 
+  }
 
   # ---------------------
 
@@ -77,17 +77,17 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       # areal_units_proj4string_planar_km = projection_proj4string("omerc_nova_scotia")  # coord system to use for areal estimation and gridding for carstm
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
-      tus="yr", 
+      tus="yr",
       fraction_todrop = 1/5,
-      fraction_cv = 1.0, 
-      fraction_good_bad = 0.8, 
-      nAU_min = 5,  
+      fraction_cv = 1.0,
+      fraction_good_bad = 0.8,
+      nAU_min = 5,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
       carstm_inputs_aggregated = FALSE
     )
 
-  
+
     if ( !exists("carstm_inputdata_model_source", p))  p$carstm_inputdata_model_source = list()
     p$carstm_inputdata_model_source = parameters_add_without_overwriting( p$carstm_inputdata_model_source,
       bathymetry = "stmv",  # "stmv", "hybrid", "carstm"
@@ -100,10 +100,10 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       if ( !exists("carstm_model_formula", p)  ) {
         p$carstm_model_formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
-            ' + f( dyri, model="ar1", hyper=H$ar1 )', 
-            ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)', 
+            ' + f( dyri, model="ar1", hyper=H$ar1 )',
+            ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)', 
+            ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( auid, model="bym2", graph=slot(sppoly, "nb"), group=year_factor, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
@@ -162,7 +162,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         nu = 0.5  # exponential smoothing
         ac_local = 0.1  # ac at which to designate "effective range"
         p = parameters_add_without_overwriting( p,
-          stmv_fft_filter = "matern tapered lowpass modelled fast_predictions", #  act as a low pass filter first before matern with taper  
+          stmv_fft_filter = "matern tapered lowpass modelled fast_predictions", #  act as a low pass filter first before matern with taper
           stmv_autocorrelation_fft_taper = 0.9,  # benchmark from which to taper
           stmv_autocorrelation_localrange = ac_local,  # for output to stats
           stmv_autocorrelation_interpolation = c(0.25, 0.1, 0.05, 0.01),
@@ -189,8 +189,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
           cor_0.01 = rep("localhost", 1)
         ),
         interpolate_predictions = list(
-          c1 = rep("localhost", 1),  
-          c2 = rep("localhost", 1),  
+          c1 = rep("localhost", 1),
+          c2 = rep("localhost", 1),
           c3 = rep("localhost", 1),
           c4 = rep("localhost", 1),
           c5 = rep("localhost", 1),
@@ -209,7 +209,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if ( p$inputdata_spatial_discretization_planar_km >= p$pres ) {
       warning( "p$inputdata_spatial_discretization_planar_km >= p$pres " )
     }
-    message ("p$stmv_distance_statsgrid: ", p$stmv_distance_statsgrid)
+#     message ("p$stmv_distance_statsgrid: ", p$stmv_distance_statsgrid)
 
 
     return(p)
@@ -262,7 +262,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         save_completed_data = TRUE
       )  # ncpus for each runmode
     )
-  
+
 
     p = parameters_add_without_overwriting( p,
       stmv_distance_prediction_limits = p$stmv_distance_statsgrid * c( 1, 2 ), # range of permissible predictions km (i.e  stats grid to upper limit based upon data density)
@@ -270,18 +270,18 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       stmv_distance_interpolate_predictions = p$stmv_distance_statsgrid * c( 1/2, 1, 2) # finalizing preds using linear interpolation
     )
 
- 
+
     p = parameters_add_without_overwriting( p,
       stmv_runmode = list(
         carstm = rep("localhost", 1),
         globalmodel = FALSE,
         save_intermediate_results = TRUE,
         save_completed_data = TRUE
-      )  
+      )
     )
 
     p = aegis_parameters( p=p, DS="stmv" )  # get defaults
- 
+
     # intervals of decimal years... fractional year breaks finer than the default 10 units (taking daily for now..)
     #.. need to close right side for "cut" .. controls resolution of data prior to modelling
     if (!exists("dyear_discretization_rawdata", p)) p$dyear_discretization_rawdata = c( {c(1:365)-1}/365, 1)
