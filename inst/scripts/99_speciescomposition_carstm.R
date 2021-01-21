@@ -24,19 +24,29 @@ for ( variabletomodel in c("pca1", "pca2"))  {
       variabletomodel = variabletomodel,
       carstm_model_label = "default",
       inputdata_spatial_discretization_planar_km = 1,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
-      inputdata_temporal_discretization_yr = 1/12,  # ie., every 2 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+      inputdata_temporal_discretization_yr = 1/52,  # ie., every 2 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
       yrs = 1999:year.assessment,
       aegis_dimensionality="space-year",
       spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
       areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
       areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
  #     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
-       areal_units_type = "tessilation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
+       areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
        areal_units_overlay = "none"
     )
 
+  if (0) { 
+        p$fraction_todrop = 1/10 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
+        p$fraction_cv = 1  #sd/mean no.
+        p$fraction_good_bad = 0.9
+        p$areal_units_constraint_nmin =  length(p$yrs)
+        p$nAU_min = 100
+  }
+
     # to recreate the underlying data
-    sppoly = areal_units( p=p, redo=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
+    xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
+
+    sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
     M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
     # to extract fits and predictions
 
