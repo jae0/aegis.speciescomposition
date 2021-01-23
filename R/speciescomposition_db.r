@@ -183,6 +183,8 @@
       }
       xydata = speciescomposition_db( p=p, DS="speciescomposition"  )  #
       xydata = planar2lonlat(xydata, p$areal_units_proj4string_planar_km)  # should not be required but to make sure
+      names(xydata)[which(names(xydata)=="z.mean" )] = "z"
+      xydata = xydata[ geo_subset( spatial_domain=p$spatial_domain, Z=xydata ) , ] # need to be careful with extrapolation ...  filter depths
       xydata = xydata[ , c("lon", "lat", "yr" )]
       save(xydata, file=fn, compress=TRUE )
       return( xydata )
@@ -341,13 +343,13 @@
       # vnps = paste(vnmod, "predicted_se", sep=".")
 
       if (p$carstm_inputdata_model_source$bathymetry=="carstm") {
-        LU = carstm_summary( p=pB ) # to load exact sppoly, if present
+        LU = carstm_model( p=pB, DS="carstm_modelled_summary" ) # to load exact sppoly, if present
         LU_sppoly = areal_units( p=pB )  # default poly
 
         if (is.null(LU)) {
           message("Exactly modelled surface not found, estimating from default run...")
           pBD = bathymetry_parameters( project_class="carstm" ) # choose "default" full bathy carstm run and re-estimate:
-          LU = carstm_summary( p=pBD )
+          LU = carstm_model( p=pBD, DS="carstm_modelled_summary" )
           LU_sppoly = areal_units( p=pBD )  # default poly
         }
 
@@ -393,7 +395,7 @@
 
 
       if (p$carstm_inputdata_model_source$substrate=="carstm") {
-        LU = carstm_summary( p=pS ) # to load exact sppoly, if present
+        LU = carstm_model( p=pS, DS="carstm_modelled_summary" ) # to load exact sppoly, if present
         # sppoly = areal_units( p=pS )  # default poly no need to reload
 
         if (is.null(LU)) {
@@ -403,7 +405,7 @@
           vnp = paste(vnmod, "predicted", sep=".")
           # vnps = paste(vnmod, "predicted_se", sep=".")
 
-          LU = carstm_summary( p=pSD )
+          LU = carstm_model( p=pSD, DS="carstm_modelled_summary" )
           LU_sppoly = areal_units( p=pSD )  # default poly
           iLU = match( LU_sppoly$AUID, LU$AUID )
           LU_sppoly[[vnp]] = LU[[vnp]][ iLU ]
@@ -456,13 +458,13 @@
 
       if (p$carstm_inputdata_model_source$temperature=="carstm") {
 
-        LU = carstm_summary( p=pT ) # to load exact sppoly, if present
+        LU = carstm_model( p=pT, DS="carstm_modelled_summary" ) # to load exact sppoly, if present
         LU_sppoly = areal_units( p=pT )  # default poly
 
         if (is.null(LU)) {
           message("Exactly modelled surface not found, estimating from default run...")
           pTD = temperature_parameters( project_class="carstm" ) # choose "default" full bathy carstm run and re-estimate:
-          LU = carstm_summary( p=pTD )
+          LU = carstm_model( p=pTD, DS="carstm_modelled_summary" )
           LU_sppoly = areal_units( p=pTD )  # default poly
         }
 
