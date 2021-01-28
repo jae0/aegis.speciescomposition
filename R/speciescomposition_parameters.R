@@ -116,6 +116,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if ( p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km ) {
       warning( "p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km " )
     }
+    
     message ("p$areal_units_resolution_km: ", p$areal_units_resolution_km)
 
     return(p)
