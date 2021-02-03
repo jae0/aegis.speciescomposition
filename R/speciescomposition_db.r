@@ -266,7 +266,7 @@
       }
       iM = which(!is.finite( M[, vnB] ))
       if (length(iM > 0)) {
-        M[iM, vnB] = bathymetry_lookup_rawdata( spatial_domain=p$spatial_domain, M=M[iM, c("lon", "lat")], sppoly=sppoly )
+        M[iM, vnB] = bathymetry_lookup( LOCS=M[iM, c("lon", "lat")], spatial_domain=p$spatial_domain, lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
       }
 
       M = M[ is.finite(M[ , vnB]  ) , ]
@@ -286,8 +286,9 @@
       if (!(exists(pS$variabletomodel, M ))) M[,pS$variabletomodel] = NA
       iM = which(!is.finite( M[, pS$variabletomodel] ))
       if (length(iM > 0)) {
-        M[iM, pS$variabletomodel] = substrate_lookup_rawdata( spatial_domain=p$spatial_domain, M=M[iM, c("lon", "lat")], sppoly=sppoly )
+        M[iM, pS$variabletomodel] = substrate_lookup( LOCS=M[iM, c("lon", "lat")], spatial_domain=p$spatial_domain, lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
       }
+
       M = M[ is.finite(M[ , pS$variabletomodel]  ) , ]
 
 
