@@ -1,4 +1,4 @@
-speciescomposition_lookup_rawdata = function( M, spatial_domain=NULL, sppoly=NULL,   tz="America/Halifax", lookup_mode="stmv", vnmod=NULL ) {
+speciescomposition_lookup_rawdata = function( M, spatial_domain=NULL, sppoly=NULL,   tz="America/Halifax", lookup_mode="stmv", vnames=NULL ) {
   # lookup from rawdata
 
   if (is.null(spatial_domain))  {
@@ -17,7 +17,7 @@ speciescomposition_lookup_rawdata = function( M, spatial_domain=NULL, sppoly=NUL
   M$dyear = lubridate::decimal_date( M$timestamp ) - M$yr
 
   LU = speciescomposition_db ( p=pPC, year.assessment=max(pPC$yrs), DS="aggregated_data" )  # raw data
-  names(LU)[ which(names(LU) =="speciescomposition.mean") ] = vnmod
+  names(LU)[ which(names(LU) =="speciescomposition.mean") ] = vnames
   LU = LU[ which( LU$lon > pPC$corners$lon[1] & LU$lon < pPC$corners$lon[2]  & LU$lat > pPC$corners$lat[1] & LU$lat < pPC$corners$lat[2] ), ]
   LU = lonlat2planar(LU, proj.type=pPC$aegis_proj4string_planar_km)
 
@@ -28,14 +28,14 @@ speciescomposition_lookup_rawdata = function( M, spatial_domain=NULL, sppoly=NUL
   M_map = array_map( "xy->1", M[, c("plon","plat")], gridparams=pPC$gridparams )
 
   iLM = match( paste(M_map, T_map, sep="_"), paste(LUS_map, LUT_map, sep="_") )
-  M[ , vnmod ] = LU[ iLM, paste(vnmod, "mean", sep="." ) ]
+  M[ , vnames ] = LU[ iLM, paste(vnames, "mean", sep="." ) ]
 
   gc()
 
   if (!is.null(sppoly)) {
         # if any still missing then use a mean by AUID
     ii = NULL
-    ii =  which( !is.finite(M[ , vnmod ]))
+    ii =  which( !is.finite(M[ , vnames ]))
     if (length(ii) > 0) {
       if (!exists("AUID", M)) {
         M_AUID = st_points_in_polygons(
@@ -56,14 +56,14 @@ speciescomposition_lookup_rawdata = function( M, spatial_domain=NULL, sppoly=NUL
       
       LUT_map = array_map( "ts->1", LU[,c("yr", "dyear")], dims=c(pPC$ny, pPC$nw), res=c( 1, 1/pPC$nw ), origin=c( min(pPC$yrs), 0) )
       LU$uid = paste(LU$AUID, LUT_map, sep=".")
-      LU = tapply( LU[, paste(vnmod, "mean", sep="." )], LU$uid, FUN=median, na.rm=TRUE )
+      LU = tapply( LU[, paste(vnames, "mean", sep="." )], LU$uid, FUN=median, na.rm=TRUE )
       jj = match( as.character( M_uid), as.character( names(LU )) )
       
-      M[ ii, vnmod ] = LU[jj]
+      M[ ii, vnames ] = LU[jj]
     }
   }
  
 
-  return( M[ , vnmod ] )
+  return( M[ , vnames ] )
 
 }
