@@ -71,18 +71,18 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     # defaults in case not provided ...
     p = parameters_add_without_overwriting( p,
       areal_units_xydata = "speciescomposition_db(p=p, DS='areal_units_input')",
-      areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
-      areal_units_resolution_km = 25, # default in case not provided ... 25 km dim of lattice ~ 1 hr; 5km = 79hrs; 2km = ?? hrs
+      areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
+      areal_units_resolution_km = 1, # default in case not provided ... 25 km dim of lattice ~ 1 hr; 5km = 79hrs; 2km = ?? hrs
       areal_units_proj4string_planar_km =  p$aegis_proj4string_planar_km,  # coord system to use for areal estimation and gridding for carstm
       # areal_units_proj4string_planar_km = projection_proj4string("omerc_nova_scotia")  # coord system to use for areal estimation and gridding for carstm
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
       tus="yr",
-      fraction_todrop = 1/4,
+      fraction_todrop = 1/11,
       fraction_cv = 1.0,
       fraction_good_bad = 0.9,
-      areal_units_constraint_nmin=30,
-      nAU_min = 5,
+      areal_units_constraint_nmin=20,  # best compromise
+      nAU_min = 30,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
       carstm_inputs_aggregated = FALSE

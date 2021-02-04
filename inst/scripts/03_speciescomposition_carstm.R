@@ -6,6 +6,7 @@ year.assessment = 2020
 require( aegis.speciescomposition )
 
 # adjust based upon RAM requirements and ncores
+require(INLA)
 inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
 inla.setOption(blas.num.threads= 2 )
 
@@ -21,7 +22,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
       variabletomodel = variabletomodel,
       carstm_model_label = "default",
       inputdata_spatial_discretization_planar_km = 1,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
-      inputdata_temporal_discretization_yr = 1/52,  # ie., every 2 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+      inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
       yrs = 1999:year.assessment,
       aegis_dimensionality="space-year",
       spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
@@ -34,10 +35,10 @@ for ( variabletomodel in c("pca1", "pca2"))  {
 
 
     if (0) { 
-          p$fraction_todrop = 1/10 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
-          p$fraction_cv = 1  #sd/mean no.
+          p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
+          p$fraction_cv = 1.0 #sd/mean no.
           p$fraction_good_bad = 0.9
-          p$areal_units_constraint_nmin =  length(p$yrs)
+          p$areal_units_constraint_nmin =  20
           p$nAU_min = 100
     }
 
