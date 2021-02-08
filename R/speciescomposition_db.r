@@ -328,17 +328,15 @@
       APS[, pB$variabletomodel] = bathymetry_lookup(  LOCS=sppoly, 
         lookup_from = p$carstm_inputdata_model_source$bathymetry,
         lookup_to = "areal_units", 
-        spatial_domain=p$spatial_domain, 
         vnames="z" 
       ) 
       APS[, pS$variabletomodel] = substrate_lookup(  LOCS=sppoly, 
         lookup_from = p$carstm_inputdata_model_source$substrate,
         lookup_to = "areal_units", 
-        spatial_domain=p$spatial_domain, 
         vnames="substrate.grainsize" 
       ) 
 
-      # to this point APS is static, now add time dynamics (teperature)
+      # to this point APS is static, now add time dynamics (temperature)
       # ---------------------
 
       vn = c( p$variabletomodel, pB$variabletomodel,  pS$variabletomodel, "tag", "AUID" )
@@ -350,14 +348,15 @@
       names(APS) = c(vn, "tiyr")
       APS$year = aegis_floor( APS$tiyr)
       APS$dyear = APS$tiyr - APS$year
+      APS$timestamp = lubridate::date_decimal( APS$tiyr, tz=p$timezone )
 
 
-      APS[, pT$variabletomodel] = temperature_lookup(  LOCS=APS[ , c("AUID", "timestamp")], LOCS_AU=sppoly, 
-        lookup_from = p$carstm_inputdata_model_source$bathymetry,
+
+      APS[, pT$variabletomodel] = temperature_lookup(  LOCS=APS[ , c("AUID", "timestamp")], AU_target=sppoly, 
+        lookup_from = p$carstm_inputdata_model_source$temperature,
         lookup_to = "areal_units", 
-        spatial_domain=p$spatial_domain, 
-        tz="America/Halifax",
-        vnames="substrate.grainsize" 
+        vnames_from="t.predicted",
+        vnames="t" 
       ) 
 
       M = rbind( M[, names(APS)], APS )

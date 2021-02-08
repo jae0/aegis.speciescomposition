@@ -12,7 +12,7 @@ speciescomposition_lookup = function( M, spatial_domain=NULL, sppoly=NULL,   tz=
   M = as.data.frame( M )
   names(M) = c("lon", "lat", "timestamp")
   M = lonlat2planar(M, proj.type=pPC$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
-  if (! "POSIXct" %in% class(M$timestamp)  ) M$timestamp = as.POSIXct( M$timestamp, tz=tz, origin=lubridate::origin  )
+  if (! "POSIXct" %in% class(M$timestamp)  ) M$timestamp = lubridate::date_decimal( M$timestamp, tz=tz  )
   M$yr = lubridate::year(M$timestamp)
   M$dyear = lubridate::decimal_date( M$timestamp ) - M$yr
 

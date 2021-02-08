@@ -36,7 +36,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
-  p = parameters_add_without_overwriting( p, yrs = 1950:lubridate::year(lubridate::now()) )  # default
+  p = parameters_add_without_overwriting( p, yrs=1950:lubridate::year(lubridate::now()), timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
 
   p = parameters_add_without_overwriting( p,
