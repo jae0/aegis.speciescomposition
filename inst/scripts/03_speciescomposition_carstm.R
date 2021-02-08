@@ -10,6 +10,13 @@ require(INLA)
 inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
 inla.setOption(blas.num.threads= 2 )
 
+coastline = coastline_db( p=p, DS="eastcoast_gadm" )
+coastline = st_transform( coastline, st_crs(p$aegis_proj4string_planar_km) )
+
+# depth contours
+isobaths = aegis.bathymetry::isobath_db( p=p, depths=c(50, 100, 200, 400, 800)  )
+isobaths = st_transform( isobaths, st_crs(p$aegis_proj4string_planar_km) )
+
 
 # construct basic parameter list defining the main characteristics of the study
 # and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
@@ -65,62 +72,54 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     res$summary$dic$dic
     res$summary$dic$p.eff
     res$dyear
-
-
-    # maps of some of the results
-    vn = paste(p$variabletomodel, "predicted", sep=".")
-    carstm_map(  res=res, vn=vn, 
-      time_match=list(year="2000" ),  
-      # at=seq(-2, 10, by=2),          
-      sp.layout = p$coastLayout, 
-      col.regions = p$mypalette, 
-      main=paste("Bottom temperature", paste0(time_match, collapse="-") )  
-    )
-
-    vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
-    carstm_map(  res=res, vn=vn, time_match=time_match, 
-      time_match=list(year="2000" ),  
-      # at=seq(-2, 10, by=2),          
-      sp.layout = p$coastLayout, 
-      col.regions = p$mypalette, 
-      main=paste("Bottom temperature", paste0(time_match, collapse="-") )  
-    )
-
-    
-    vn = paste(p$variabletomodel, "random_auid_spatial", sep=".")
-    carstm_map(  res=res, vn=vn, time_match=time_match, 
-      time_match=list(year="2000" ),  
-      # at=seq(-2, 10, by=2),          
-      sp.layout = p$coastLayout, 
-      col.regions = p$mypalette, 
-      main=paste("Bottom temperature", paste0(time_match, collapse="-") )  
-    )
-
-    
-  }
-
-  # map all :
-
-   # variabletomodel = "pca1"
-   # variabletomodel = "pca2"
-
-  vn = paste( variabletomodel, "predicted", sep=".")
-  outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
-  if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
-
-  for (y in res$yrs ){
-      time_match = list( year=as.character(y)  )
-      fn_root = paste( "Bottom temperature",  paste0(time_match, collapse=" - ") )
-      fn = file.path( outdir, paste(fn_root, "png", sep=".") )
-      png( filename=fn, width=3072, height=2304, pointsize=40, res=300  )
-        o = carstm_map(  res=res, vn=vn, time_match=time_match, 
-          # at=seq(-2, 10, by=2), 
-          sp.layout = p$coastLayout, 
-          col.regions = p$mypalette, 
-          main=fn_root  )
-      print(o); dev.off()
-  }
   
+    if (0) {
+      # map all :
+
+      # variabletomodel = "pca1"
+      # variabletomodel = "pca2"
+    
+        # mypalette = colorRampPalette(c("darkblue","blue3", "green", "yellow", "orange","red3", "darkred"), space = "Lab")(100)
+        # mypalette = rev( heat.colors( 150 ) )
+        # mypalette = RColorBrewer::brewer.pal(9, "YlOrRd")
+
+
+        time_match = list(year="2019" )
+      
+        vn = paste(p$variabletomodel, "predicted", sep=".")
+        vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
+        vn = paste(p$variabletomodel, "random_auid_spatial", sep=".")
+
+        carstm_map(  res=res, vn=vn, time_match=time_match , 
+          coastline=coastline,
+          isobaths=isobaths,
+          plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
+          main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
+        )
+    }
+
+    vn = paste( variabletomodel, "predicted", sep=".")
+    outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
+    if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
+
+    for (y in res$yrs ){
+      time_match = list( year=as.character(y)  )
+      fn_root = paste( "speciescomposition", variabletomodel, paste0(time_match, collapse=" - "), sep="_" )
+      fn = file.path( outdir, paste(fn_root, "png", sep=".") )
+
+      png( filename=fn, width=3072, height=2304, pointsize=40, res=300  )
+      o = carstm_map(  res=res, vn=vn, time_match=time_match , 
+        breaks = seq(-0.5, 0.5, by=0.1),
+        coastline=coastline,
+        isobaths=isobaths,
+        main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
+      )
+      print(o); dev.off()
+    }
+    
+
+
+  }
 
 
 
