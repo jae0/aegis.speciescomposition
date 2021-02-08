@@ -370,12 +370,12 @@
       M$year_factor = as.numeric( factor( M$year, levels=p$yrs))
       M = M[ is.finite(M$year_factor), ]
       M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
+      M$dyri = discretize_data( M[, "dyear"], p$discretization[["dyear"]] )
 
       if (0) {
         M$zi  = discretize_data( M[, pB$variabletomodel], p$discretization[[pB$variabletomodel]] )
         M$ti  = discretize_data( M[, pT$variabletomodel], p$discretization[[pT$variabletomodel]] )
         M$gsi = discretize_data( M[, pS$variabletomodel], p$discretization[[pS$variabletomodel]] )
-        M$dyri = discretize_data( M[, "dyear"], p$discretization[["dyear"]] )
         M$seasonal = (as.numeric(M$year_factor) - 1) * length(p$dyears)  + as.numeric(M$dyear)
       }
 
