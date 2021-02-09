@@ -83,7 +83,6 @@ for ( variabletomodel in c("pca1", "pca2"))  {
         # mypalette = rev( heat.colors( 150 ) )
         # mypalette = RColorBrewer::brewer.pal(9, "YlOrRd")
 
-
         time_match = list(year="2019" )
       
         vn = paste(p$variabletomodel, "predicted", sep=".")
@@ -102,22 +101,21 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
 
-    for (y in res$yrs ){
+    for (y in res$year ){
       time_match = list( year=as.character(y)  )
       fn_root = paste( "speciescomposition", variabletomodel, paste0(time_match, collapse=" - "), sep="_" )
-      fn = file.path( outdir, paste(fn_root, "png", sep=".") )
 
-      png( filename=fn, width=3072, height=2304, pointsize=40, res=300  )
-      o = carstm_map(  res=res, vn=vn, time_match=time_match , 
-        breaks = seq(-0.5, 0.5, by=0.1),
-        coastline=coastline,
-        isobaths=isobaths,
-        main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
-      )
-      print(o); dev.off()
+      fn = file.path( outputdir, paste(fn_root, "pdf", sep=".") )
+
+      pdf( file=fn, width=8, height=6, bg='white', pointsize=10 )
+        carstm_map(  res=res, vn=vn, time_match=time_match , 
+          breaks = seq(-0.5, 0.5, by=0.1),
+          coastline=coastline,
+          isobaths=isobaths,
+          main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
+        )
+      dev.off()
     }
-    
-
 
   }
 
