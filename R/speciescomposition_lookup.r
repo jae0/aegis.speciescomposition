@@ -1,15 +1,15 @@
 speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL, spatial_domain=NULL, 
   lookup_from="core", lookup_to="points", 
   FUNC=mean,  vnames="pca1", vnames_from=paste(vnames, "mean", sep="."), 
-  lookup_from_class="aggregated_data", tz="America/Halifax" ) {
+  lookup_from_class="aggregated_data", tz="America/Halifax", speciescomposition ) {
   # lookup from rawdata
  
   message("need to check::  [match( APS$AUID, as.character( sppoly$AUID ) )] ")
 
   if (is.null(spatial_domain))  {
-    pO = speciescomposition_parameters(  project_class="core"  )
+    pO = speciescomposition_parameters(  project_class="core", variabletomodel=vnames  )
   } else {
-    pO = speciescomposition_parameters( spatial_domain=spatial_domain, project_class="core"  )
+    pO = speciescomposition_parameters( spatial_domain=spatial_domain, project_class="core", variabletomodel=vnames  )
   }
 
   crs_lonlat =  st_crs(projection_proj4string("lonlat_wgs84"))
