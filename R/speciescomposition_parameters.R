@@ -36,7 +36,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
-  p = parameters_add_without_overwriting( p, yrs=1950:lubridate::year(lubridate::now()), timezone="America/Halifax" )  # default
+  
+  if (!exists("year.assessment", p )) stop("need probably want to assign current year.assessment")  
+  p = parameters_add_without_overwriting( p, yrs=1999:p$year.assessment, timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
 
   p = parameters_add_without_overwriting( p,
@@ -66,6 +68,10 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     p$project_class = "carstm"
 
     if (!exists("variabletomodel", p)) stop( "The dependent variable, p$variabletomodel needs to be defined")
+
+    # over-rides
+    p$inputdata_spatial_discretization_planar_km = 1  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
+    p$inputdata_temporal_discretization_yr = 1/52  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
 
 
     # defaults in case not provided ...
