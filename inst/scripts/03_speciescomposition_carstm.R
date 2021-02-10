@@ -67,8 +67,6 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     res$summary$dic$p.eff
     res$dyear
   
-    if (0) {
-      # map all :
 
         require(aegis.coastline)
         coastline = coastline_db( p=p, DS="eastcoast_gadm" )
@@ -78,6 +76,9 @@ for ( variabletomodel in c("pca1", "pca2"))  {
         require(aegis.polygons)
         isobaths = aegis.bathymetry::isobath_db( p=p, depths=c(50, 100, 200, 400, 800)  )
         isobaths = st_transform( isobaths, st_crs(p$aegis_proj4string_planar_km) )
+   
+    if (0) {
+      # map all :
 
       # variabletomodel = "pca1"
       # variabletomodel = "pca2"
