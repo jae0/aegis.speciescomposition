@@ -294,7 +294,7 @@
 
       # --------------------------
       # temperature observations lookup
-      pT = temperature_parameters( project_class="core"  )
+      pT = temperature_parameters( project_class="core",  year.assessment=p$year.assessment )
       if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
       iM = which(!is.finite( M[, pT$variabletomodel] ))
       if (length(iM > 0)) {
