@@ -10,13 +10,6 @@ require(INLA)
 inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
 inla.setOption(blas.num.threads= 2 )
 
-coastline = coastline_db( p=p, DS="eastcoast_gadm" )
-coastline = st_transform( coastline, st_crs(p$aegis_proj4string_planar_km) )
-
-# depth contours
-isobaths = aegis.bathymetry::isobath_db( p=p, depths=c(50, 100, 200, 400, 800)  )
-isobaths = st_transform( isobaths, st_crs(p$aegis_proj4string_planar_km) )
-
 
 # construct basic parameter list defining the main characteristics of the study
 # and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
@@ -30,6 +23,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
       carstm_model_label = "default",
       inputdata_spatial_discretization_planar_km = 1,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
       inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+      year.assessment = year.assessment,
       yrs = 1999:year.assessment,
       aegis_dimensionality="space-year",
       spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
@@ -76,6 +70,15 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     if (0) {
       # map all :
 
+        require(aegis.coastline)
+        coastline = coastline_db( p=p, DS="eastcoast_gadm" )
+        coastline = st_transform( coastline, st_crs(p$aegis_proj4string_planar_km) )
+
+        # depth contours
+        require(aegis.polygons)
+        isobaths = aegis.bathymetry::isobath_db( p=p, depths=c(50, 100, 200, 400, 800)  )
+        isobaths = st_transform( isobaths, st_crs(p$aegis_proj4string_planar_km) )
+
       # variabletomodel = "pca1"
       # variabletomodel = "pca2"
     
@@ -96,6 +99,8 @@ for ( variabletomodel in c("pca1", "pca2"))  {
           main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
         )
     }
+
+
 
     vn = paste( variabletomodel, "predicted", sep=".")
     outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )

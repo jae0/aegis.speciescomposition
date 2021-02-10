@@ -298,7 +298,7 @@
       if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
       iM = which(!is.finite( M[, pT$variabletomodel] ))
       if (length(iM > 0)) {
-        M[iM, pT$variabletomodel] = temperature_lookup( spatial_domain=p$spatial_domain, LOCS=M[ iM, c("lon", "lat", "timestamp")],lookup_from="core", lookup_to="points", lookup_from_class="aggregated_data", tz="America/Halifax"  )
+        M[iM, pT$variabletomodel] = temperature_lookup( spatial_domain=p$spatial_domain, LOCS=M[ iM, c("lon", "lat", "timestamp")],lookup_from="core", lookup_to="points", lookup_from_class="aggregated_data", tz="America/Halifax", year.assessment=p$year.assessment  )
 
       }
 
@@ -356,7 +356,8 @@
         lookup_from = p$carstm_inputdata_model_source$temperature,
         lookup_to = "areal_units", 
         vnames_from="t.predicted",
-        vnames="t" 
+        vnames="t",
+        year.assessment=p$year.assessment 
       ) 
 
       M = rbind( M[, names(APS)], APS )
