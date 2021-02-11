@@ -1,14 +1,14 @@
 speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL, 
   lookup_from="core", lookup_to="points", 
   FUNC=mean,  vnames="pca1", vnames_from=paste(vnames, "mean", sep="."), 
-  lookup_from_class="aggregated_data", tz="America/Halifax" , year.assessment=NULL ) {
+  lookup_from_class="aggregated_data", tz="America/Halifax" , year.assessment=NULL, pO=NULL ) {
   # lookup from rawdata
  
   message("need to check::  [match( APS$AUID, as.character( sppoly$AUID ) )] ")
 
   if (is.null(year.assessment)) year.assessment = max( lubridate::year(LOCS$timestamp) )
 
-  pO = speciescomposition_parameters(  project_class=lookup_from, variabletomodel=vnames, year.assessment=year.assessment  )
+  if (is.null(pO)) pO = speciescomposition_parameters(  project_class=lookup_from, variabletomodel=vnames, year.assessment=year.assessment  )
 
   crs_lonlat =  st_crs(projection_proj4string("lonlat_wgs84"))
 
@@ -22,8 +22,9 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     LOCS$yr = lubridate::year( LOCS$timestamp ) 
     LOCS$dyear = lubridate::decimal_date( LOCS$timestamp ) - LOCS$yr
 
-    LU = speciescomposition_db ( p=pO, DS=lookup_from_class )  # raw data
-    LU = lonlat2planar(LU, proj.type=pO$aegis_proj4string_planar_km)
+    LU = speciescomposition_db ( p=pO, DS="speciescomposition" )  # raw data
+    # LU = planar2lonlat(LU, proj.type=pO$aegis_proj4string_planar_km)
+    # LU = lonlat2planar(LU, proj.type=pO$aegis_proj4string_planar_km)
     names(LU)[ which(names(LU) == vnames_from ) ] =  vnames
 
     LU_map = paste( 
@@ -61,8 +62,8 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     LOCS$dyear = lubridate::decimal_date( LOCS$timestamp ) - LOCS$yr
 
 
-    LU = speciescomposition_db ( p=pO, DS=lookup_from_class )  # raw data
-    LU = lonlat2planar(LU, proj.type=pO$aegis_proj4string_planar_km)
+    LU = speciescomposition_db ( p=pO, DS="speciescomposition" )  # raw data
+    # LU = lonlat2planar(LU, proj.type=pO$aegis_proj4string_planar_km)
     names(LU)[ which(names(LU) ==vnames_from) ] =  vnames
     LU = sf::st_as_sf( LU, coords=c("lon", "lat") )
     st_crs(LU) = st_crs( projection_proj4string("lonlat_wgs84") )
@@ -91,9 +92,10 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
 
 
   if ( lookup_from %in% c("stmv", "hybrid") & lookup_to == "points" )  {
+    
 
     # matching to point (LU) to points (LOCS)
-    LU = speciescomposition_db ( p=pO, DS="spatial.annual.seasonal" )  # raw data
+    LU = aegis_db( p=pO, DS="complete" )  # raw data
     LU = planar2lonlat(LU, proj.type=pO$aegis_proj4string_planar_km)
     LU_map = array_map( "xy->1", LU[, c("plon","plat")], gridparams=pO$gridparams )
     
@@ -115,7 +117,8 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
 
    if ( lookup_from %in% c("stmv", "hybrid") & lookup_to == "areal_units" )  {
      # points (LU) -> areal units (LOCS)
-     LU = speciescomposition_db ( pO, DS="complete", varnames="all" )  # raw data
+     LU = aegis_db( p=pO, DS="complete" )  # raw data
+
      LU = planar2lonlat(LU, pO$aegis_proj4string_planar_km)
     
      LU = sf::st_as_sf( LU, coords=c("lon", "lat") )
