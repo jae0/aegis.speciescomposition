@@ -266,7 +266,7 @@
       }
       iM = which(!is.finite( M[, vnB] ))
       if (length(iM > 0)) {
-        M[iM, vnB] = bathymetry_lookup( LOCS=M[iM, c("lon", "lat")], spatial_domain=p$spatial_domain, lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
+        M[iM, vnB] = bathymetry_lookup( LOCS=M[iM, c("lon", "lat")], lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
       }
 
       M = M[ is.finite(M[ , vnB]  ) , ]
@@ -286,7 +286,7 @@
       if (!(exists(pS$variabletomodel, M ))) M[,pS$variabletomodel] = NA
       iM = which(!is.finite( M[, pS$variabletomodel] ))
       if (length(iM > 0)) {
-        M[iM, pS$variabletomodel] = substrate_lookup( LOCS=M[iM, c("lon", "lat")], spatial_domain=p$spatial_domain, lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
+        M[iM, pS$variabletomodel] = substrate_lookup( LOCS=M[iM, c("lon", "lat")], lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
       }
 
       M = M[ is.finite(M[ , pS$variabletomodel]  ) , ]
@@ -298,7 +298,7 @@
       if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
       iM = which(!is.finite( M[, pT$variabletomodel] ))
       if (length(iM > 0)) {
-        M[iM, pT$variabletomodel] = temperature_lookup( spatial_domain=p$spatial_domain, LOCS=M[ iM, c("lon", "lat", "timestamp")],lookup_from="core", lookup_to="points", lookup_from_class="aggregated_data", tz="America/Halifax", year.assessment=p$year.assessment  )
+        M[iM, pT$variabletomodel] = temperature_lookup( LOCS=M[ iM, c("lon", "lat", "timestamp")],lookup_from="core", lookup_to="points", lookup_from_class="aggregated_data", tz="America/Halifax", year.assessment=p$year.assessment  )
 
       }
 

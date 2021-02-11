@@ -1,4 +1,4 @@
-speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL, spatial_domain=NULL, 
+speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL, 
   lookup_from="core", lookup_to="points", 
   FUNC=mean,  vnames="pca1", vnames_from=paste(vnames, "mean", sep="."), 
   lookup_from_class="aggregated_data", tz="America/Halifax" , year.assessment=NULL ) {
@@ -8,11 +8,7 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL, spatia
 
   if (is.null(year.assessment)) year.assessment = max( lubridate::year(LOCS$timestamp) )
 
-  if (is.null(spatial_domain))  {
-    pO = speciescomposition_parameters(  project_class=lookup_from, variabletomodel=vnames, year.assessment=year.assessment  )
-  } else {
-    pO = speciescomposition_parameters( spatial_domain=spatial_domain, project_class=lookup_from, variabletomodel=vnames, year.assessment=year.assessment   )
-  }
+  pO = speciescomposition_parameters(  project_class=lookup_from, variabletomodel=vnames, year.assessment=year.assessment  )
 
   crs_lonlat =  st_crs(projection_proj4string("lonlat_wgs84"))
 

@@ -39,7 +39,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   
   if (!exists("year.assessment", p )) {
     message("need probably want to assign current year.assessment, using current year for now")  
-    p$year.assessment = lubridate::year(Sys.Date()) 
+    p$year.assessment = lubridate::year(lubridate::now()) 
   }
 
   p = parameters_add_without_overwriting( p, yrs=1999:p$year.assessment, timezone="America/Halifax" )  # default

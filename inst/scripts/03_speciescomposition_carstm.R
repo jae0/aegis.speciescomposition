@@ -16,6 +16,8 @@ inla.setOption(blas.num.threads= 2 )
 
 for ( variabletomodel in c("pca1", "pca2"))  {
     # variabletomodel = "pca1"
+    # variabletomodel = "pca2"
+    
     p = speciescomposition_parameters(
       project_class="carstm",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
