@@ -269,7 +269,7 @@
         M[iM, vnB] = bathymetry_lookup( LOCS=M[iM, c("lon", "lat")], lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
       }
 
-      M = M[ is.finite(M[ , vnB]  ) , ]
+      # M = M[ is.finite(M[ , vnB]  ) , ]
 
 
       # must go after depths have been finalized
@@ -289,7 +289,7 @@
         M[iM, pS$variabletomodel] = substrate_lookup( LOCS=M[iM, c("lon", "lat")], lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
       }
 
-      M = M[ is.finite(M[ , pS$variabletomodel]  ) , ]
+      # M = M[ is.finite(M[ , pS$variabletomodel]  ) , ]
 
 
       # --------------------------
@@ -305,9 +305,9 @@
 
       M$lon = M$lat = M$plon = M$plat = NULL
 
-      M = M[ which(is.finite(M[, pB$variabletomodel] )),]
-      M = M[ which(is.finite(M[, pS$variabletomodel] )),]
-      M = M[ which(is.finite(M[, pT$variabletomodel] )),]
+      # M = M[ which(is.finite(M[, pB$variabletomodel] )),]
+      # M = M[ which(is.finite(M[, pS$variabletomodel] )),]
+      # M = M[ which(is.finite(M[, pT$variabletomodel] )),]
 
       M$tag = "observations"
 
