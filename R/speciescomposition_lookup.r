@@ -22,7 +22,7 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     LOCS$yr = lubridate::year( LOCS$timestamp ) 
     LOCS$dyear = lubridate::decimal_date( LOCS$timestamp ) - LOCS$yr
 
-    LU = speciescomposition_db ( p=pO, year.assessment=max(pO$yrs), DS=lookup_from_class )  # raw data
+    LU = speciescomposition_db ( p=pO, DS=lookup_from_class )  # raw data
     LU = lonlat2planar(LU, proj.type=pO$aegis_proj4string_planar_km)
     names(LU)[ which(names(LU) == vnames_from ) ] =  vnames
 
@@ -61,7 +61,7 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     LOCS$dyear = lubridate::decimal_date( LOCS$timestamp ) - LOCS$yr
 
 
-    LU = speciescomposition_db ( p=pO, year.assessment=max(pO$yrs), DS=lookup_from_class )  # raw data
+    LU = speciescomposition_db ( p=pO, DS=lookup_from_class )  # raw data
     LU = lonlat2planar(LU, proj.type=pO$aegis_proj4string_planar_km)
     names(LU)[ which(names(LU) ==vnames_from) ] =  vnames
     LU = sf::st_as_sf( LU, coords=c("lon", "lat") )
