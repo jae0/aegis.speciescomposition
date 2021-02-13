@@ -33,6 +33,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     aegis_dimensionality="space-year"
   )
 
+  p$quantile_bounds =c(0, 0.95) # trim upper bounds
+
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
@@ -112,9 +114,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$carstm_model_formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
             ' + f( dyri, model="ar1", hyper=H$ar1 )',
-            ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( t, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( z, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( substrate.grainsize, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( auid, model="bym2", graph=slot(sppoly, "nb"), group=year_factor, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
