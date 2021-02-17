@@ -5,13 +5,13 @@ year.assessment = 2020
 
 require( aegis.speciescomposition )
 
-# construct basic parameter list defining the main characteristics of the study
-# and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
 
 for ( variabletomodel in c("pca1", "pca2"))  {
+    
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
     
+    # construct basic parameter list defining the main characteristics of the study
     p = speciescomposition_parameters(
       project_class="carstm",
       data_root = project.datadirectory( "aegis", "speciescomposition" ),
@@ -93,7 +93,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
 
     coastline=aegis.coastline::coastline_db( DS="eastcoast_gadm", project_to=plot_crs )
     isobaths=aegis.bathymetry::isobath_db( depths=c(50, 100, 200, 400, 800), project_to=plot_crs  )
-    managementlines = aegis.polygons::area_lines.db( DS="cfa.regions", returntype="sf", project_to=plot_crs )
+
  
     vn = paste( variabletomodel, "predicted", sep=".")
     outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
@@ -107,8 +107,8 @@ for ( variabletomodel in c("pca1", "pca2"))  {
         carstm_map(  res=res, vn=vn, time_match=time_match , 
           coastline=coastline,
           isobaths=isobaths,
-          managementlines=managementlines,
-          breaks = seq(-0.4, 0.4, by=0.2),
+          palette="RdYlBu",
+          breaks = seq(-0.3, 0.3, by=0.1),
           main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") ) ,
           outfilename=fn
         )
