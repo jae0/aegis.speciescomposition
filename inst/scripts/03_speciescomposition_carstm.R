@@ -102,7 +102,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     for (y in res$year ){
       time_match = list( year=as.character(y)  )
       fn_root = paste( "speciescomposition", variabletomodel, paste0(time_match, collapse=" - "), sep="_" )
-      fn = file.path( outputdir, paste(fn_root, "svg", sep=".") )
+      fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
  
         carstm_map(  res=res, vn=vn, time_match=time_match , 
           coastline=coastline,
