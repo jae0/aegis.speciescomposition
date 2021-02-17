@@ -337,6 +337,7 @@
         lookup_to = "areal_units", 
         vnames="z" 
       ) 
+      
       APS[, pS$variabletomodel] = substrate_lookup(  LOCS=sppoly, 
         lookup_from = p$carstm_inputdata_model_source$substrate,
         lookup_to = "areal_units", 
