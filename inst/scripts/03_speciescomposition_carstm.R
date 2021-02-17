@@ -5,12 +5,6 @@ year.assessment = 2020
 
 require( aegis.speciescomposition )
 
-# adjust based upon RAM requirements and ncores
-require(INLA)
-inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
-inla.setOption(blas.num.threads= 2 )
-
-
 # construct basic parameter list defining the main characteristics of the study
 # and some plotting parameters (bounding box, projection, bathymetry layout, coastline)
 
@@ -35,14 +29,21 @@ for ( variabletomodel in c("pca1", "pca2"))  {
        areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
        areal_units_overlay = "none"
     )
-
+   
+     
 
     if (0) { 
           p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
           p$fraction_cv = 1.0 #sd/mean no.
           p$fraction_good_bad = 0.9
-          p$areal_units_constraint_nmin =  20
+          p$areal_units_constraint_nmin =  15
           p$nAU_min = 100
+
+          # adjust based upon RAM requirements and ncores
+          require(INLA)
+          inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
+          inla.setOption(blas.num.threads= 2 )
+
     }
 
     # to recreate the underlying data
@@ -68,43 +69,32 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     res$summary$dic$dic
     res$summary$dic$p.eff
     res$dyear
-  
-
-        require(aegis.coastline)
-        coastline = coastline_db( p=p, DS="eastcoast_gadm" )
-        coastline = st_transform( coastline, st_crs(p$aegis_proj4string_planar_km) )
-
-        # depth contours
-        require(aegis.polygons)
-        isobaths = aegis.bathymetry::isobath_db( p=p, depths=c(50, 100, 200, 400, 800)  )
-        isobaths = st_transform( isobaths, st_crs(p$aegis_proj4string_planar_km) )
    
     if (0) {
       # map all :
 
       # variabletomodel = "pca1"
       # variabletomodel = "pca2"
-    
-        # mypalette = colorRampPalette(c("darkblue","blue3", "green", "yellow", "orange","red3", "darkred"), space = "Lab")(100)
-        # mypalette = rev( heat.colors( 150 ) )
-        # mypalette = RColorBrewer::brewer.pal(9, "YlOrRd")
 
         time_match = list(year="2019" )
       
         vn = paste(p$variabletomodel, "predicted", sep=".")
-        vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
-        vn = paste(p$variabletomodel, "random_auid_spatial", sep=".")
+     #   vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
+     #   vn = paste(p$variabletomodel, "random_auid_spatial", sep=".")
 
         carstm_map(  res=res, vn=vn, time_match=time_match , 
-          coastline=coastline,
-          isobaths=isobaths,
           plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
           main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
         )
+
     }
 
+    plot_crs = p$aegis_proj4string_planar_km
 
-
+    coastline=aegis.coastline::coastline_db( DS="eastcoast_gadm", project_to=plot_crs )
+    isobaths=aegis.bathymetry::isobath_db( depths=c(50, 100, 200, 400, 800), project_to=plot_crs  )
+    managementlines = aegis.polygons::area_lines.db( DS="cfa.regions", returntype="sf", project_to=plot_crs )
+ 
     vn = paste( variabletomodel, "predicted", sep=".")
     outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
@@ -112,16 +102,17 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     for (y in res$year ){
       time_match = list( year=as.character(y)  )
       fn_root = paste( "speciescomposition", variabletomodel, paste0(time_match, collapse=" - "), sep="_" )
-      fn = file.path( outputdir, paste(fn_root, "pdf", sep=".") )
-
-      pdf( file=fn, width=8, height=6, bg='white', pointsize=10 )
+      fn = file.path( outputdir, paste(fn_root, "svg", sep=".") )
+ 
         carstm_map(  res=res, vn=vn, time_match=time_match , 
-          breaks = seq(-0.5, 0.5, by=0.1),
           coastline=coastline,
           isobaths=isobaths,
-          main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
+          managementlines=managementlines,
+          breaks = seq(-0.4, 0.4, by=0.2),
+          main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") ) ,
+          outfilename=fn
         )
-      dev.off()
+
     }
 
   }
