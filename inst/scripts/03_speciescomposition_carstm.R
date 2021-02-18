@@ -52,11 +52,13 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
     M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
     # to extract fits and predictions
-
-    # run model and obtain predictions
-    fit = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
-    
-      # extract results
+    M= NULL
+    gc()
+      
+      # run model and obtain predictions
+      fit = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
+      
+        # extract results
       if (0) {
         # very large files .. slow 
         fit = carstm_model( p=p, DS="carstm_modelled_fit" )  # extract currently saved model fit
