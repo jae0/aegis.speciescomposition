@@ -176,6 +176,10 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     }
     names(LU)[ which(names(LU) == vnames_from ) ] =  vnames
 
+#    nw = length(LU$dyear)
+    ny = length(LU$year)
+    yr0 = min(as.numeric(LU$year))
+
 
     AU = sf::st_transform( LU$sppoly, crs=st_crs(pO$aegis_proj4string_planar_km) )
     AU$au_index = 1:nrow(AU)
@@ -190,8 +194,9 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     if (! "POSIXct" %in% class(LOCS$timestamp)  ) LOCS$timestamp =  lubridate::date_decimal( LOCS$timestamp, tz=tz )
     LOCS$yr = lubridate::year(LOCS$timestamp) 
     LOCS$dyear = lubridate::decimal_date( LOCS$timestamp ) - LOCS$yr
-    # TIMESTAMP_index = array_map( "ts->2", LOCS [, c("yr", "dyear")], dims=c(pO$ny, pO$nw), res=c( 1, 1/pO$nw ), origin=c( min(pO$yrs), 0) )
-    TIMESTAMP_index = array_map( "ts->year_index", LOCS [, c("yr" )], dims=c(pO$ny ), res=c( 1  ), origin=c( min(pO$yrs) ) )
+
+    # TIMESTAMP_index = array_map( "ts->2", LOCS [, c("yr", "dyear")], dims=c(ny, nw), res=c( 1, 1/nw ), origin=c( yr0, 0) )
+    TIMESTAMP_index = array_map( "ts->year_index", LOCS [, c("yr" )], dims=c(ny ), res=c( 1  ), origin=c( yr0 ) )
 
   
     LOCS[,vnames] = LU[[vnames_from]][ cbind( LOCS$AU_index, TIMESTAMP_index )]
@@ -215,6 +220,10 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     }
     names(LU)[ which(names(LU) == vnames_from ) ] =  vnames
 
+#    nw = length(LU$dyear)
+    ny = length(LU$year)
+    yr0 = min(as.numeric(LU$year))
+
     AU = sf::st_transform( LU$sppoly, crs=st_crs(pO$aegis_proj4string_planar_km) )
     AU = st_cast(AU, "POLYGON")
     AU$au_uid = 1:nrow(AU)
@@ -234,8 +243,8 @@ speciescomposition_lookup = function( LOCS=NULL, AU_target=NULL, AU=NULL,
     LOCS$yr = lubridate::year(LOCS$timestamp) 
     # LOCS$dyear = lubridate::decimal_date( LOCS$timestamp ) - LOCS$yr
     
-    # TIMESTAMP_index = array_map( "ts->2", LOCS [, c("yr", "dyear")], dims=c(pO$ny, pO$nw), res=c( 1, 1/pO$nw ), origin=c( min(pO$yrs), 0) )
-    TIMESTAMP_index = array_map( "ts->year_index", LOCS [, c("yr" )], dims=c(pO$ny ), res=c( 1  ), origin=c( min(pO$yrs) ) )
+    # TIMESTAMP_index = array_map( "ts->2", LOCS [, c("yr", "dyear")], dims=c(ny, nw), res=c( 1, 1/nw ), origin=c( yr0, 0) )
+    TIMESTAMP_index = array_map( "ts->year_index", LOCS [, c("yr" )], dims=c(ny ), res=c( 1  ), origin=c( yr0 ) )
 
     # id membership in AU_target
     pts_AUID = st_points_in_polygons( pts=AU_pts, polys=AU_target[,"AUID"], varname="AUID" ) 
