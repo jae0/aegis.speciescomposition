@@ -36,7 +36,9 @@ for ( variabletomodel in c("pca1", "pca2"))  {
           p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
           p$fraction_cv = 1.0 #sd/mean no.
           p$fraction_good_bad = 0.9
-          p$areal_units_constraint_nmin =  15
+          p$areal_units_constraint_nmin =  3
+          p$areal_units_constraint_ntarget = 15  # length(p$yrs)
+
           p$nAU_min = 100
 
           # adjust based upon RAM requirements and ncores
