@@ -29,8 +29,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
        areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
        areal_units_overlay = "none"
     )
-   
-     
+  
 
     if (0) { 
           p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
@@ -52,6 +51,9 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
 
     sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
+  
+    plot(sppoly["AUID"])
+
     M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
     # to extract fits and predictions
     M= NULL

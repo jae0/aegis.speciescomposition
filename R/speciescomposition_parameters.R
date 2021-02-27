@@ -94,7 +94,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       fraction_cv = 1.0,
       fraction_good_bad = 0.9,
       areal_units_constraint_nmin=3,  # best compromise
-      areal_units_constraint_ntarget=15, 
+      areal_units_constraint_ntarget=20, 
       nAU_min = 30,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
