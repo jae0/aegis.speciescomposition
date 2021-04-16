@@ -372,6 +372,8 @@
       APS = NULL
 
       M$auid = match( M$AUID, region.id )
+      
+      M$auid_main = M$auid
 
       M$tiyr  = aegis_floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
 
