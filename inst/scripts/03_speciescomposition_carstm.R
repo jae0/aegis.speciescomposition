@@ -32,32 +32,33 @@ for ( variabletomodel in c("pca1", "pca2"))  {
   
 
     if (0) { 
-          p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
-          p$fraction_cv = 1.0 #sd/mean no.
-          p$fraction_good_bad = 0.9
-          p$areal_units_constraint_nmin =  3
-          p$areal_units_constraint_ntarget = 15  # length(p$yrs)
+          # p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
+          # p$fraction_cv = 1.0 #sd/mean no.
+          # p$fraction_good_bad = 0.9
+          # p$areal_units_constraint_nmin =  3
+          # p$areal_units_constraint_ntarget = 15  # length(p$yrs)
 
-          p$nAU_min = 100
+          # p$nAU_min = 100
 
-          # adjust based upon RAM requirements and ncores
-          require(INLA)
-          inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
-          inla.setOption(blas.num.threads= 2 )
+          # # adjust based upon RAM requirements and ncores
+          # require(INLA)
+          # inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
+          # inla.setOption(blas.num.threads= 2 )
 
+        # to recreate the underlying data
+        xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
+
+        sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
+      
+        plot(sppoly["AUID"])
+
+        M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
+        # to extract fits and predictions
+        M= NULL
+        gc()
+ 
     }
 
-    # to recreate the underlying data
-    xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
-
-    sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
-  
-    plot(sppoly["AUID"])
-
-    M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
-    # to extract fits and predictions
-    M= NULL
-    gc()
       
       # run model and obtain predictions
       fit = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
