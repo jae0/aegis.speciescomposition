@@ -52,7 +52,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
       
         plot(sppoly["AUID"])
 
-        M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found
+        M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
         # to extract fits and predictions
         M= NULL
         gc()

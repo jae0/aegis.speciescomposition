@@ -117,9 +117,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
             ' + f( dyri, model="ar1", hyper=H$ar1 )',
             ' + f( year, model="ar1",  hyper=H$ar1 ) ',
             ' + f( auid_main, model="besag", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE ) ',
-            ' + f( inla.group( t, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( z, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( substrate.grainsize, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( auid, model="bym2", graph=slot(sppoly, "nb"), group=year_factor, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
