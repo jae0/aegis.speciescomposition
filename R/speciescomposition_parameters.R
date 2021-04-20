@@ -76,7 +76,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if (!exists("variabletomodel", p)) stop( "The dependent variable, p$variabletomodel needs to be defined")
 
     # over-rides
-    p$inputdata_spatial_discretization_planar_km = 1  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
+    p$inputdata_spatial_discretization_planar_km = 0.5  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
     p$inputdata_temporal_discretization_yr = 1/52  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
 
 
@@ -117,9 +117,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
             ' + f( dyri, model="ar1", hyper=H$ar1 )',
             ' + f( year, model="ar1",  hyper=H$ar1 ) ',
             ' + f( auid_main, model="besag", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE ) ',
-            ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( t, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+            ' + f( inla.group( z, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
+#             ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( auid, model="bym2", graph=slot(sppoly, "nb"), group=year_factor, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
