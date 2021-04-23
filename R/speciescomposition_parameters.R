@@ -125,7 +125,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
           ) )
       }
 
-      if ( !exists("carstm_model_family", p)  )  p$carstm_model_family = "normal"
+      if ( !exists("carstm_model_family", p)  )  p$carstm_model_family = "gaussian"
     }
 
     p = carstm_parameters( p=p )  #generics
@@ -257,7 +257,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         'inla(
           formula =', p$variabletomodel, ' ~ 1
             + f(auid, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE, hyper=H$bym2),
-          family = "normal",
+          family = "gaussian",
           data= dat,
           control.compute=list(dic=TRUE, waic=TRUE, cpo=FALSE, config=FALSE),  # config=TRUE if doing posterior simulations
           control.results=list(return.marginals.random=TRUE, return.marginals.predictor=TRUE ),
