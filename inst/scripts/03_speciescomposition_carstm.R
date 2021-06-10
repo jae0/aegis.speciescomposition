@@ -85,7 +85,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
       
         vn = paste(p$variabletomodel, "predicted", sep=".")
     #   vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
-    #   vn = paste(p$variabletomodel, "random_auid_spatial", sep=".")
+    #   vn = paste(p$variabletomodel, "random_space", sep=".")
 
         carstm_map(  res=res, vn=vn, time_match=time_match , 
           plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,

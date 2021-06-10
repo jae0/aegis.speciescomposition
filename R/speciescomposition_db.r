@@ -371,24 +371,17 @@
       M = rbind( M[, names(APS)], APS )
       APS = NULL
 
-      M$auid = match( M$AUID, region.id )
-      
-      M$auid_main = M$auid
+      M$space = match( M$AUID, region.id )
+      M$space_time = M$space
 
       M$tiyr  = aegis_floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
 
       M$year = aegis_floor( M$tiyr)
-      M$year_factor = as.numeric( factor( M$year, levels=p$yrs))
-      M = M[ is.finite(M$year_factor), ]
+      M$time = M$time_space = as.numeric( factor( M$year, levels=p$yrs))
+
+      M = M[ is.finite(M$time), ]
       M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
       M$dyri = discretize_data( M[, "dyear"], p$discretization[["dyear"]] )
-
-      if (0) {
-        M$zi  = discretize_data( M[, pB$variabletomodel], p$discretization[[pB$variabletomodel]] )
-        M$ti  = discretize_data( M[, pT$variabletomodel], p$discretization[[pT$variabletomodel]] )
-        M$gsi = discretize_data( M[, pS$variabletomodel], p$discretization[[pS$variabletomodel]] )
-        M$seasonal = (as.numeric(M$year_factor) - 1) * length(p$dyears)  + as.numeric(M$dyear)
-      }
 
       save( M, file=fn, compress=TRUE )
       return( M )
