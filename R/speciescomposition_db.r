@@ -236,7 +236,7 @@
       }
 
       # INLA does not like duplicates ... causes optimizer to crash frequently
-      oo = which(duplicated( M[, p$variabletomodel] )) 
+      oo = which(duplicated( M[, p$variabletomodel] ))
       if ( length(oo)> 0) {
         eps = exp( log( .Machine$double.eps ) / 2)  # ~ 1.5e-8
         M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
@@ -250,138 +250,23 @@
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
 
-      M$AUID = st_points_in_polygons(
-        pts = st_as_sf( M, coords=c("lon","lat"), crs=crs_lonlat ),
-        polys = sppoly[, "AUID"],
-        varname = "AUID"
+
+      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly,
+        lookup = c("bathymetry", "substrate", "temperature" ),
+        varstoretain = c( "sa"  ),
+        APS_data_offset=1
       )
-      M = M[ which(!is.na(M$AUID)),]
-      M$AUID = as.character( M$AUID )  # match each datum to an area
 
 
-      # --------------------------
-      # bathymetry observations  lookup
-      pB = bathymetry_parameters( project_class="core"  )
-      vnB = pB$variabletomodel
-      if ( !(exists(vnB, M ))) {
-        vnB2 = paste(vnB, "mean", sep=".")
-        if ((exists(vnB2, M ))) {
-          names(M)[which(names(M) == vnB2 )] = vnB
-        } else {
-          M[,vnB] = NA
-        }
+
+      if (0) {
+        M$tiyr  = aegis_floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
+        M$year = aegis_floor( M$tiyr)
+        M$time = M$time_space = as.numeric( factor( M$year, levels=p$yrs))
+        M = M[ is.finite(M$time), ]
+        M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
+        M$dyri = discretize_data( M[, "dyear"], p$discretization[["dyear"]] )
       }
-      iM = which(!is.finite( M[, vnB] ))
-      if (length(iM > 0)) {
-        M[iM, vnB] = bathymetry_lookup( LOCS=M[iM, c("lon", "lat")], lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
-      }
-
-      # M = M[ is.finite(M[ , vnB]  ) , ]
-
-
-      # must go after depths have been finalized
-      if (p$carstm_inputs_aggregated) {
-        if ( exists("spatial_domain", p)) {
-          M = M[ geo_subset( spatial_domain=p$spatial_domain, Z=M ) , ] # need to be careful with extrapolation ...  filter depths
-        }
-      }
-
- 
-      # --------------------------
-      # substrate observations  lookup
-      pS = substrate_parameters( project_class="core"  )
-      if (!(exists(pS$variabletomodel, M ))) M[,pS$variabletomodel] = NA
-      iM = which(!is.finite( M[, pS$variabletomodel] ))
-      if (length(iM > 0)) {
-        M[iM, pS$variabletomodel] = substrate_lookup( LOCS=M[iM, c("lon", "lat")], lookup_from="core", lookup_to="points" , lookup_from_class="aggregated_data" ) # core=="rawdata"
-      }
-
-      # M = M[ is.finite(M[ , pS$variabletomodel]  ) , ]
-
-
-      # --------------------------
-      # temperature observations lookup
-      pT = temperature_parameters( project_class="core",  year.assessment=p$year.assessment )
-      if (!(exists(pT$variabletomodel, M ))) M[,pT$variabletomodel] = NA
-      iM = which(!is.finite( M[, pT$variabletomodel] ))
-      if (length(iM > 0)) {
-        M[iM, pT$variabletomodel] = temperature_lookup( LOCS=M[ iM, c("lon", "lat", "timestamp")],lookup_from="core", lookup_to="points", lookup_from_class="aggregated_data", tz="America/Halifax", year.assessment=p$year.assessment  )
-
-      }
-
-
-      M$lon = M$lat = M$plon = M$plat = NULL
-
-      # M = M[ which(is.finite(M[, pB$variabletomodel] )),]
-      # M = M[ which(is.finite(M[, pS$variabletomodel] )),]
-      # M = M[ which(is.finite(M[, pT$variabletomodel] )),]
-
-      M$tag = "observations"
-
-
-      # end observations
-      # ----------
-
-      # predicted locations (APS)
-
-
-      region.id = slot( slot(sppoly, "nb"), "region.id" )
-      APS = st_drop_geometry(sppoly)
-
-      APS$AUID = as.character( APS$AUID )
-      APS$tag ="predictions"
-      APS[,p$variabletomodel] = NA
-
-      APS[, pB$variabletomodel] = bathymetry_lookup(  LOCS=sppoly, 
-        lookup_from = p$carstm_inputdata_model_source$bathymetry,
-        lookup_to = "areal_units", 
-        vnames="z" 
-      ) 
-      
-      APS[, pS$variabletomodel] = substrate_lookup(  LOCS=sppoly, 
-        lookup_from = p$carstm_inputdata_model_source$substrate,
-        lookup_to = "areal_units", 
-        vnames="substrate.grainsize" 
-      ) 
-
-      # to this point APS is static, now add time dynamics (temperature)
-      # ---------------------
-
-      vn = c( p$variabletomodel, pB$variabletomodel,  pS$variabletomodel, "tag", "AUID" )
-      APS = APS[, vn]
-
-      # expand APS to all time slices
-      n_aps = nrow(APS)
-      APS = cbind( APS[ rep.int(1:n_aps, p$nt), ], rep.int( p$prediction_ts, rep(n_aps, p$nt )) )
-      names(APS) = c(vn, "tiyr")
-      APS$year = aegis_floor( APS$tiyr)
-      APS$dyear = APS$tiyr - APS$year
-      APS$timestamp = lubridate::date_decimal( APS$tiyr, tz=p$timezone )
-
-
-
-      APS[, pT$variabletomodel] = temperature_lookup(  LOCS=APS[ , c("AUID", "timestamp")], AU_target=sppoly, 
-        lookup_from = p$carstm_inputdata_model_source$temperature,
-        lookup_to = "areal_units", 
-        vnames_from="t.predicted",
-        vnames="t",
-        year.assessment=p$year.assessment 
-      ) 
-
-      M = rbind( M[, names(APS)], APS )
-      APS = NULL
-
-      M$space = match( M$AUID, region.id )
-      M$space_time = M$space
-
-      M$tiyr  = aegis_floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
-
-      M$year = aegis_floor( M$tiyr)
-      M$time = M$time_space = as.numeric( factor( M$year, levels=p$yrs))
-
-      M = M[ is.finite(M$time), ]
-      M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
-      M$dyri = discretize_data( M[, "dyear"], p$discretization[["dyear"]] )
 
       save( M, file=fn, compress=TRUE )
       return( M )

@@ -38,10 +38,10 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = spatial_parameters( p=p)
 
   # define focal years for modelling and interpolation
-  
+
   if (!exists("year.assessment", p )) {
-    message("need probably want to assign current year.assessment, using current year for now")  
-    p$year.assessment = lubridate::year(lubridate::now()) 
+    message("need probably want to assign current year.assessment, using current year for now")
+    p$year.assessment = lubridate::year(lubridate::now())
   }
 
   p = parameters_add_without_overwriting( p, yrs=1999:p$year.assessment, timezone="America/Halifax" )  # default
@@ -94,7 +94,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       fraction_cv = 1.0,
       fraction_good_bad = 0.9,
       areal_units_constraint_nmin=3,  # best compromise
-      areal_units_constraint_ntarget=20, 
+      areal_units_constraint_ntarget=20,
       nAU_min = 30,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
@@ -112,7 +112,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
     if ( grepl("inla", p$carstm_modelengine) ) {
       if ( !exists("carstm_model_formula", p)  ) {
-      
+
         p$carstm_model_formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
             ' + f( uid, model="iid" ) ',
@@ -122,7 +122,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
             ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
 #             ' + f( inla.group( substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( space_time, model="bym2", graph=slot(sppoly, "nb"), group=time_space, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'  
+            ' + f( space_time, model="bym2", graph=slot(sppoly, "nb"), group=time_space, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
 
@@ -134,7 +134,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if ( p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km ) {
       warning( "p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km " )
     }
-    
+
     message ("p$areal_units_resolution_km: ", p$areal_units_resolution_km)
 
     return(p)
