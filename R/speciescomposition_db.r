@@ -203,7 +203,7 @@
       areal_units_fn = attributes(sppoly)[["areal_units_fn"]]
 
       fn = carstm_filenames( p=p, returntype="carstm_inputs", areal_units_fn=areal_units_fn )
-      if (!p$carstm_inputs_aggregated) {
+      if (p$carstm_inputs_prefilter =="rawdata") {
         fn = carstm_filenames( p=p, returntype="carstm_inputs_rawdata", areal_units_fn=areal_units_fn )
       }
 

@@ -98,7 +98,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       nAU_min = 30,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
-      carstm_inputs_aggregated = FALSE
+      carstm_inputs_prefilter = "rawdata"
     )
 
 
