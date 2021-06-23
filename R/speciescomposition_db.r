@@ -250,23 +250,7 @@
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
 
-
-      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly,
-        lookup = c("bathymetry", "substrate", "temperature" ),
-        varstoretain = c( "sa"  ),
-        APS_data_offset=1
-      )
-
-
-
-      if (0) {
-        M$tiyr  = aegis_floor( M$tiyr / p$tres )*p$tres    # discretize for inla .. midpoints
-        M$year = aegis_floor( M$tiyr)
-        M$time = M$time_space = as.numeric( factor( M$year, levels=p$yrs))
-        M = M[ is.finite(M$time), ]
-        M$dyear =  M$tiyr - M$year   # revert dyear to non-discretized form
-        M$dyri = discretize_data( M[, "dyear"], p$discretization[["dyear"]] )
-      }
+      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ) )
 
       save( M, file=fn, compress=TRUE )
       return( M )
