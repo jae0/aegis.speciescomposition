@@ -225,15 +225,18 @@
       # do this immediately to reduce storage for sppoly (before adding other variables)
 
       M = speciescomposition_db( p=p, DS="speciescomposition"  )
-
-      # globally remove all unrealistic data
-        # p$quantile_bounds = c(0.0005, 0.9995)
-      if (exists("quantile_bounds", p)) {
-        TR = quantile(M[,p$variabletomodel], probs=p$quantile_bounds, na.rm=TRUE ) # this was -1.7, 21.8 in 2015
-        keep = which( M[,p$variabletomodel] >=  TR[1] & M[,p$variabletomodel] <=  TR[2] )
-        if (length(keep) > 0 ) M = M[ keep, ]
-          # this was -1.7, 21.8 in 2015
+      
+      if (p$carstm_inputs_prefilter != "aggregated") {
+        if (exists("quantile_bounds", p)) {
+          vn = p$variabletomodel
+          TR = quantile(M[[vn]], probs=p$quantile_bounds, na.rm=TRUE )
+          oo = which( M[[vn]] < TR[1])
+          if (length(oo) > 0) M[[vn]][oo] = TR[1]
+          oo = which( M[[vn]] > TR[2])
+          if (length(oo) > 0) M[[vn]][oo] = TR[2]
+        }
       }
+
 
       # INLA does not like duplicates ... causes optimizer to crash frequently
       oo = which(duplicated( M[, p$variabletomodel] ))
@@ -242,7 +245,7 @@
         M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
       }
 
-      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
+      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km, returntype="DT" ) # get planar projections of lon/lat in km
       M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
 
       names(M)[which(names(M)=="yr") ] = "year"
@@ -251,6 +254,9 @@
       M$dyear = M$tiyr - M$year
 
       M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ) )
+
+      attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
+      attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")
 
       save( M, file=fn, compress=TRUE )
       return( M )
