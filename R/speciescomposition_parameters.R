@@ -33,7 +33,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     aegis_dimensionality="space-year"
   )
 
-  p$quantile_bounds =c(0, 0.95) # trim upper bounds
+  p$quantile_bounds =c(0.005, 0.995) # trim upper bounds
 
   p = spatial_parameters( p=p)
 
