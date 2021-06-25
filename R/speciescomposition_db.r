@@ -225,6 +225,7 @@
       # do this immediately to reduce storage for sppoly (before adding other variables)
 
       M = speciescomposition_db( p=p, DS="speciescomposition"  )
+      setDT(M)
       
       if (p$carstm_inputs_prefilter != "aggregated") {
         if (exists("quantile_bounds", p)) {
@@ -245,7 +246,7 @@
         M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
       }
 
-      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km, returntype="DT" ) # get planar projections of lon/lat in km
+      M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
       M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
 
       names(M)[which(names(M)=="yr") ] = "year"
