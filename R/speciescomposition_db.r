@@ -253,7 +253,7 @@
       M = M[ which(M$year %in% p$yrs), ]
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
-      M$season = M$dyear
+
 
       M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ) )
 

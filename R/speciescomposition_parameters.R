@@ -30,7 +30,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = parameters_add_without_overwriting( p,
     spatial_domain = "SSE",  # canada.east.highres and canada.east.superhighres result in memory overflow
     spatial_domain_subareas = c( "SSE", "SSE.mpa" , "snowcrab"),  # this is for bathymetry_db, not stmv
-    aegis_dimensionality="space-year-season"
+    aegis_dimensionality="space-year"
   )
 
   p$quantile_bounds =c(0.005, 0.995) # trim upper bounds
@@ -134,9 +134,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if ( p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km ) {
       warning( "p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km " )
     }
-
-    message ("p$areal_units_resolution_km: ", p$areal_units_resolution_km)
-
+ 
     return(p)
   }
 
