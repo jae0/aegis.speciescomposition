@@ -62,21 +62,21 @@ for ( variabletomodel in c("pca1", "pca2"))  {
 
     
     # run model and obtain predictions
-    fit = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
+    res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
     
       # extract results
     if (0) {
       # very large files .. slow 
       fit = carstm_model( p=p, DS="carstm_modelled_fit" )  # extract currently saved model fit
+      fit$summary$dic$dic
+      fit$summary$dic$p.eff
+      fit$dyear
       plot(fit)
       plot(fit, plot.prior=TRUE, plot.hyperparameters=TRUE, plot.fixed.effects=FALSE )
     }
 
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
-    res$summary$dic$dic
-    res$summary$dic$p.eff
-    res$dyear
   
     if (0) {
       # map all :
