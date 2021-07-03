@@ -175,7 +175,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
     if (!exists("stmv_global_modelformula", p)) p$stmv_global_modelformula = "none"
 
-
+    if (exists("stmv_local_modelengine", p) | exists("stmv_twostep_space", p) ) {
+    
       if (p$stmv_local_modelengine == "fft"  |  p$stmv_twostep_space == "fft"  ) {
         nu = 0.5  # exponential smoothing
         ac_local = 0.1  # ac at which to designate "effective range"
@@ -188,7 +189,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
           stmv_lowpass_phi = stmv::matern_distance2phi( distance=p$pres/2, nu=nu, cor=ac_local )
         )
       }
-
+    }
 
     # intervals of decimal years... fractional year breaks finer than the default 10 units (taking daily for now..)
     #.. need to close right side for "cut" .. controls resolution of data prior to modelling
