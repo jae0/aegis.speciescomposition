@@ -194,8 +194,9 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
           stmv_lowpass_phi = stmv::matern_distance2phi( distance=p$pres/2, nu=nu, cor=ac_local )
         )
       }
-    
- 
+
+
+
     # default to serial mode
     p = parameters_add_without_overwriting( p,
       stmv_runmode = list(
@@ -301,6 +302,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     )
 
     p = aegis_parameters( p=p, DS="stmv" )  # get defaults
+
 
     if ( p$inputdata_spatial_discretization_planar_km >= p$pres ) {
       warning( "p$inputdata_spatial_discretization_planar_km >= p$pres " )
