@@ -195,11 +195,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         )
       }
     
-    # intervals of decimal years... fractional year breaks finer than the default 10 units (taking daily for now..)
-    #.. need to close right side for "cut" .. controls resolution of data prior to modelling
-    if (!exists("dyear_discretization_rawdata", p)) p$dyear_discretization_rawdata = c( {c(1:365)-1}/365, 1)
-
-
+ 
     # default to serial mode
     p = parameters_add_without_overwriting( p,
       stmv_runmode = list(
@@ -306,9 +302,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
     p = aegis_parameters( p=p, DS="stmv" )  # get defaults
 
-    # intervals of decimal years... fractional year breaks finer than the default 10 units (taking daily for now..)
-    #.. need to close right side for "cut" .. controls resolution of data prior to modelling
-    if (!exists("dyear_discretization_rawdata", p)) p$dyear_discretization_rawdata = c( {c(1:365)-1}/365, 1)
     if ( p$inputdata_spatial_discretization_planar_km >= p$pres ) {
       warning( "p$inputdata_spatial_discretization_planar_km >= p$pres " )
     }
