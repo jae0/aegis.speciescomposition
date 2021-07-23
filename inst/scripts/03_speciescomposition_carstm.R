@@ -62,7 +62,7 @@ for ( variabletomodel in c("pca1", "pca2"))  {
 
     
     # run model and obtain predictions
-    res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) "  )
+    res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) ", verbose=TRUE )
     
       # extract results
     if (0) {
@@ -70,53 +70,59 @@ for ( variabletomodel in c("pca1", "pca2"))  {
       fit = carstm_model( p=p, DS="carstm_modelled_fit" )  # extract currently saved model fit
       fit$summary$dic$dic
       fit$summary$dic$p.eff
-      fit$dyear
+
       plot(fit)
       plot(fit, plot.prior=TRUE, plot.hyperparameters=TRUE, plot.fixed.effects=FALSE )
     }
 
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
-  
+
+    map_centre = c( (p$lon0+p$lon1)/2 - 0.5, (p$lat0+p$lat1)/2 -0.8 )
+    map_zoom = 6.5
+
+
     if (0) {
       # map all :
+      vn=c( "random", "space", "combined" )
+      vn=c( "random", "spacetime", "combined" )
+      vn="predictions"
+      tmatch="2015"
 
-        time_match = list(year="2019" )
-      
-        vn = paste(p$variabletomodel, "predicted", sep=".")
-    #   vn = paste(p$variabletomodel, "random_sample_iid", sep=".")
-    #   vn = paste(p$variabletomodel, "random_space", sep=".")
-
-        carstm_map(  res=res, vn=vn, time_match=time_match , 
-          plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
-          main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") )  
-        )
+      carstm_map(  res=res, vn=vn, tmatch=tmatch, 
+        plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
+        palette="RdYlBu",
+        breaks = seq(-0.3, 0.3, by=0.1),
+        plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
+        tmap_zoom= c(map_centre, map_zoom),
+        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
+      )
 
     }
-
-    plot_crs = p$aegis_proj4string_planar_km
-
-    coastline=aegis.coastline::coastline_db( DS="eastcoast_gadm", project_to=plot_crs )
-    isobaths=aegis.bathymetry::isobath_db( depths=c(50, 100, 200, 400 ), project_to=plot_crs  )
 
 
     vn = paste( variabletomodel, "predicted", sep=".")
     outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
 
+    map_centre = c( (p$lon0+p$lon1)/2 - 0.5, (p$lat0+p$lat1)/2 -0.8 )
+    map_zoom = 6.5
+
     for (y in res$year ){
-      time_match = list( year=as.character(y)  )
-      fn_root = paste( "speciescomposition", variabletomodel, paste0(time_match, collapse=" - "), sep="_" )
+      tmatch = as.character(y) 
+      fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
       fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
 
-        carstm_map(  res=res, vn=vn, time_match=time_match , 
-          coastline=coastline,
-          isobaths=isobaths,
-          palette="RdYlBu",
-          breaks = seq(-0.3, 0.3, by=0.1),
-          main=paste("Species composition: ", variabletomodel, "  ", paste0(time_match, collapse="-") ) ,
-          outfilename=fn
-        )
+      vn="predictions"
+    
+      carstm_map(  res=res, vn=vn, tmatch=tmatch , 
+        palette="RdYlBu",
+        breaks = seq(-0.3, 0.3, by=0.1),
+        plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
+        tmap_zoom= c(map_centre, map_zoom),
+        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) ,
+        outfilename=fn
+      )
 
     }
 
