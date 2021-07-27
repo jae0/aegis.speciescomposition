@@ -101,14 +101,12 @@ for ( variabletomodel in c("pca1", "pca2"))  {
     }
 
 
-    vn = paste( variabletomodel, "predicted", sep=".")
-    outputdir = file.path( gsub( ".rdata", "", dirname(res$fn_res) ), "figures", vn )
+    outputdir = file.path( gsub( ".rdata", "", carstm_filenames(p, "carstm_modelled_fit") ), "figures" )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
 
-    map_centre = c( (p$lon0+p$lon1)/2 - 0.5, (p$lat0+p$lat1)/2 -0.8 )
-    map_zoom = 6.5
+    graphics.off()
 
-    for (y in res$year ){
+    for (y in res$time ){
       tmatch = as.character(y) 
       fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
       fn = file.path( outputdir, paste(fn_root, "png", sep=".") )

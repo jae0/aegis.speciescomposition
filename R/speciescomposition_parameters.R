@@ -117,7 +117,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
         p$carstm_model_formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
-            ' + f( uid, model="iid" ) ',
             ' + f( season, model="rw2", hyper=H$rw2, cyclic=TRUE ) ',
             ' + f( time, model="ar1",  hyper=H$ar1 ) ',
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE ) ',
