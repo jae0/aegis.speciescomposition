@@ -10,7 +10,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
-    # variabletomodel = "pca3"
+    # variabletomodel = "ca3"
     
     # construct basic parameter list defining the main characteristics of the study
     p = speciescomposition_parameters(
@@ -64,7 +64,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     
     # run model and obtain predictions
     res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
-     control.inla = list( strategy='adaptive', int.strategy='eb' ),
+     control.inla = list( int.strategy='eb' ),
+     # control.inla = list( strategy='adaptive', int.strategy='eb', h=0.01),
      verbose=TRUE 
      )
     
