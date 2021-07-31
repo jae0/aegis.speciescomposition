@@ -62,7 +62,10 @@ for ( variabletomodel in c("pca1", "pca2"))  {
 
     
     # run model and obtain predictions
-    res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) ", verbose=TRUE )
+    res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
+     control.inla = list( strategy='adaptive', int.strategy='eb' ),
+     verbose=TRUE 
+     )
     
       # extract results
     if (0) {

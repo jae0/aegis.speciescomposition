@@ -162,6 +162,11 @@
         }
       }
 
+      imperative = c( "pca1", "pca2", "ca1", "ca2" )
+      ii = which( is.finite( rowSums( SC[,imperative ] ) ) )
+      if (length(ii) == 0) stop( "No data .. something went wrong")
+      SC = SC[ii,]
+
       save( SC, file=fn, compress=T )
 			return (fn)
 		}
@@ -240,14 +245,16 @@
 
 
       # INLA does not like duplicates ... causes optimizer to crash frequently
-      oo = which(duplicated( M[, p$variabletomodel] ))
-      if ( length(oo)> 0) {
-        eps = exp( log( .Machine$double.eps ) / 2)  # ~ 1.5e-8
-        M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
-      }
+      # oo = which(duplicated( M[, p$variabletomodel] ))
+      # if ( length(oo)> 0) {
+      #   eps = exp( log( .Machine$double.eps ) / 2)  # ~ 1.5e-8
+      #   M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
+      # }
 
       M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
-      M = M[ which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] ), ]
+      
+      ii = which( M$lon > p$corners$lon[1] & M$lon < p$corners$lon[2]  & M$lat > p$corners$lat[1] & M$lat < p$corners$lat[2] )
+      M = M[ ii, ]
 
       names(M)[which(names(M)=="yr") ] = "year"
       M = M[ which(M$year %in% p$yrs), ]
