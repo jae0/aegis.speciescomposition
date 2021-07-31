@@ -14,7 +14,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     "parallel", "sf", "GADMTools", "INLA" , "data.table") ) )
 
   p$libs = unique( c( p$libs, project.library ( "aegis", "aegis.bathymetry", "aegis.coastline",
-    "aegis.polygons", "aegis.substrate", "aegis.temperature", "aegis.survey", "aegis.speciescomposition" ) ) )
+    "aegis.polygons", "aegis.substrate", "aegis.temperature", "aegis.survey", "aegis.speciescomposition", "bio.taxonomy" ) ) )
 
 
   p = parameters_add_without_overwriting( p, project_name = project_name )

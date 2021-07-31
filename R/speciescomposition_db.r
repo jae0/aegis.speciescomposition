@@ -102,10 +102,10 @@
       y = cbind( evec[,1] * sqrt(ev[1] ) , evec[,2] * sqrt( ev[2]),  evec[,3] * sqrt( ev[3]) )
       rownames(y) = colnames(m)
 
-      scores = data.frame( id=rownames(m), pca1=as.numeric(x[,1]), pca2=as.numeric(x[,2]), pca3=as.numeric(x[,3]), stringsAsFactors=F )
-      set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
+      scores = data.frame( id=rownames(m), pca1=as.numeric(x[,1]), pca2=as.numeric(x[,2]), pca3=as.numeric(x[,3]), stringsAsFactors=FALSE )
+      set = merge(set, scores, by="id", all.x=T, all.y=F, sort=FALSE)
       pca.out = list( scores=scores, eignenvectors=evec, eigenvalues=ev, cscores=y )
-      save( pca.out, file=fn.pca, compress=T)
+      save( pca.out, file=fn.pca, compress=TRUE)
 
 
       # Correpsondence analysis
@@ -113,8 +113,8 @@
         n = m * 0
         n[ which(m>0) ] = 1
         ord = cca( n )
-        sp.sc = scores(ord)$species
-        si.sc = scores(ord)$sites
+        sp.sc = scores(ord, choices=c(1:3))$species
+        si.sc = scores(ord, choices=c(1:3))$sites
         scores = data.frame( id=as.character(rownames(si.sc)), ca1=as.numeric(si.sc[,1]), ca2=as.numeric(si.sc[,2]), ca3=as.numeric(si.sc[,3]) )
         variances=  ord$CA$eig[1:10]/sum(ord$CA$eig)*100
         set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
