@@ -98,11 +98,11 @@
 
       evec = s$v
       ev = s$d
-      x = cbind( scores[,1] / sqrt(ev[1] ), scores[,2] / sqrt( ev[2]) )
-      y = cbind( evec[,1] * sqrt(ev[1] ) , evec[,2] * sqrt( ev[2]) )
+      x = cbind( scores[,1] / sqrt(ev[1] ), scores[,2] / sqrt( ev[2]), scores[,3] / sqrt(ev[3] ) )
+      y = cbind( evec[,1] * sqrt(ev[1] ) , evec[,2] * sqrt( ev[2]),  evec[,3] * sqrt( ev[3]) )
       rownames(y) = colnames(m)
 
-      scores = data.frame( id=rownames(m), pca1=as.numeric(x[,1]), pca2=as.numeric(x[,2]), stringsAsFactors=F )
+      scores = data.frame( id=rownames(m), pca1=as.numeric(x[,1]), pca2=as.numeric(x[,2]), pca3=as.numeric(x[,3]), stringsAsFactors=F )
       set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
       pca.out = list( scores=scores, eignenvectors=evec, eigenvalues=ev, cscores=y )
       save( pca.out, file=fn.pca, compress=T)
@@ -115,7 +115,7 @@
         ord = cca( n )
         sp.sc = scores(ord)$species
         si.sc = scores(ord)$sites
-        scores = data.frame( id=as.character(rownames(si.sc)), ca1=as.numeric(si.sc[,1]), ca2=as.numeric(si.sc[,2]) )
+        scores = data.frame( id=as.character(rownames(si.sc)), ca1=as.numeric(si.sc[,1]), ca2=as.numeric(si.sc[,2]), ca3=as.numeric(si.sc[,3]) )
         variances=  ord$CA$eig[1:10]/sum(ord$CA$eig)*100
         set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
         ca.out = list( scores=scores, ca=ord, variances=variances )
@@ -162,7 +162,7 @@
         }
       }
 
-      imperative = c( "pca1", "pca2", "ca1", "ca2" )
+      imperative = c( "pca1", "pca2",  "pca3", "ca1", "ca2", "ca3" )
       ii = which( is.finite( rowSums( SC[,imperative ] ) ) )
       if (length(ii) == 0) stop( "No data .. something went wrong")
       SC = SC[ii,]

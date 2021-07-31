@@ -6,10 +6,11 @@ year.assessment = 2020
 require( aegis.speciescomposition )
 
 
-for ( variabletomodel in c("pca1", "pca2"))  {
+for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
+    # variabletomodel = "pca3"
     
     # construct basic parameter list defining the main characteristics of the study
     p = speciescomposition_parameters(

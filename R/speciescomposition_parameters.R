@@ -52,7 +52,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = parameters_add_without_overwriting( p,
     additional.data=c("groundfish", "snowcrab", "USSurvey_NEFSC", "lobster"),
     taxa =  "maxresolved",
-    varstomodel = c( "pca1", "pca2", "ca1", "ca2" ),
+    varstomodel = c( "pca1", "pca2", "pca3", "ca1", "ca2", "ca3" ),
     inputdata_spatial_discretization_planar_km = p$pres/2, # controls resolution of data prior to modelling (km .. ie 100 linear units smaller than the final discretization pres)
     inputdata_temporal_discretization_yr = 1/12  # ie., controls resolution of data prior to modelling to reduce data set and speed up modelling;; use 1/12 -- monthly or even 1/4.. if data density is low
   )
