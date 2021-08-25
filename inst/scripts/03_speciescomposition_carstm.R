@@ -13,7 +13,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     # variabletomodel = "pca3"
     if (variabletomodel == "pca3") {
 
-        p$carstm_model_formula = as.formula( paste(
+        p$formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
             ' + f( season, model="rw2", hyper=H$rw2, cyclic=TRUE ) ',
             ' + f( time, model="ar1",  hyper=H$ar1 ) ',
@@ -78,7 +78,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
 
     
     # run model and obtain predictions
-    res = carstm_model( p=p, M="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
+    res = carstm_model( p=p, data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
      control.inla = list( strategy='adaptive', int.strategy='eb' ),
      verbose=TRUE 
      )

@@ -49,11 +49,6 @@
               &  set$lat >= p$corners$lat[1] & set$lat <= p$corners$lat[2] )
       set = set[igood, ]
 
-      # filter species
-      # sc$spec = taxonomy.parsimonious( spec=sc$spec )
-
-     # browser()
-
       isc = taxonomy.filter.taxa( sc$spec_bio, method=p$taxa, outtype="internalcodes" )
       set = set[ which( set$id %in% unique( sc$id[isc]) ),]
 
@@ -80,18 +75,7 @@
       corel = cor( m, use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
       corel[ is.na(corel) ] = 0
       s = svd(corel)  # eigenanalysis via singular value decomposition
-
-      # matrix.multiply = function (x, y, nfac=2){
-      #   ndat = dim(x)[1]
-      #   z = matrix(0, nrow=ndat, ncol = nfac)
-      #   for (j in 1:nfac) {
-      #     for (i in 1:ndat) {
-      #       z[i,j] = sum ( x[i,] * t(y[,j]), na.rm=T )
-      #     }
-      #   }
-      #   return (z)
-      # }
-
+ 
       # scores = matrix.multiply (m, s$v)  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
       m[which(!is.finite(m))] = 0
       scores = m %*% s$v  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
