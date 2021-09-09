@@ -49,6 +49,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = parameters_add_without_overwriting( p, yrs=1999:p$year.assessment, timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
 
+  p$discretization = discretizations(p=p$discretization)  # key for discretization levels
+
   p = parameters_add_without_overwriting( p,
     additional.data=c("groundfish", "snowcrab", "USSurvey_NEFSC", "lobster"),
     taxa =  "maxresolved",
@@ -117,7 +119,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
         p$formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
-            ' + f( season, model="rw2", scale.model=TRUE, hyper=H$rw2, cyclic=TRUE ) ',
+            ' + f( cyclic, model="rw2", scale.model=TRUE, hyper=H$rw2, cyclic=TRUE ) ',
             ' + f( time, model="ar1",  hyper=H$ar1 ) ',
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',
             ' + f( inla.group( t, method="quantile", n=7 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
@@ -254,13 +256,12 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       stmv_local_modelcall = paste(
         'inla(
           formula =', p$variabletomodel, ' ~ 1
-            + f( uid, model="iid" )
-            + NOTE_TO_UPDATE_MODEL
+            + NOTE____UPDATE_MODEL
             + f(space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE, hyper=H$bym2),
           family = "gaussian",
           data= dat,
-          control.compute=list(dic=TRUE, waic=TRUE, cpo=FALSE, config=FALSE),  # config=TRUE if doing posterior simulations
-          control.results=list(return.marginals.random=TRUE, return.marginals.predictor=TRUE ),
+          inla.mode="experimental",
+          control.compute=list(dic=TRUE, waic=TRUE, cpo=FALSE, config=FALSE), return.marginals.predictor=TRUE,  # config=TRUE if doing posterior simulations
           control.predictor=list(compute=FALSE, link=1 ),
           control.fixed=H$fixed,  # priors for fixed effects, generic is ok
           verbose=FALSE
