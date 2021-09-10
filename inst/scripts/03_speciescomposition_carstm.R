@@ -1,7 +1,7 @@
 
 # species composition analysis via car
 
-year.assessment = 2020
+year.assessment = 2021
 
 require( aegis.speciescomposition )
 
@@ -11,21 +11,6 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
     # variabletomodel = "pca3"
-    if (variabletomodel == "pca3") {
-
-        p$formula = as.formula( paste(
-         p$variabletomodel, ' ~ 1',
-            ' + f( season, model="rw2", hyper=H$rw2, cyclic=TRUE ) ',
-            ' + f( time, model="ar1",  hyper=H$ar1 ) ',
-            ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE ) ',
-            ' + f( inla.group( t, method="quantile", n=7 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( z, method="quantile", n=7 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( substrate.grainsize, method="quantile", n=7 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( space_time, model="bym2", graph=slot(sppoly, "nb"), group=time_space, scale.model=TRUE, constr=TRUE, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
-          ) )
-
-    }
-    
     
     # construct basic parameter list defining the main characteristics of the study
     p = speciescomposition_parameters(
