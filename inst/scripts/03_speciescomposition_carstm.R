@@ -67,6 +67,10 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="4:2",
+      # control.inla = list( strategy='laplace' ), # "adaptive" strategy seems to run into problems with sparse data (in current year) 
+      control.inla = list( strategy='adaptive' ),
+      # control.inla = list( strategy='adaptive', int.strategy="eb" , optimise.strategy="plain"),
+
       # control.inla = list( strategy='adaptive', int.strategy='eb' ),
       verbose=TRUE 
      )
