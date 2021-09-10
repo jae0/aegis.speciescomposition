@@ -245,8 +245,12 @@
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
 
-
       M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ) )
+
+      jj = which(!is.finite(M$t))
+      if (length(jj) > 0 ) {
+        M = M[-jj,]
+      }
 
       attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
       attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")
