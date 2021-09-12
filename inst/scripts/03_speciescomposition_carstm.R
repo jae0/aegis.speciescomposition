@@ -5,6 +5,53 @@ year.assessment = 2021
 
 require( aegis.speciescomposition )
 
+# construct basic parameter list defining the main characteristics of the study
+p0 = speciescomposition_parameters(
+  project_class="carstm",
+  data_root = project.datadirectory( "aegis", "speciescomposition" ),
+  variabletomodel = "",  # will b eover-ridden .. this brings in all pca's and ca's
+  carstm_model_label = "default",
+  inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
+  inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+  year.assessment = year.assessment,
+  yrs = 1999:year.assessment,
+  aegis_dimensionality="space-year",
+  spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
+  areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
+  areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
+#     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
+    areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
+    areal_units_overlay = "none"
+)
+
+M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
+# to extract fits and predictions
+M= NULL
+gc()
+
+if (0) { 
+    # p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
+    # p$fraction_cv = 1.0 #sd/mean no.
+    # p$fraction_good_bad = 0.9
+    # p$areal_units_constraint_nmin =  3
+    # p$areal_units_constraint_ntarget = 15  # length(p$yrs)
+
+    # p$nAU_min = 100
+
+    # # adjust based upon RAM requirements and ncores
+    # require(INLA)
+    # inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
+    # inla.setOption(blas.num.threads= 2 )
+
+    # to recreate the underlying data
+    xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
+
+    sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
+  
+    plot(sppoly["AUID"])
+
+}
+
 
 for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     
@@ -13,55 +60,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
     # variabletomodel = "pca3"
     
     # construct basic parameter list defining the main characteristics of the study
-    p = speciescomposition_parameters(
-      project_class="carstm",
-      data_root = project.datadirectory( "aegis", "speciescomposition" ),
-      variabletomodel = variabletomodel,
-      carstm_model_label = "default",
-      inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
-      inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
-      year.assessment = year.assessment,
-      yrs = 1999:year.assessment,
-      aegis_dimensionality="space-year",
-      spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
-      areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
-      areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
- #     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
-       areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
-       areal_units_overlay = "none"
-    )
-  
+    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel )
 
-    if (0) { 
-        # p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
-        # p$fraction_cv = 1.0 #sd/mean no.
-        # p$fraction_good_bad = 0.9
-        # p$areal_units_constraint_nmin =  3
-        # p$areal_units_constraint_ntarget = 15  # length(p$yrs)
-
-        # p$nAU_min = 100
-
-        # # adjust based upon RAM requirements and ncores
-        # require(INLA)
-        # inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
-        # inla.setOption(blas.num.threads= 2 )
-
-        # to recreate the underlying data
-        xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
-
-        sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
-      
-        plot(sppoly["AUID"])
-
-    }
-
-
-    M = speciescomposition_db( p=p, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
-    # to extract fits and predictions
-    M= NULL
-    gc()
-
-    
     # run model and obtain predictions
     fit = carstm_model( 
       p=p, 
@@ -69,9 +69,6 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
       num.threads="4:2",
       # control.inla = list( strategy='laplace' ), # "adaptive" strategy seems to run into problems with sparse data (in current year) 
       control.inla = list( strategy='adaptive' ),
-      # control.inla = list( strategy='adaptive', int.strategy="eb" , optimise.strategy="plain"),
-
-      # control.inla = list( strategy='adaptive', int.strategy='eb' ),
       verbose=TRUE 
      )
     

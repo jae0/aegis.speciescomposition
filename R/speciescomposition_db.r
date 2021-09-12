@@ -190,6 +190,9 @@
       sppoly = areal_units( p=p )  # will redo if not found
       sppoly = st_transform(sppoly, crs=crs_lonlat )
       areal_units_fn = attributes(sppoly)[["areal_units_fn"]]
+      
+      # over-ride
+      p$variabletomodel = "speciescomposition"  # force to be generic to share across variables 
 
       fn = carstm_filenames( p=p, returntype="carstm_inputs", areal_units_fn=areal_units_fn )
       if (p$carstm_inputs_prefilter =="rawdata") {
@@ -216,17 +219,19 @@
       M = speciescomposition_db( p=p, DS="speciescomposition"  )
       setDT(M)
       
+      vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3" )
+
       if (p$carstm_inputs_prefilter != "aggregated") {
         if (exists("quantile_bounds", p)) {
-          vn = p$variabletomodel
-          TR = quantile(M[[vn]], probs=p$quantile_bounds, na.rm=TRUE )
-          oo = which( M[[vn]] < TR[1])
-          if (length(oo) > 0) M[[vn]][oo] = TR[1]
-          oo = which( M[[vn]] > TR[2])
-          if (length(oo) > 0) M[[vn]][oo] = TR[2]
+          for (vn in vars_to_retain) {
+            TR = quantile(M[[vn]], probs=p$quantile_bounds, na.rm=TRUE )
+            oo = which( M[[vn]] < TR[1])
+            if (length(oo) > 0) M[[vn]][oo] = TR[1]
+            oo = which( M[[vn]] > TR[2])
+            if (length(oo) > 0) M[[vn]][oo] = TR[2]
+          }
         }
       }
-
 
       # INLA does not like duplicates ... causes optimizer to crash frequently
       # oo = which(duplicated( M[, p$variabletomodel] ))
@@ -245,7 +250,8 @@
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
 
-      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ) )
+      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ),
+            vars_to_retain=vars_to_retain )
 
       jj = which(!is.finite(M$t))
       if (length(jj) > 0 ) {
