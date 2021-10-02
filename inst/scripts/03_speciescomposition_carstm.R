@@ -24,6 +24,8 @@ p0 = speciescomposition_parameters(
     areal_units_overlay = "none"
 )
 
+p0$formula = NULL  # reset
+
 M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
 # to extract fits and predictions
 M= NULL
@@ -53,7 +55,7 @@ if (0) {
 }
 
 
-for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
+for ( variabletomodel in c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
@@ -68,7 +70,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3"))  {
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="4:2",
       # control.inla = list( strategy='laplace' ), # "adaptive" strategy seems to run into problems with sparse data (in current year) 
-      control.inla = list( strategy='adaptive' ),
+      control.inla = list( strategy='laplace' ),
       verbose=TRUE 
      )
     
