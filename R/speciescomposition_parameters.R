@@ -46,7 +46,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   
   # if (is.null(p$year.assessment)) p$year.assessment = lubridate::year(lubridate::now())
 
-  p = parameters_add_without_overwriting( p, yrs=1999:p$year.assessment, timezone="America/Halifax" )  # default
+  p = parameters_add_without_overwriting( p, yrs=1970:p$year.assessment, timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
 
   p$discretization = discretizations(p=p$discretization)  # key for discretization levels
@@ -120,7 +120,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
             ' + f( cyclic, model="rw2", scale.model=TRUE, hyper=H$rw2, cyclic=TRUE ) ',
-            ' + f( time, model="ar1",  hyper=H$ar1 ) ',
+            # ' + f( time, model="ar1",  hyper=H$ar1 ) ',
+            + as.factor(time) 
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',
             ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
