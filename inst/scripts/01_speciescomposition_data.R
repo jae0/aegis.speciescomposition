@@ -4,7 +4,7 @@
   # ordination
   year.assessment = 2020
 
-  p = aegis.speciescomposition::speciescomposition_parameters( yrs=1999:year.assessment )
+  p = aegis.speciescomposition::speciescomposition_parameters( yrs=1970:year.assessment )
 
   speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
 
