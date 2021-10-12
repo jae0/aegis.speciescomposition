@@ -14,7 +14,7 @@ p0 = speciescomposition_parameters(
   inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
   inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
   year.assessment = year.assessment,
-  yrs = 1999:year.assessment,
+  yrs = 1970:year.assessment,
   aegis_dimensionality="space-year",
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
   areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
@@ -32,11 +32,11 @@ M= NULL
 gc()
 
 if (0) { 
-    # p$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
-    # p$fraction_cv = 1.0 #sd/mean no.
-    # p$fraction_good_bad = 0.9
-    # p$areal_units_constraint_nmin =  3
-    # p$areal_units_constraint_ntarget = 15  # length(p$yrs)
+    # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
+    # p0$fraction_cv = 0.7 #sd/mean no.
+    # p0$fraction_good_bad = 0.9
+    # p0$areal_units_constraint_nmin =  3
+    # p0$areal_units_constraint_ntarget = 15  # length(p0$yrs)
 
     # p$nAU_min = 100
 
@@ -46,9 +46,9 @@ if (0) {
     # inla.setOption(blas.num.threads= 2 )
 
     # to recreate the underlying data
-    xydata = speciescomposition_db(p=p, DS="areal_units_input", redo=TRUE)
+    xydata = speciescomposition_db(p=p0, DS="areal_units_input", redo=TRUE)
 
-    sppoly = areal_units( p=p, redo=TRUE, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
+    sppoly = areal_units( p=p0, redo=TRUE, hull_alpha=20, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
   
     plot(sppoly["AUID"])
 

@@ -98,7 +98,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       fraction_cv = 1.0,
       fraction_good_bad = 0.9,
       areal_units_constraint_nmin=3,  # best compromise
-      areal_units_constraint_ntarget=20,
+      areal_units_constraint_ntarget= length(p$yrs),
       nAU_min = 30,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
@@ -121,7 +121,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
          p$variabletomodel, ' ~ 1',
             ' + f( cyclic, model="rw2", scale.model=TRUE, hyper=H$rw2, cyclic=TRUE ) ',
             # ' + f( time, model="ar1",  hyper=H$ar1 ) ',
-            + as.factor(time) 
+            ' + as.factor(time) ',
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',
             ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
