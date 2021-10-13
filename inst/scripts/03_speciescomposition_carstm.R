@@ -24,12 +24,7 @@ p0 = speciescomposition_parameters(
     areal_units_overlay = "none"
 )
 
-p0$formula = NULL  # reset
 
-M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
-# to extract fits and predictions
-M= NULL
-gc()
 
 if (0) { 
     # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
@@ -48,29 +43,47 @@ if (0) {
     # to recreate the underlying data
     xydata = speciescomposition_db(p=p0, DS="areal_units_input", redo=TRUE)
 
-    sppoly = areal_units( p=p0, redo=TRUE, hull_alpha=20, verbose=TRUE )  # this has already been done in aegis.polygons::01 polygons.R .. should nto have to redo
+    sppoly = areal_units( p=p0, redo=TRUE, hull_alpha=20, verbose=TRUE )   
   
-    plot(sppoly["AUID"])
+      plot(sppoly["AUID"])
 
 }
 
 
-for ( variabletomodel in c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3"))  {
+
+M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
+str(M); 
+M= NULL; gc()
+
+p0$formula = NULL  # reset to force a new default below 
+
+for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
     # variabletomodel = "pca3"
     
     # construct basic parameter list defining the main characteristics of the study
-    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel )
+    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel, mc.cores=2 )  # mc.cores == no of cores to use for posterior extraction .. can be memory intensive so keep low 
 
     # run model and obtain predictions
     fit = carstm_model( 
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
-      num.threads="4:2",
+      num.threads="6:2",  # adjust for your machine
       # control.inla = list( strategy='laplace' ), # "adaptive" strategy seems to run into problems with sparse data (in current year) 
-      control.inla = list( strategy='laplace' ),
+      control.inla = list( strategy='adaptive' ),
+      control.mode = list(
+        theta = switch( variabletomodel,
+          pca1 = c(5.779, 4.330, 15.261, -1.951, 4.617, 3.950, 5.652, 3.552, 3.611 ),
+          pca2 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
+          pca3 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
+          ca1 = c( 2.658, 1.229, 10.311, 19.854, 8.145, 0.250, 2.298, 5.280, 3.342 ),
+          ca2 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
+          ca3 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 )
+        ), 
+        restart=TRUE
+      ),  # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
      )
     
@@ -85,6 +98,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3"))  {
       plot(fit, plot.prior=TRUE, plot.hyperparameters=TRUE, plot.fixed.effects=FALSE )
     }
 
+    fit = NULL; gc()
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
 
