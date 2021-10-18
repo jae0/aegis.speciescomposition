@@ -255,7 +255,12 @@
 
       jj = which(!is.finite(M$t))
       if (length(jj) > 0 ) {
-        M = M[-jj,]
+        M$t[jj] = median( M$t[-jj] )
+      }
+
+      jj = which(!is.finite(M$substrate.grainsize))
+      if (length(jj) > 0 ) {
+        M$substrate.grainsize[jj] = median( M$substrate.grainsize[-jj] )
       }
 
       attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
