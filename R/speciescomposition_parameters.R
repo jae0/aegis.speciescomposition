@@ -135,10 +135,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       if ( !exists("family", p)  )  p$family = "gaussian"
     }
 
-    if ( p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km ) {
-      warning( "p$inputdata_spatial_discretization_planar_km >= p$areal_units_resolution_km " )
-    }
- 
+
     return(p)
   }
 
@@ -227,13 +224,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
     p = aegis_parameters(p=p, DS="stmv" ) # generics for aegis.* projects
 
-
-    if ( p$inputdata_spatial_discretization_planar_km >= p$pres ) {
-      warning( "p$inputdata_spatial_discretization_planar_km >= p$pres " )
-    }
-#     message ("p$stmv_distance_statsgrid: ", p$stmv_distance_statsgrid)
-
-
     return(p)
   }
 
@@ -304,12 +294,6 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     )
 
     p = aegis_parameters( p=p, DS="stmv" )  # get defaults
-
-
-    if ( p$inputdata_spatial_discretization_planar_km >= p$pres ) {
-      warning( "p$inputdata_spatial_discretization_planar_km >= p$pres " )
-    }
-    message ("p$stmv_distance_statsgrid: ", p$stmv_distance_statsgrid)
 
     return(p)
   }

@@ -115,10 +115,10 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca
           ca2 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
           ca3 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 )
         ), 
-        restart=TRUE
+        restart=FALSE
       ),  
       
-      redo_fit=F, # to start optim from a solution close to the final in 2021 ... 
+      redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
      )
     
