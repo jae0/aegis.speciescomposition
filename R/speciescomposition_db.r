@@ -194,10 +194,9 @@
       # over-ride
       p$variabletomodel = "speciescomposition"  # force to be generic to share across variables 
 
-      fn = carstm_filenames( p=p, returntype="carstm_inputs", areal_units_fn=areal_units_fn )
-      if (p$carstm_inputs_prefilter =="rawdata") {
-        fn = carstm_filenames( p=p, returntype="carstm_inputs_rawdata", areal_units_fn=areal_units_fn )
-      }
+      label = paste( "carstm_inputs",  p$carstm_model_label , sep="_" )
+      if (p$carstm_inputs_prefilter =="rawdata") label = paste( "carstm_inputs_rawdata",  p$carstm_model_label , sep="_" ) 
+      fn = carstm_filenames( p=p, returntype=label, areal_units_fn=areal_units_fn )
 
       # inputs are shared across various secneario using the same polys
       #.. store at the modeldir level as default
