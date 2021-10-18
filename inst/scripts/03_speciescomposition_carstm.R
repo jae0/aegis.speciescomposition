@@ -46,9 +46,9 @@ p0 = speciescomposition_parameters(
   areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
   areal_units_overlay = "none",
   carstm_lookup_parameters = list( 
-    bathymetry = bathymetry_parameters( project_class="stmv", spatial_domain="SSE", stmv_model_label="default"  ),
-    substrate = substrate_parameters(   project_class="stmv", spatial_domain="SSE", stmv_model_label="default"  ),
-    temperature = temperature_parameters( project_class="carstm", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
+    bathymetry = bathymetry_parameters( project_class="stmv", spatial_domain="canada.east.superhighres", stmv_model_label="default"  ),
+    substrate = substrate_parameters(   project_class="stmv", spatial_domain="canada.east.highres", stmv_model_label="default"  ),
+    temperature = temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
   )
 )
 
@@ -75,10 +75,7 @@ if (0) {
       plot(sppoly["AUID"])
 
 }
-
  
- 
-  
 
 
 M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
