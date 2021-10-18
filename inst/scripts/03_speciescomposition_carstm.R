@@ -6,6 +6,9 @@ year.assessment = 2021
 require( aegis.speciescomposition )
 
 # construct basic parameter list defining the main characteristics of the study
+# choose one:
+
+# default run: 1970:present
 p0 = speciescomposition_parameters(
   project_class="carstm",
   data_root = project.datadirectory( "aegis", "speciescomposition" ),
@@ -24,6 +27,30 @@ p0 = speciescomposition_parameters(
     areal_units_overlay = "none"
 )
 
+
+# for bio.snowcrab 1999:present
+p0 = speciescomposition_parameters(
+  project_class="carstm",
+  data_root = project.datadirectory( "aegis", "speciescomposition" ),
+  variabletomodel = "",  # will b eover-ridden .. this brings in all pca's and ca's
+  carstm_model_label = "1999_present",
+  inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
+  inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+  year.assessment = year.assessment,
+  yrs = 1970:year.assessment,
+  aegis_dimensionality="space-year",
+  spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
+  areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
+  areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
+#     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
+  areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
+  areal_units_overlay = "none",
+  carstm_lookup_parameters = list( 
+    bathymetry = bathymetry_parameters( project_class="stmv", spatial_domain="SSE", stmv_model_label="default"  ),
+    substrate = substrate_parameters(   project_class="stmv", spatial_domain="SSE", stmv_model_label="default"  ),
+    temperature = temperature_parameters( project_class="carstm", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
+  )
+)
 
 
 if (0) { 
@@ -49,6 +76,9 @@ if (0) {
 
 }
 
+ 
+ 
+  
 
 
 M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
@@ -83,7 +113,9 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca
           ca3 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 )
         ), 
         restart=TRUE
-      ),  # to start optim from a solution close to the final in 2021 ... 
+      ),  
+      
+      redo_fit=F, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
      )
     
@@ -141,6 +173,7 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca
         palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
         plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
+        map_mode="plot",
         tmap_zoom= c(map_centre, map_zoom),
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) ,
         outfilename=fn
