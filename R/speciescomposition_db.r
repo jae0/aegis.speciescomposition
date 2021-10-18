@@ -249,7 +249,8 @@
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
 
-      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, lookup = c("bathymetry", "substrate", "temperature" ),
+      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, 
+            lookup_parameters = c("bathymetry", "substrate", "temperature" ),
             vars_to_retain=vars_to_retain,
             vars_to_drop ="speciescomposition" )  # drop dummy variable
 

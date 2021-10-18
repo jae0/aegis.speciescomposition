@@ -23,8 +23,14 @@ p0 = speciescomposition_parameters(
   areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
 #     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
-    areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
-    areal_units_overlay = "none"
+  areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
+  areal_units_overlay = "none",
+  carstm_lookup_parameters = list( 
+      bathymetry = bathymetry_parameters( project_class="stmv" ),
+      substrate = substrate_parameters(   project_class="stmv" ),
+      temperature = temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
+  )
+
 )
 
 
@@ -46,8 +52,8 @@ p0 = speciescomposition_parameters(
   areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
   areal_units_overlay = "none",
   carstm_lookup_parameters = list( 
-    bathymetry = bathymetry_parameters( project_class="stmv", spatial_domain="canada.east.superhighres", stmv_model_label="default"  ),
-    substrate = substrate_parameters(   project_class="stmv", spatial_domain="canada.east.highres", stmv_model_label="default"  ),
+    bathymetry = bathymetry_parameters( project_class="stmv" ),
+    substrate = substrate_parameters(   project_class="stmv" ),
     temperature = temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
   )
 )
