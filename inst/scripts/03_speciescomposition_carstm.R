@@ -26,9 +26,9 @@ p0 = speciescomposition_parameters(
   areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
   areal_units_overlay = "none",
   carstm_lookup_parameters = list( 
-      bathymetry = bathymetry_parameters( project_class="stmv" ),
-      substrate = substrate_parameters(   project_class="stmv" ),
-      temperature = temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
+      bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
+      substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
+      temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
   )
 
 )
@@ -52,9 +52,9 @@ p0 = speciescomposition_parameters(
   areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
   areal_units_overlay = "none",
   carstm_lookup_parameters = list( 
-    bathymetry = bathymetry_parameters( project_class="stmv" ),
-    substrate = substrate_parameters(   project_class="stmv" ),
-    temperature = temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
+    bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
+    substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
+    temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
   )
 )
 
