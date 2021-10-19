@@ -29,8 +29,15 @@ p0 = speciescomposition_parameters(
       bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
       substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
       temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
+  ),
+  theta0 =  list(
+    pca1 = c( 5.802, 5.580, 6.112, 3.214, 14.980, -0.469, 7.971, 3.109, 6.327, 5.621, 3.920, 3.485 ),
+    pca2 = c(  ),
+    pca3 = c( ),
+    ca1 = c(  ),
+    ca2 = c(  ),
+    ca3 = c(  )
   )
-
 )
 
 
@@ -55,6 +62,14 @@ p0 = speciescomposition_parameters(
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
     temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
+  ),
+  theta0 = list(
+    pca1 = c( 5.802, 5.580, 6.112, 3.214, 14.980, -0.469, 7.971, 3.109, 6.327, 5.621, 3.920, 3.485 ),
+    pca2 = c(  ),
+    pca3 = c( ),
+    ca1 = c(  ),
+    ca2 = c(  ),
+    ca3 = c(  )
   )
 )
 
@@ -88,6 +103,7 @@ M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo i
 str(M); 
 M= NULL; gc()
 
+
 p0$formula = NULL  # reset to force a new default below 
 
 for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca3"))  {
@@ -97,30 +113,20 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca
     # variabletomodel = "pca3"
     
     # construct basic parameter list defining the main characteristics of the study
-    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel, mc.cores=2 )  # mc.cores == no of cores to use for posterior extraction .. can be memory intensive so keep low 
-
+    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel, yrs=p0$yrs, 
+      mc.cores=2, theta=p0$theta0[[variabletomodel]]
+    )  
+    
     # run model and obtain predictions
     fit = carstm_model( 
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
-      # control.inla = list( strategy='laplace' ), # "adaptive" strategy seems to run into problems with sparse data (in current year) 
-      control.inla = list( strategy='adaptive' ),
-      control.mode = list(
-        theta = switch( variabletomodel,
-          pca1 = c(5.779, 4.330, 15.261, -1.951, 4.617, 3.950, 5.652, 3.552, 3.611 ),
-          pca2 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
-          pca3 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
-          ca1 = c( 2.658, 1.229, 10.311, 19.854, 8.145, 0.250, 2.298, 5.280, 3.342 ),
-          ca2 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 ),
-          ca3 = c( 6.014, 5.303, 11.065, 20.323, 9.516, 4.379, 5.920, 3.823, 3.528 )
-        ), 
-        restart=FALSE
-      ),  
-      
+      control.inla = list( strategy='laplace' ),  # slower but more stable results
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
      )
+       
     
       # extract results
     if (0) {
