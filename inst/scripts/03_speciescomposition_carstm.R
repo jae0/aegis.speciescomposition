@@ -31,7 +31,7 @@ p0 = speciescomposition_parameters(
       temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
   ),
   theta0 =  list(
-    pca1 = c( 5.802, 5.580, 6.112, 3.214, 14.980, -0.469, 7.971, 3.109, 6.327, 5.621, 3.920, 3.485 ),
+    pca1 = c( 5.782, 5.580, 6.144, 3.237, 14.977, -0.470, 7.986, 3.108, 6.339, 5.635, 3.922, 3.589 ),
     pca2 = c( 6.027, 6.899, 4.684, 5.069, 6.782, 11.509, 12.440, 2.424, 1.439, 6.130, 2.884, 3.269 ),
     pca3 = c(  ),
     ca1 = c(  ),
@@ -40,7 +40,7 @@ p0 = speciescomposition_parameters(
   )
 )
 
-
+ 
 
 # for bio.snowcrab 1999:present
 p0 = speciescomposition_parameters(
