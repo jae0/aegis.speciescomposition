@@ -32,13 +32,14 @@ p0 = speciescomposition_parameters(
   ),
   theta0 =  list(
     pca1 = c( 5.802, 5.580, 6.112, 3.214, 14.980, -0.469, 7.971, 3.109, 6.327, 5.621, 3.920, 3.485 ),
-    pca2 = c(  ),
-    pca3 = c( ),
+    pca2 = c( 6.027, 6.899, 4.684, 5.069, 6.782, 11.509, 12.440, 2.424, 1.439, 6.130, 2.884, 3.269 ),
+    pca3 = c(  ),
     ca1 = c(  ),
     ca2 = c(  ),
     ca3 = c(  )
   )
 )
+
 
 
 # for bio.snowcrab 1999:present
@@ -104,9 +105,12 @@ str(M);
 M= NULL; gc()
 
 
-p0$formula = NULL  # reset to force a new default below 
+#### IMPERTATIVE:
+p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
 
-for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca3"))  {
+
+
+for ( variabletomodel in c("pca1", "pca2", "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
@@ -122,13 +126,13 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  } , "ca1", "ca2",  "pca3", "ca
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
-      control.inla = list( strategy='laplace' ),  # slower but more stable results
+      control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
      )
        
     
-      # extract results
+    # extract results
     if (0) {
       # very large files .. slow 
       fit = carstm_model( p=p, DS="carstm_modelled_fit" )  # extract currently saved model fit
