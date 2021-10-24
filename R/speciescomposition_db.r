@@ -194,8 +194,8 @@
       # over-ride
       p$variabletomodel = "speciescomposition"  # force to be generic to share across variables 
 
-      label = paste( "carstm_inputs",  p$carstm_model_label , sep="_" )
-      if (p$carstm_inputs_prefilter =="rawdata") label = paste( "carstm_inputs_rawdata",  p$carstm_model_label , sep="_" ) 
+      label =  "carstm_inputs" 
+      if (p$carstm_inputs_prefilter =="rawdata") label = "carstm_inputs_rawdata"
       fn = carstm_filenames( p=p, returntype=label, areal_units_fn=areal_units_fn )
 
       # inputs are shared across various secneario using the same polys
@@ -207,6 +207,7 @@
       if (!redo)  {
         if (file.exists(fn)) {
           load( fn)
+          M = M[ which( M$yr %in% p$yrs), ]
           return( M )
         }
       }
@@ -269,6 +270,9 @@
       attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")
 
       save( M, file=fn, compress=TRUE )
+
+      M = M[ which( M$yr %in% p$yrs), ]
+
       return( M )
     }
 
