@@ -2,7 +2,7 @@
 
   # -----------------------------
   # ordination
-  year.assessment = 2020
+  year.assessment = 2021
 
   p = aegis.speciescomposition::speciescomposition_parameters( yrs=1970:year.assessment )
 
