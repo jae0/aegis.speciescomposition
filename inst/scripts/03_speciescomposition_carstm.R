@@ -22,8 +22,7 @@ p0 = speciescomposition_parameters(
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
   areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
-#     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
-  areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
+  areal_units_type = "tesselation",    
   areal_units_overlay = "none",
   carstm_lookup_parameters = list( 
       bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
@@ -31,10 +30,8 @@ p0 = speciescomposition_parameters(
       temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
   ),
   theta0 =  list(
-    # pca1 = c( 5.782, 5.580, 6.144, 3.237, 14.977, -0.470, 7.986, 3.108, 6.339, 5.635, 3.922, 3.589 ),
-    # pca2 = c( 6.027, 6.899, 4.684, 5.069, 6.782, 11.509, 12.440, 2.424, 1.439, 6.130, 2.884, 3.269 ),
-    pca1 = c( 5.785, 5.610, 14.818, -0.494, 8.503, 3.052,  5.623, 4.081, 3.619 ),
-    pca2 = c( 6.019, 7.028, 8.396, 26.309, 12.093, 2.163,  5.982, 2.833, 3.476 ),
+    pca1 = c( 5.784, 5.615, 14.818, -0.494, 8.504, 3.052, 5.617, 4.081, 3.614 ),
+    pca2 = c( 5.781, 5.620, 14.749, -0.493, 8.491, 3.054, 5.613, 4.075, 3.610 ),
     pca3 = c(  ),   
     ca1 = c(  ),
     ca2 = c(  ),
@@ -53,23 +50,21 @@ p0 = speciescomposition_parameters(
   inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
   inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
   year.assessment = year.assessment,
-  yrs = 1970:year.assessment,
+  yrs = 1999:year.assessment,
   aegis_dimensionality="space-year",
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
   areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
-#     areal_units_type = "lattice", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
-  areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not     
+  areal_units_type = "tesselation",       
   areal_units_overlay = "none",
   carstm_lookup_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
     temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
-  ),
-  theta0 = list(
-    # pca1 = c( 5.802, 5.580, 6.112, 3.214, 14.980, -0.469, 7.971, 3.109, 6.327, 5.621, 3.920, 3.485 ),
-    pca1 = c( 5.802, 5.580,  14.980, -0.469, 7.971, 3.109, 6.327, 5.621, 3.920, 3.485 ),
-    pca2 = c(  ),
+  ) ,
+  theta0 = list( 
+    pca1 = c( 5.561, 4.667, 6.375, 3.375, 8.600, 3.162, 5.643, 2.707, 3.406 ),
+    pca2 = c( 5.781, 5.620, 14.749, -0.493, 8.491, 3.054, 5.613, 4.075, 3.610 ),
     pca3 = c( ),
     ca1 = c(  ),
     ca2 = c(  ),
@@ -97,7 +92,7 @@ if (0) {
 
     sppoly = areal_units( p=p0, redo=TRUE, hull_alpha=20, verbose=TRUE )   
   
-      plot(sppoly["AUID"])
+    plot(sppoly["AUID"])
 
 }
  
@@ -109,17 +104,17 @@ M= NULL; gc()
 
 
 #### IMPERTATIVE:
-p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
 
 
 
-for ( variabletomodel in c("pca1", "pca2", "pca3" , "ca1", "ca2",   "ca3"))  {
+for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
     # variabletomodel = "pca3"
     
     # construct basic parameter list defining the main characteristics of the study
+    p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
     p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel, yrs=p0$yrs, 
       mc.cores=2, theta=p0$theta0[[variabletomodel]]
     )  
@@ -150,9 +145,9 @@ for ( variabletomodel in c("pca1", "pca2", "pca3" , "ca1", "ca2",   "ca3"))  {
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
 
-    map_centre = c( (p$lon0+p$lon1)/2 - 0.5, (p$lat0+p$lat1)/2 -0.8 )
-    map_zoom = 6.5
-
+    map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
+    map_zoom = 7
+    background = tmap::tm_basemap(leaflet::providers$CartoDB.Positron, alpha=0.8 )
 
     if (0) {
       # map all :
@@ -167,6 +162,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3" , "ca1", "ca2",   "ca3"))  {
         breaks = seq(-0.3, 0.3, by=0.1),
         plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
         tmap_zoom= c(map_centre, map_zoom),
+        background = background,
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
       )
 
@@ -189,8 +185,9 @@ for ( variabletomodel in c("pca1", "pca2", "pca3" , "ca1", "ca2",   "ca3"))  {
         palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
         plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
-        map_mode="plot",
+        map_mode="view",
         tmap_zoom= c(map_centre, map_zoom),
+        background=background, 
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) ,
         outfilename=fn
       )

@@ -39,14 +39,15 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
   # define focal years for modelling and interpolation
 
+  if (!exists("year.assessment", p )) if (exists("yrs", p)) p$year.assessment=max(p$yrs)
+
   if (!exists("year.assessment", p )) {
-    message("need probably want to assign current year.assessment, using current year for now")
+    message("probably want to assign current year.assessment, using current year for now")
     p$year.assessment = lubridate::year(lubridate::now())
   }
   
-  # if (is.null(p$year.assessment)) p$year.assessment = lubridate::year(lubridate::now())
-
-  p = parameters_add_without_overwriting( p, yrs=1970:p$year.assessment, timezone="America/Halifax" )  # default
+  yrs_default = 1970:p$year.assessment
+  p = parameters_add_without_overwriting( p, yrs=yrs_default, timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
 
   p$discretization = discretizations(p=p$discretization)  # key for discretization levels
