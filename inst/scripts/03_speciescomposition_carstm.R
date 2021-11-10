@@ -160,7 +160,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
         plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
         palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
-        plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
+        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         tmap_zoom= c(map_centre, map_zoom),
         background = background,
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
@@ -184,7 +184,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
-        plot_elements=c( "isobaths", "coastline", "compass", "scale_bar", "legend" ),
+        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         map_mode="view",
         tmap_zoom= c(map_centre, map_zoom),
         background=background, 
