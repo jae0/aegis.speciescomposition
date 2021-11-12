@@ -199,7 +199,7 @@
         if (length(j) > 0 ) m = m[ , -j ]
       }
 
-      # m = log(m)
+      m = log(m)
 
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
