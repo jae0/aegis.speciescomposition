@@ -72,34 +72,6 @@
       set = set[ which( set$id %in% unique( sc$id[isc]) ),]
 
       set = set[ , c("id", "yr", "dyear", "sa", "lon", "lat", "t", "z", "timestamp", "gear", "vessel", "data.source" )]
-      i = which(!is.finite(set$z)) 
-      if (length(i) > 0 ) {
-        set$z[i] = aegis_lookup(  
-            parameters= "bathymetry" , 
-            LOCS=set[ i, c("lon", "lat")],  
-            project_class="core", 
-            output_format="points" , 
-            DS="aggregated_data", 
-            variable_name="z.mean",
-            returntype="vector" ,
-            yrs=p$yrs
-          ) 
-      }
-
-      i = which(!is.finite(set$t)) 
-      if (length(i) > 0 ) {
-        set$t[i] = aegis_lookup(  
-            parameters= "temperature" , 
-            LOCS=set[ i, c("lon", "lat", "timestamp")],  
-            project_class="carstm", 
-            output_format="points" , 
-            variable_name=list( "predictions"),
-            statvars=c("mean"),
-            raster_resolution=min(p$gridparams$res)/2,
-            returntype="vector" ,
-            yrs=p$yrs
-          ) 
-      }
 
       sc = merge(sc, set, by="id", all.x=TRUE, all.y=FALSE) 
       sc = na.omit(sc)
@@ -184,11 +156,10 @@
       # convert from quantile to z-score
       sc$zn = quantile_to_normal( sc$qn )
 
-
       m = xtabs( zn*1e6 ~ as.factor(id) + as.factor(spec_bio), data=sc )  / 1e6
       
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0.1   # 
+      cthreshold = 0.01   # 
       
       finished = F
       while( !(finished) ) {
@@ -281,6 +252,38 @@
       ii = which( is.finite( rowSums( SC[,imperative ] ) ) )
       if (length(ii) == 0) stop( "No data .. something went wrong")
       SC = SC[ii,]
+
+      i = which(!is.finite(SC$z)) 
+      if (length(i) > 0 ) {
+        SC$z[i] = aegis_lookup(  
+            parameters= "bathymetry" , 
+            LOCS=SC[ i, c("lon", "lat")],  
+            project_class="core", 
+            output_format="points" , 
+            DS="aggregated_data", 
+            variable_name="z.mean",
+            returntype="vector" ,
+            yrs=p$yrs
+          ) 
+      }
+
+      i = which(!is.finite(SC$t)) 
+      if (length(i) > 0 ) {
+        SC$t[i] = aegis_lookup(  
+            parameters= "temperature" , 
+            LOCS=SC[ i, c("lon", "lat", "timestamp")],  
+            project_class="carstm", 
+            output_format="points" , 
+            variable_name=list( "predictions"),
+            statvars=c("mean"),
+            raster_resolution=min(p$gridparams$res)/2,
+            returntype="vector" ,
+            yrs=p$yrs
+          ) 
+      }
+
+
+
 
       save( SC, file=fn, compress=T )
 			return (fn)
