@@ -107,61 +107,6 @@
       sc$totno_adjusted = trunc( sc$totno * sc$cf_cat )   # correct to catch subsmapling 
       sc$totwgt_adjusted = trunc( sc$totwgt * sc$cf_cat )   # correct to catch subsmapling 
       
-      if (0) {
-
-          # way too slow to use a modelled solution:
-          # gc()
-
-          # sc$log_sa = log(sc$sa) 
-          # o = as.data.frame(sc) 
-          # o$tag ="obs"
-          # o$spec_bio = as.numeric( as.factor( o$spec_bio))
-
-          # u=o
-          # u$tag ="preds"
-          # u$log_sa = 0
-          # u$totno_adjusted = NA
-          # u$vessel = "CAR"
-          # u$gear = "US 4 seam 3 bridle survey trawl"
-          # u$data.source = "groundfish"
-
-          # o =  rbind( o, u[ , names(o)])
-          # u = NULL; gc()
-          # o$survey = paste( o$data.source, o$vessel, o$gear, sep="__")
-          # o$yr = o$yr - min(o$yr) + 1
-          # o$yr1 = o$yr2 = o$yr3 = o$yr
-
-          # nmod = inla( 
-          #     formula = totno_adjusted ~ 1 + offset(log_sa) 
-          #       + f( yr, model="ar1")
-          #       + f( id, model="iid", group=yr3 )
-          #       + f( spec_bio, model="iid", group=yr1 )
-          #       + f( survey, model="iid", group=yr2),  
-          #     data = o,
-          #     family = "poisson",
-          #     control.predictor=list(link=1),
-          #     control.inla = list( strategy='adaptive', int.strategy="eb" ),
-          #     # inla.mode="experimental",
-          #     verbose =TRUE
-          # )
-
-          # # .. data loss due to truncation is OK
-          # # ... smallest abundance adds little information to ordinations
-          
-
-          # sc$density =  nmod$summary.fitted.values$mean[ which(o$tag=="preds" ) ]
-          # sc$zdensity = NA 
-
-          # sps = unique( sc$spec_bio )
-          # for ( s in sps ) {
-          #   ii = which( sc$spec_bio==s & sc$density > 0 )
-          #   if (length( ii) > 5 ) {
-          #     sc$zdensity[ii] = quantile_to_normal( quantile_estimate( sc$density[ii] ) )
-          #   }
-          # }
-
-      }
- 
       
       # the US 4 seam behaves very differently and has a shorter standard tow .. treat as a separate data source 
       # of course if misses out on the high abundance period from the 1980s but no model-based solution possible at this point 
@@ -172,26 +117,25 @@
       sc$survey[ i ]  = paste( sc$survey[i], sc$gear[i], sep="__")
       sc$qn = NA 
 
+      sc$density = sc$totwgt_adjusted / sc$sa
       surveys = unique(sc$survey)
       for ( s in surveys ) {
-        ii = which( sc$survey==s & sc$totwgt_adjusted > 0 )
-        if (length( ii) > 0 ) sc$qn[ii] = quantile_estimate( sc$totwgt_adjusted[ii] )  # convert to quantiles, by survey
+        ii = which( sc$survey==s & sc$density > 0 )
+        if (length( ii) > 0 ) sc$qn[ii] = quantile_estimate( sc$density[ii] )  # convert to quantiles, by survey
       }
 
-      oo = which( sc$totwgt_adjusted == 0 )  # retain as zero values
+      oo = which( sc$density == 0 )  # retain as zero values
       if (length(oo)>0 ) sc$qn[oo] = 0
-
 
       # convert from quantile to z-score
       sc$zn = quantile_to_normal( sc$qn )
 
-
       m = xtabs( zn*1e9 ~ as.factor(id) + as.factor(spec_bio), data=sc )  / 1e9
       
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0.05   # 
+      cthreshold = 0 
       
-      finished = F
+      finished = FALSE
       while( !(finished) ) {
         i = unique( which(rowSums(m) == 0 ) )
         j = unique( which(colSums(m) <= cthreshold ) )

@@ -29,15 +29,15 @@ p0 = speciescomposition_parameters(
       substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
       temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
   )
-  # ,
-  # theta0 =  list(
-  #   pca1 = c( 5.782, 4.273, 15.146, -1.808, 9.019, 3.672, 5.634, 3.499, 3.574 ),
-  #   pca2 = c( 5.782, 4.273, 15.146, -1.808, 9.019, 3.672, 5.634, 3.499, 3.574 ),
-  #   pca3 = c(  ),   
-  #   ca1 = c(  ),
-  #   ca2 = c(  ),
-  #   ca3 = c(  )
-  # )
+  ,
+  theta0 =  list(
+    pca1 = c( 5.782, 4.273, 15.146, -1.808, 9.019, 3.672, 5.634, 3.499, 3.574 ),
+    pca2 = c( 5.782, 4.273, 15.146, -1.808, 9.019, 3.672, 5.634, 3.499, 3.574 ),
+    pca3 = c(  ),   
+    ca1 = c(  ),
+    ca2 = c(  ),
+    ca3 = c(  )
+  )
 )
 
  
@@ -97,15 +97,9 @@ if (0) {
 
 }
  
-
-
 M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
 str(M); 
 M= NULL; gc()
-
-
-#### IMPERTATIVE:
-
 
 
 for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
