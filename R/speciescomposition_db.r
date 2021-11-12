@@ -33,17 +33,36 @@
         return ( ca.out )
       }
 
-      sc = survey_db( DS="cat" ,p=p)  # species catch
 
-      sc = sc[ which(is.finite( sc$zn ) ), ]
-      sc = sc[ , c("id", "spec_bio", "zn" ) ]  # zscore-transformed into 0,1
-      sc = sc[ , c("id", "zn","spec_bio" ) ]  # zscore-transformed into 0,1
+ 
 
-      set = survey_db( DS="set", p=p) # trip/set loc information
 
-      set = set[ ,  c("id", "yr", "dyear", "sa", "lon", "lat", "t", "z", "timestamp" ) ]
-      set = na.omit( set ) # all are required fields
+    # # convert from quantile to z-score
+    # set$zm = quantile_to_normal( set$qm )
+    # set$zn = quantile_to_normal( set$qn )
 
+      require(data.table)
+
+      # catch info
+      sc = survey_db( DS="cat" ,p=p)[ , c("id", "totno", "totwgt", "cf_cat", "spec_bio" )]
+      sc = setDT( sc, key="id" ) # species catch
+ 
+      # trip/set loc information
+      set = survey_db( DS="set", p=p)
+
+      set = set[ which( set$settype %in% c(1,2,4,5,8) ) , ] # == "good"
+        # settype:
+        # 1=stratified random,
+        # 2=regular survey,
+        # 3=unrepresentative(net damage),
+        # 4=representative sp recorded(but only part of total catch),
+        # 5=comparative fishing experiment,
+        # 6=tagging,
+        # 7=mesh/gear studies,
+        # 8=explorartory fishing,
+        # 9=hydrography
+
+    
       # filter area
       igood = which( set$lon >= p$corners$lon[1] & set$lon <= p$corners$lon[2]
               &  set$lat >= p$corners$lat[1] & set$lat <= p$corners$lat[2] )
@@ -52,15 +71,125 @@
       isc = taxonomy.filter.taxa( sc$spec_bio, method=p$taxa, outtype="internalcodes" )
       set = set[ which( set$id %in% unique( sc$id[isc]) ),]
 
-      # .. data loss due to truncation is OK
-      # ... smallest abundance adds little information to ordinations
-      k = 1e3         # a large constant number to make xtabs work  but not too large as truncation is desired
-      sc$zn = as.integer( sc$zn*k )
-      m = xtabs( zn ~ as.factor(id) + as.factor(spec_bio), data=sc ) /k
+      set = set[ , c("id", "yr", "dyear", "sa", "lon", "lat", "t", "z", "timestamp", "gear", "vessel", "data.source" )]
+      i = which(!is.finite(set$z)) 
+      if (length(i) > 0 ) {
+        set$z[i] = aegis_lookup(  
+            parameters= "bathymetry" , 
+            LOCS=set[ i, c("lon", "lat")],  
+            project_class="core", 
+            output_format="points" , 
+            DS="aggregated_data", 
+            variable_name="z.mean",
+            returntype="vector" ,
+            yrs=p$yrs
+          ) 
+      }
 
+      i = which(!is.finite(set$t)) 
+      if (length(i) > 0 ) {
+        set$t[i] = aegis_lookup(  
+            parameters= "temperature" , 
+            LOCS=set[ i, c("lon", "lat", "timestamp")],  
+            project_class="carstm", 
+            output_format="points" , 
+            variable_name=list( "predictions"),
+            statvars=c("mean"),
+            raster_resolution=min(p$gridparams$res)/2,
+            returntype="vector" ,
+            yrs=p$yrs
+          ) 
+      }
+
+      sc = merge(sc, set, by="id", all.x=TRUE, all.y=FALSE) 
+      sc = na.omit(sc)
+
+      sc$totno_adjusted = trunc( sc$totno * sc$cf_cat )   # correct to catch subsmapling 
+      sc$log_sa = log(sc$sa) 
+      
+      if (0) {
+
+          # way too slow to use a modelled solution:
+          # gc()
+
+          # o = as.data.frame(sc) 
+          # o$tag ="obs"
+          # o$spec_bio = as.numeric( as.factor( o$spec_bio))
+
+          # u=o
+          # u$tag ="preds"
+          # u$log_sa = 0
+          # u$totno_adjusted = NA
+          # u$vessel = "CAR"
+          # u$gear = "US 4 seam 3 bridle survey trawl"
+          # u$data.source = "groundfish"
+
+          # o =  rbind( o, u[ , names(o)])
+          # u = NULL; gc()
+          # o$survey = paste( o$data.source, o$vessel, o$gear, sep="__")
+          # o$yr = o$yr - min(o$yr) + 1
+          # o$yr1 = o$yr2 = o$yr3 = o$yr
+
+          # nmod = inla( 
+          #     formula = totno_adjusted ~ 1 + offset(log_sa) 
+          #       + f( yr, model="ar1")
+          #       + f( id, model="iid", group=yr3 )
+          #       + f( spec_bio, model="iid", group=yr1 )
+          #       + f( survey, model="iid", group=yr2),  
+          #     data = o,
+          #     family = "poisson",
+          #     control.predictor=list(link=1),
+          #     control.inla = list( strategy='adaptive', int.strategy="eb" ),
+          #     # inla.mode="experimental",
+          #     verbose =TRUE
+          # )
+
+          # # .. data loss due to truncation is OK
+          # # ... smallest abundance adds little information to ordinations
+          
+
+          # sc$density =  nmod$summary.fitted.values$mean[ which(o$tag=="preds" ) ]
+          # sc$zdensity = NA 
+
+          # sps = unique( sc$spec_bio )
+          # for ( s in sps ) {
+          #   ii = which( sc$spec_bio==s & sc$density > 0 )
+          #   if (length( ii) > 5 ) {
+          #     sc$zdensity[ii] = quantile_to_normal( quantile_estimate( sc$density[ii] ) )
+          #   }
+          # }
+
+      }
+ 
+      
+      # the US 4 seam behaves very differently and has a shorter standard tow .. treat as a separate data source 
+      # of course if misses out on the high abundance period from the 1980s but no model-based solution possible at this point 
+      # due simply to CPU speed issues
+
+      sc$survey = sc$data.source
+      i = which( sc$gear=="US 4 seam 3 bridle survey trawl" )
+      sc$survey[ i ]  = paste( sc$survey[i], sc$gear[i], sep="__")
+      sc$qn = NA 
+
+      surveys = unique(sc$survey)
+      for ( s in surveys ) {
+        ii = which( sc$survey==s & sc$totno_adjusted > 0 )
+        if (length( ii) > 0 ) sc$qn[ii] = quantile_estimate( sc$totno_adjusted[ii] )  # convert to quantiles, by survey
+      }
+
+      oo = which( sc$totno_adjusted == 0 )  # retain as zero values
+      if (length(oo)>0 ) sc$qn[oo] = 0
+
+
+      # convert from quantile to z-score
+      sc$zn = quantile_to_normal( sc$qn )
+
+
+      m = xtabs( zn*1e6 ~ as.factor(id) + as.factor(spec_bio), data=sc )  / 1e6
+      
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0.05 * k  # quantiles to be removed
-
+      cthreshold = 0.1   # 
+      
       finished = F
       while( !(finished) ) {
         i = unique( which(rowSums(m) == 0 ) )
@@ -70,12 +199,14 @@
         if (length(j) > 0 ) m = m[ , -j ]
       }
 
+      # m = log(m)
+
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
       corel = cor( m, use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
       corel[ is.na(corel) ] = 0
       s = svd(corel)  # eigenanalysis via singular value decomposition
- 
+
       # scores = matrix.multiply (m, s$v)  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
       m[which(!is.finite(m))] = 0
       scores = m %*% s$v  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
@@ -94,17 +225,18 @@
 
       # Correpsondence analysis
       require(vegan)
-        n = m * 0
-        n[ which(m>0) ] = 1
-        ord = cca( n )
-        sp.sc = scores(ord, choices=c(1:3))$species
-        si.sc = scores(ord, choices=c(1:3))$sites
-        scores = data.frame( id=as.character(rownames(si.sc)), ca1=as.numeric(si.sc[,1]), ca2=as.numeric(si.sc[,2]), ca3=as.numeric(si.sc[,3]) )
-        variances=  ord$CA$eig[1:10]/sum(ord$CA$eig)*100
-        set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
-        ca.out = list( scores=scores, ca=ord, variances=variances )
-        save( ca.out, file=fn.ca, compress=T)
-        save( set, file=fn.set, compress=T )
+      n = m * 0
+      n[ which(m>0) ] = 1
+      ord = cca( n )
+      sp.sc = scores(ord, choices=c(1:3))$species
+      si.sc = scores(ord, choices=c(1:3))$sites
+      scores = data.frame( id=as.character(rownames(si.sc)), ca1=as.numeric(si.sc[,1]), ca2=as.numeric(si.sc[,2]), ca3=as.numeric(si.sc[,3]) )
+      variances=  ord$CA$eig[1:10]/sum(ord$CA$eig)*100
+      set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
+      ca.out = list( scores=scores, ca=ord, variances=variances )
+
+      save( ca.out, file=fn.ca, compress=T)
+      save( set, file=fn.set, compress=T )
 
       return (fn.set)
     }
@@ -127,8 +259,7 @@
 
       SC = speciescomposition_db( DS="speciescomposition.ordination", p=p )
       SC = lonlat2planar( SC, proj.type=p$aegis_proj4string_planar_km )
-      SC$lon = SC$lat = NULL
-
+ 
       oo = which(!is.finite( SC$plon+SC$plat ) )
       if (length(oo)>0) SC = SC[ -oo , ]  # a required field for spatial interpolation
 
@@ -171,7 +302,7 @@
         }
       }
       xydata = speciescomposition_db( p=p, DS="speciescomposition"  )  #
-      xydata = planar2lonlat(xydata, p$areal_units_proj4string_planar_km)  # should not be required but to make sure
+
       names(xydata)[which(names(xydata)=="z.mean" )] = "z"
       xydata = xydata[ geo_subset( spatial_domain=p$spatial_domain, Z=xydata ) , ] # need to be careful with extrapolation ...  filter depths
       xydata = xydata[ , c("lon", "lat", "yr" )]
