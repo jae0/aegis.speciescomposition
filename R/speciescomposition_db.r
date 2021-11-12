@@ -72,18 +72,47 @@
       set = set[ which( set$id %in% unique( sc$id[isc]) ),]
 
       set = set[ , c("id", "yr", "dyear", "sa", "lon", "lat", "t", "z", "timestamp", "gear", "vessel", "data.source" )]
+      i = which(!is.finite(set$z)) 
+      if (length(i) > 0 ) {
+        set$z[i] = aegis_lookup(  
+            parameters= "bathymetry" , 
+            LOCS=set[ i, c("lon", "lat")],  
+            project_class="core", 
+            output_format="points" , 
+            DS="aggregated_data", 
+            variable_name="z.mean",
+            returntype="vector" ,
+            yrs=p$yrs
+          ) 
+      }
+
+      i = which(!is.finite(set$t)) 
+      if (length(i) > 0 ) {
+        set$t[i] = aegis_lookup(  
+            parameters= "temperature" , 
+            LOCS=set[ i, c("lon", "lat", "timestamp")],  
+            project_class="carstm", 
+            output_format="points" , 
+            variable_name=list( "predictions"),
+            statvars=c("mean"),
+            raster_resolution=min(p$gridparams$res)/2,
+            returntype="vector" ,
+            yrs=p$yrs
+          ) 
+      }
 
       sc = merge(sc, set, by="id", all.x=TRUE, all.y=FALSE) 
       sc = na.omit(sc)
 
       sc$totno_adjusted = trunc( sc$totno * sc$cf_cat )   # correct to catch subsmapling 
-      sc$log_sa = log(sc$sa) 
+      sc$totwgt_adjusted = trunc( sc$totwgt * sc$cf_cat )   # correct to catch subsmapling 
       
       if (0) {
 
           # way too slow to use a modelled solution:
           # gc()
 
+          # sc$log_sa = log(sc$sa) 
           # o = as.data.frame(sc) 
           # o$tag ="obs"
           # o$spec_bio = as.numeric( as.factor( o$spec_bio))
@@ -145,21 +174,22 @@
 
       surveys = unique(sc$survey)
       for ( s in surveys ) {
-        ii = which( sc$survey==s & sc$totno_adjusted > 0 )
-        if (length( ii) > 0 ) sc$qn[ii] = quantile_estimate( sc$totno_adjusted[ii] )  # convert to quantiles, by survey
+        ii = which( sc$survey==s & sc$totwgt_adjusted > 0 )
+        if (length( ii) > 0 ) sc$qn[ii] = quantile_estimate( sc$totwgt_adjusted[ii] )  # convert to quantiles, by survey
       }
 
-      oo = which( sc$totno_adjusted == 0 )  # retain as zero values
+      oo = which( sc$totwgt_adjusted == 0 )  # retain as zero values
       if (length(oo)>0 ) sc$qn[oo] = 0
 
 
       # convert from quantile to z-score
       sc$zn = quantile_to_normal( sc$qn )
 
-      m = xtabs( zn*1e6 ~ as.factor(id) + as.factor(spec_bio), data=sc )  / 1e6
+
+      m = xtabs( zn*1e9 ~ as.factor(id) + as.factor(spec_bio), data=sc )  / 1e9
       
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0.01   # 
+      cthreshold = 0.05   # 
       
       finished = F
       while( !(finished) ) {
@@ -169,8 +199,6 @@
         if (length(i) > 0 ) m = m[ -i , ]
         if (length(j) > 0 ) m = m[ , -j ]
       }
-
-      m = log(m)
 
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
@@ -197,7 +225,7 @@
       # Correpsondence analysis
       require(vegan)
       n = m * 0
-      n[ which(m>0) ] = 1
+      n[ which( m > 0.05 ) ] = 1
       ord = cca( n )
       sp.sc = scores(ord, choices=c(1:3))$species
       si.sc = scores(ord, choices=c(1:3))$sites
@@ -252,38 +280,6 @@
       ii = which( is.finite( rowSums( SC[,imperative ] ) ) )
       if (length(ii) == 0) stop( "No data .. something went wrong")
       SC = SC[ii,]
-
-      i = which(!is.finite(SC$z)) 
-      if (length(i) > 0 ) {
-        SC$z[i] = aegis_lookup(  
-            parameters= "bathymetry" , 
-            LOCS=SC[ i, c("lon", "lat")],  
-            project_class="core", 
-            output_format="points" , 
-            DS="aggregated_data", 
-            variable_name="z.mean",
-            returntype="vector" ,
-            yrs=p$yrs
-          ) 
-      }
-
-      i = which(!is.finite(SC$t)) 
-      if (length(i) > 0 ) {
-        SC$t[i] = aegis_lookup(  
-            parameters= "temperature" , 
-            LOCS=SC[ i, c("lon", "lat", "timestamp")],  
-            project_class="carstm", 
-            output_format="points" , 
-            variable_name=list( "predictions"),
-            statvars=c("mean"),
-            raster_resolution=min(p$gridparams$res)/2,
-            returntype="vector" ,
-            yrs=p$yrs
-          ) 
-      }
-
-
-
 
       save( SC, file=fn, compress=T )
 			return (fn)
@@ -353,21 +349,25 @@
       M = speciescomposition_db( p=p, DS="speciescomposition"  )
       setDT(M)
       
-      vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3" )
+      vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3", "gear", "data.source", "vessel" )
 
-      if (p$carstm_inputs_prefilter != "aggregated") {
-        if (exists("quantile_bounds", p)) {
-          for (vn in vars_to_retain) {
-            TR = quantile(M[[vn]], probs=p$quantile_bounds, na.rm=TRUE )
-            oo = which( M[[vn]] < TR[1])
-            if (length(oo) > 0) M[[vn]][oo] = TR[1]
-            oo = which( M[[vn]] > TR[2])
-            if (length(oo) > 0) M[[vn]][oo] = TR[2]
-          }
-        }
-      }
+      # if (p$carstm_inputs_prefilter != "aggregated") {
+      #   if (exists("quantile_bounds", p)) {
+      #     for (vn in vars_to_retain) {
+      #       if (exists( vn, M )) {
+      #         if (is.numeric(  M[[ vn ]] )) {
+      #           TR = quantile(M[[vn]], probs=p$quantile_bounds, na.rm=TRUE )
+      #           oo = which( M[[vn]] < TR[1])
+      #           if (length(oo) > 0) M[[vn]][oo] = TR[1]
+      #           oo = which( M[[vn]] > TR[2])
+      #           if (length(oo) > 0) M[[vn]][oo] = TR[2]
+      #         }
+      #       }  
+      #     }
+      #   }
+      # }
 
-      # INLA does not like duplicates ... causes optimizer to crash frequently
+      # # INLA does not like duplicates ... causes optimizer to crash frequently
       # oo = which(duplicated( M[, p$variabletomodel] ))
       # if ( length(oo)> 0) {
       #   eps = exp( log( .Machine$double.eps ) / 2)  # ~ 1.5e-8

@@ -28,15 +28,16 @@ p0 = speciescomposition_parameters(
       bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
       substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
       temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
-  ),
-  theta0 =  list(
-    pca1 = c( 5.784, 5.615, 14.818, -0.494, 8.504, 3.052, 5.617, 4.081, 3.614 ),
-    pca2 = c( 5.781, 5.620, 14.749, -0.493, 8.491, 3.054, 5.613, 4.075, 3.610 ),
-    pca3 = c(  ),   
-    ca1 = c(  ),
-    ca2 = c(  ),
-    ca3 = c(  )
   )
+  # ,
+  # theta0 =  list(
+  #   pca1 = c( 5.782, 4.273, 15.146, -1.808, 9.019, 3.672, 5.634, 3.499, 3.574 ),
+  #   pca2 = c( 5.782, 4.273, 15.146, -1.808, 9.019, 3.672, 5.634, 3.499, 3.574 ),
+  #   pca3 = c(  ),   
+  #   ca1 = c(  ),
+  #   ca2 = c(  ),
+  #   ca3 = c(  )
+  # )
 )
 
  

@@ -10,14 +10,14 @@
 
   if (0) { 
     # extract summaries and plot
-    pca = speciescomposition_db( DS="pca", p=p )  # analsysis
-    ca  = speciescomposition_db( DS="ca", p=p )  # analsysis
+      pca = speciescomposition_db( DS="pca", p=p )  # analsysis
+      ca  = speciescomposition_db( DS="ca", p=p )  # analsysis
 
-    toplot = as.data.frame( pca$cscores )
-    toplot$vern = taxonomy.recode( from="spec", to="taxa", tolookup=rownames( toplot ) )$vern
+      toplot = as.data.frame( pca$cscores )
+      toplot$vern = taxonomy.recode( from="spec", to="taxa", tolookup=rownames( toplot ) )$vern
 
-    plot(V2 ~ V1, toplot, type="n")
-    text( V2 ~ V1, labels=vern, data=toplot )
+      plot(V2 ~ V1, toplot, type="n")
+      text( V2 ~ V1, labels=vern, data=toplot )
 
 
     plot(V3 ~ V1, toplot, type="n")
