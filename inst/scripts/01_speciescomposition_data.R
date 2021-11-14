@@ -1,10 +1,17 @@
 
 
-  # -----------------------------
-  # ordination
-  year.assessment = 2021
+    # -----------------------------
+    # ordination
+    year.assessment = 2021
 
-  p = aegis.speciescomposition::speciescomposition_parameters( yrs=1970:year.assessment )
+    require(aegis.speciescomposition)
+   
+    p = speciescomposition_parameters( yrs=1970:year.assessment )
+
+
+    spatial_domain = "SSE"
+    yrs = 1970:2021
+
 
   speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
 

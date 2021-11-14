@@ -62,6 +62,42 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
 
 
+    # basic selection criteria
+  p = parameters_add_without_overwriting( p,
+    selection = list(
+      # biologicals=list(
+      #   spec_bio = bio.taxonomy::taxonomy.recode( from="spec", to="parsimonious", tolookup=groundfish_survey_species_code )
+      # ),
+      survey=list(
+        data.source = c("groundfish", "snowcrab" ),
+        yr = p$yrs,      # time frame for comparison specified above
+        # months=6:8,
+        # dyear = c(150,250)/365, #  summer = which( (x>150) & (x<250) ) , spring = which(  x<149 ), winter = which(  x>251 )
+        # ranged_data="dyear"
+        settype = c(1,2,5,8),
+        # gear = c("Western IIA trawl", "Yankee #36 otter trawl"),
+        # strata_toremove=c("Gulf", "Georges_Bank", "Spring", "Deep_Water"),  # <<<<< strata to remove from standard strata-based analysis
+        # polygon_enforce=TRUE
+        greater_than = c("sa", "sa_towdistance"),
+        sa = 0.001,  # km^2 (snowcrab)
+        sa_towdistance = 0.001 
+      )
+    )
+  )
+
+  # NOTE: groundfish settypes:
+    # 1=stratified random,
+    # 2=regular survey,
+    # 3=unrepresentative(net damage),
+    # 4=representative sp recorded(but only part of total catch),
+    # 5=comparative fishing experiment,
+    # 6=tagging,
+    # 7=mesh/gear studies,
+    # 8=explorartory fishing,
+    # 9=hydrography
+
+
+
   # ---------------------
 
   if (project_class=="core") {

@@ -33,125 +33,86 @@
         return ( ca.out )
       }
 
-
  
-
-
-    # # convert from quantile to z-score
-    # set$zm = quantile_to_normal( set$qm )
-    # set$zn = quantile_to_normal( set$qn )
-
       require(data.table)
 
-      # catch info
-      sc = survey_db( DS="cat" ,p=p)[ , c("id", "totno", "totwgt", "cf_cat", "spec_bio" )]
-      sc = setDT( sc, key="id" ) # species catch
- 
-      # trip/set loc information
-      set = survey_db( DS="set", p=p)
+      # catch info by species and set 
+      sc = survey_db( p=p, DS="cat.filter"  ) 
+      sc = sc[ , c("id", "totno_adjusted", "totwgt_adjusted",  "spec_bio" )]
+      sc_species = unique(  sc$id[ taxonomy.filter.taxa( sc$spec_bio, method=p$taxa, outtype="internalcodes" ) ] )
 
-      set = set[ which( set$settype %in% c(1,2,4,5,8) ) , ] # == "good"
-        # settype:
-        # 1=stratified random,
-        # 2=regular survey,
-        # 3=unrepresentative(net damage),
-        # 4=representative sp recorded(but only part of total catch),
-        # 5=comparative fishing experiment,
-        # 6=tagging,
-        # 7=mesh/gear studies,
-        # 8=explorartory fishing,
-        # 9=hydrography
-
-    
-      # filter area
-      igood = which( set$lon >= p$corners$lon[1] & set$lon <= p$corners$lon[2]
-              &  set$lat >= p$corners$lat[1] & set$lat <= p$corners$lat[2] )
-      set = set[igood, ]
-
-      isc = taxonomy.filter.taxa( sc$spec_bio, method=p$taxa, outtype="internalcodes" )
-      set = set[ which( set$id %in% unique( sc$id[isc]) ),]
-
-      set = set[ , c("id", "yr", "dyear", "sa", "lon", "lat", "t", "z", "timestamp", "gear", "vessel", "data.source" )]
-      i = which(!is.finite(set$z)) 
-      if (length(i) > 0 ) {
-        set$z[i] = aegis_lookup(  
-            parameters= "bathymetry" , 
-            LOCS=set[ i, c("lon", "lat")],  
-            project_class="core", 
-            output_format="points" , 
-            DS="aggregated_data", 
-            variable_name="z.mean",
-            returntype="vector" ,
-            yrs=p$yrs
-          ) 
-      }
-
-      i = which(!is.finite(set$t)) 
-      if (length(i) > 0 ) {
-        set$t[i] = aegis_lookup(  
-            parameters= "temperature" , 
-            LOCS=set[ i, c("lon", "lat", "timestamp")],  
-            project_class="carstm", 
-            output_format="points" , 
-            variable_name=list( "predictions"),
-            statvars=c("mean"),
-            raster_resolution=min(p$gridparams$res)/2,
-            returntype="vector" ,
-            yrs=p$yrs
-          ) 
-      }
-
+      # trip/set loc information by set
+      set = survey_db( p=p, DS="filter"  ) 
+      set = set[ which( set$id %in% sc_species), ]
+      set = set[ , c("id", "yr", "dyear", "sa", "sa_towdistance", "lon", "lat", 
+        "timestamp", "gear", "vessel", "data.source" )]
+  
       sc = merge(sc, set, by="id", all.x=TRUE, all.y=FALSE) 
-      sc = na.omit(sc)
-
-      sc$totno_adjusted = trunc( sc$totno * sc$cf_cat )   # correct to catch subsmapling 
-      sc$totwgt_adjusted = trunc( sc$totwgt * sc$cf_cat )   # correct to catch subsmapling 
-      
-      
-      # the US 4 seam behaves very differently and has a shorter standard tow .. treat as a separate data source 
+        
+      # NOTE:: the US 4 seam behaves very differently and has a shorter standard tow .. treat as a separate data source 
       # of course if misses out on the high abundance period from the 1980s but no model-based solution possible at this point 
       # due simply to CPU speed issues
 
-      sc$survey = sc$data.source
-      i = which( sc$gear=="US 4 seam 3 bridle survey trawl" )
-      sc$survey[ i ]  = paste( sc$survey[i], sc$gear[i], sep="__")
-      sc$qn = NA 
+      sc$zscore = NA 
+      sc$density = sc$totwgt_adjusted / sc$sa_towdistance
 
-      sc$density = sc$totwgt_adjusted / sc$sa
-      surveys = unique(sc$survey)
-      for ( s in surveys ) {
-        ii = which( sc$survey==s & sc$density > 0 )
-        if (length( ii) > 0 ) sc$qn[ii] = quantile_estimate( sc$density[ii] )  # convert to quantiles, by survey
+
+      if (0) {
+        qi = quantile(sc$density, 0.999, na.rm=TRUE)
+        ii = which( sc$density > qi )
+        hist( log(sc$density[ii]) )
       }
 
-      oo = which( sc$density == 0 )  # retain as zero values
-      if (length(oo)>0 ) sc$qn[oo] = 0
+      # NOTE:: non-zero catches are not recorded in cat, also 
+      # distribution of density is very long tailed .. use quantile -> normal transformtiom
+      surveys = unique(sc$data.source)
+      taxa = unique(sc$spec_bio)
+      for ( s in surveys ) {
+        for ( tx in taxa ) {
+          ii = which( sc$data.source==s & sc$spec_bio== tx & sc$density > 0 )
+          if (length(ii) > 5 ) {
+            sc$zscore[ii] = quantile_to_normal(  quantile_estimate( sc$density[ii] ) ) # convert to quantiles, by survey
+          }
+        }
+      }
 
-      # convert from quantile to z-score
-      sc$zn = quantile_to_normal( sc$qn )
+      m = data.table::dcast( setDT(sc), 
+        formula =  id ~ spec_bio, value.var="zscore", 
+        fun.aggregate=mean, fill=NA, drop=FALSE, na.rm=TRUE
+      )
 
-      m = xtabs( zn*1e9 ~ as.factor(id) + as.factor(spec_bio), data=sc )  / 1e9
-      
+      id = m$id 
+      m$id = NULL
+      sps = colnames(m)
+
+      m = as.matrix(m[]) 
+      dimnames(m)[[1]] = id
+
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0 
-      
+      cthreshold = 0.001  # 0.01%  -> 97;  0.05 => 44 species; 0.001 => 228 species; 0.005 -> 139 
+      m [ m < cthreshold ] = 0
+      m [ !is.finite(m) ] = 0
+
       finished = FALSE
       while( !(finished) ) {
-        i = unique( which(rowSums(m) == 0 ) )
-        j = unique( which(colSums(m) <= cthreshold ) )
-        if ( ( length(i) == 0 ) & (length(j) == 0 ) ) finished=T
+        oo = colSums( ifelse( is.finite(m), 1, 0 ), na.rm=TRUE)
+        i = unique( which(rowSums(m, na.rm=TRUE) == 0 ) )
+        uu = colSums(m, na.rm=TRUE)/oo
+        j = unique( which(!is.finite( uu ) | uu < cthreshold ) )
+        if ( ( length(i) == 0 ) & (length(j) == 0 ) ) finished=TRUE
         if (length(i) > 0 ) m = m[ -i , ]
         if (length(j) > 0 ) m = m[ , -j ]
       }
 
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
+
       corel = cor( m, use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
-      corel[ is.na(corel) ] = 0
+      corel[ is.na(corel) ] = 0  # reset to 0
       s = svd(corel)  # eigenanalysis via singular value decomposition
 
       # scores = matrix.multiply (m, s$v)  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
-      m[which(!is.finite(m))] = 0
+      # m[which(!is.finite(m))] = 0
       scores = m %*% s$v  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
 
       evec = s$v
@@ -169,7 +130,7 @@
       # Correpsondence analysis
       require(vegan)
       n = m * 0
-      n[ which( m > 0.05 ) ] = 1
+      n[ which( m > cthreshold ) ] = 1
       ord = cca( n )
       sp.sc = scores(ord, choices=c(1:3))$species
       si.sc = scores(ord, choices=c(1:3))$sites
@@ -294,22 +255,9 @@
       setDT(M)
       
       vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3", "gear", "data.source", "vessel" )
+#      , 
+#        "t", "z", "substrate.grainsize", "sal", "oxyml" )
 
-      # if (p$carstm_inputs_prefilter != "aggregated") {
-      #   if (exists("quantile_bounds", p)) {
-      #     for (vn in vars_to_retain) {
-      #       if (exists( vn, M )) {
-      #         if (is.numeric(  M[[ vn ]] )) {
-      #           TR = quantile(M[[vn]], probs=p$quantile_bounds, na.rm=TRUE )
-      #           oo = which( M[[vn]] < TR[1])
-      #           if (length(oo) > 0) M[[vn]][oo] = TR[1]
-      #           oo = which( M[[vn]] > TR[2])
-      #           if (length(oo) > 0) M[[vn]][oo] = TR[2]
-      #         }
-      #       }  
-      #     }
-      #   }
-      # }
 
       # # INLA does not like duplicates ... causes optimizer to crash frequently
       # oo = which(duplicated( M[, p$variabletomodel] ))
@@ -327,7 +275,6 @@
       M = M[ which(M$year %in% p$yrs), ]
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
-
  
       M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, 
             lookup_parameters = p$carstm_lookup_parameters,
