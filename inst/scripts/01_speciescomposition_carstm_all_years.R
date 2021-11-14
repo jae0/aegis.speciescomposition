@@ -3,7 +3,7 @@
   # -----------------------------
   # ordination of all years 1970 to present
   yrs = 1970:2021
-  runlabel="1999_present"
+  runlabel="1970_present"
 
   require(aegis.speciescomposition)
   
@@ -100,7 +100,7 @@ if (0) {
 
 }
  
-# do this once for the default (all years) ... the shorter are subset from it 
+# do this once for the default (1970:present) ... the shorter are subset from it 
 # .. if not then this needs to be rerun for the full set if years do not span chosen subset
 M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
 str(M); 
