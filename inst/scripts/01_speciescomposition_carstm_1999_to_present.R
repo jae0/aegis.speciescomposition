@@ -8,7 +8,12 @@ require(aegis.speciescomposition)
 
 p = speciescomposition_parameters( yrs=yrs, runlabel=runlabel )
 
+
+# -----------------------------
+# prepare data
 speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
+
+speciescomposition_db( DS="speciescomposition.redo", p=p  ) # compute planar coords and remove dups
 
 if (0) { 
   # extract summaries and plot
@@ -26,8 +31,9 @@ if (0) {
 
 }
 
-speciescomposition_db( DS="speciescomposition.redo", p=p  ) # compute planar coords and remove dups
 
+# -----------------------------
+# carstm predictions / analysis
 
 p0 = speciescomposition_parameters(
   project_class="carstm",
@@ -48,15 +54,15 @@ p0 = speciescomposition_parameters(
   carstm_lookup_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-    temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=1999:year.assessment ) 
+    temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=yrs ) 
   ) ,
-  theta0 = list( 
-    pca1 = c(  5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922   ),
-    pca2 = c(  5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922  ),
-    pca3 = c(  5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922  ),
-    ca1 =  c(  5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922   ),
-    ca2 =  c(  5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922   ),
-    ca3 =  c(  5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922   )
+  theta0 = list(   
+    pca1 = c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   ),
+    pca2 = c(  7.489, 9.459, 9.793, -1.068, 10.057, 3.389, 6.656, 8.062, 4.225  ),
+    pca3 = c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096  ),
+    ca1 =  c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   ),
+    ca2 =  c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   ),
+    ca3 =  c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   )
   )
 )
 
@@ -138,7 +144,10 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       vn=c( "random", "space", "combined" )
       vn=c( "random", "spacetime", "combined" )
       vn="predictions"
-      tmatch="2015"
+      tmatch="1999"
+
+      qn = quantile(  carstm_results_unpack( res, vn )[,,"mean"], probs=c(0.1, 0.9), na.rm=TRUE  )
+      brks = pretty( qn ) 
 
       carstm_map(  res=res, vn=vn, tmatch=tmatch, 
         plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
@@ -156,6 +165,11 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     outputdir = file.path( gsub( ".rdata", "", carstm_filenames(p, returntype="carstm_modelled_fit") ), "figures" )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
 
+    vn="predictions"
+
+    qn = quantile(  carstm_results_unpack( res, vn )[,,"mean"], probs=c(0.1, 0.9), na.rm=TRUE  )
+    brks = pretty( qn ) 
+
     graphics.off()
 
     for (y in res$time ){
@@ -163,7 +177,6 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
       fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
 
-      vn="predictions"
     
       carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
@@ -177,6 +190,26 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       )
 
     }
+
+  
+    # pure spatial effect
+    vn=c( "random", "space", "combined" )
+   
+    fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
+    fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
+
+    carstm_map(  res=res, vn=vn, tmatch=tmatch , 
+        palette="RdYlBu",
+        breaks = seq(-0.3, 0.3, by=0.1),
+        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
+        map_mode="view",
+        tmap_zoom= c(map_centre, map_zoom),
+        background=background, 
+        title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) ,
+        outfilename=fn
+    )
+
+
 
   }
 

@@ -9,7 +9,14 @@
   
   p = speciescomposition_parameters( yrs=yrs, runlabel=runlabel )
 
+
+
+  # -----------------------------
+  # prepare data
+
   speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
+
+  speciescomposition_db( DS="speciescomposition.redo", p=p ) # compute planar coords and remove dups
 
   if (0) { 
     # extract summaries and plot
@@ -27,47 +34,48 @@
 
   }
 
-  speciescomposition_db( DS="speciescomposition.redo", p=p ) # compute planar coords and remove dups
 
   
 
-  # construct basic parameter list defining the main characteristics of the study
-  # choose one:
+# -----------------------------
+# carstm predictions / analysis
 
-  # default run: 1970:present
-  p0 = speciescomposition_parameters(
-    project_class="carstm",
-    data_root = project.datadirectory( "aegis", "speciescomposition" ),
-    variabletomodel = "",  # will b eover-ridden .. this brings in all pca's and ca's
-    runlabel = runlabel,
-    carstm_model_label = runlabel,
-    inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
-    inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
-    year.assessment = year.assessment,
-    yrs = 1970:year.assessment,
-    aegis_dimensionality="space-year",
-    spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
-    areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
-    areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
-    areal_units_type = "tesselation",    
-    areal_units_overlay = "none",
-    carstm_lookup_parameters = list( 
-        bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
-        substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-        temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:year.assessment ) 
-    )
-    ,
-    theta0 =  list(  
-      pca1 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),
-      pca2 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),
-      pca3 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),   
-      ca1 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ), 
-      ca2 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),
-      ca3 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 )
-    )
+
+
+# default run: 1970:present
+p0 = speciescomposition_parameters(
+  project_class="carstm",
+  data_root = project.datadirectory( "aegis", "speciescomposition" ),
+  variabletomodel = "",  # will b eover-ridden .. this brings in all pca's and ca's
+  runlabel = runlabel,
+  carstm_model_label = runlabel,
+  inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
+  inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
+  year.assessment =  max(yrs),
+  yrs = yrs,
+  aegis_dimensionality="space-year",
+  spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
+  areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
+  areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
+  areal_units_type = "tesselation",    
+  areal_units_overlay = "none",
+  carstm_lookup_parameters = list( 
+      bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
+      substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
+      temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=yrs ) 
   )
-  
- 
+  ,
+  theta0 =  list(  
+    pca1 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),
+    pca2 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),
+    pca3 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),   
+    ca1 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ), 
+    ca2 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 ),
+    ca3 = c( 5.632, 6.884, 10.297, -1.663, 9.739, 3.288, 4.988, 4.354, 3.922 )
+  )
+)
+
+
 
 if (0) { 
     # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
@@ -148,6 +156,9 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       vn="predictions"
       tmatch="2015"
 
+      qn = quantile(  carstm_results_unpack( res, vn )[,,"mean"], probs=c(0.1, 0.9), na.rm=TRUE  )
+      brks = pretty( qn ) 
+
       carstm_map(  res=res, vn=vn, tmatch=tmatch, 
         plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
         palette="RdYlBu",
@@ -164,6 +175,11 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     outputdir = file.path( gsub( ".rdata", "", carstm_filenames(p, returntype="carstm_modelled_fit") ), "figures" )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
 
+    vn="predictions"
+    
+    qn = quantile(  carstm_results_unpack( res, vn )[,,"mean"], probs=c(0.1, 0.9), na.rm=TRUE  )
+    brks = pretty( qn ) 
+
     graphics.off()
 
     for (y in res$time ){
@@ -171,7 +187,6 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
       fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
 
-      vn="predictions"
     
       carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
@@ -186,6 +201,22 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
     }
 
+    # pure spatial effect
+    vn=c( "random", "space", "combined" )
+   
+    fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
+    fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
+
+    carstm_map(  res=res, vn=vn, tmatch=tmatch , 
+        palette="RdYlBu",
+        breaks = seq(-0.3, 0.3, by=0.1),
+        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
+        map_mode="view",
+        tmap_zoom= c(map_centre, map_zoom),
+        background=background, 
+        title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) ,
+        outfilename=fn
+    )
   }
 
 
