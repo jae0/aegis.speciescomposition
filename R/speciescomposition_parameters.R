@@ -26,6 +26,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=FALSE, recursive=TRUE )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=FALSE, recursive=TRUE )
 
+  p = parameters_add_without_overwriting( p, runlabel="1970_present" )
 
   p = parameters_add_without_overwriting( p,
     spatial_domain = "SSE",  # canada.east.highres and canada.east.superhighres result in memory overflow

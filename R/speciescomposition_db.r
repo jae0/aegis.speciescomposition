@@ -4,7 +4,7 @@
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
 
-    infix = paste( p$spatial_domain,  p$taxa, sep=".")
+    infix = paste( p$spatial_domain,  p$taxa, p$runlabel, sep=".")
     if (p$spatial_domain == "snowcrab" ) {
       infix = paste( "SSE",  p$taxa, sep=".")  # just one domain for now
     }
@@ -195,7 +195,7 @@
 
     if ( DS=="areal_units_input" ) {
 
-      fn = file.path( p$datadir,  "areal_units_input.rdata" )
+      fn = file.path( p$datadir,   paste( "speciescomposition_areal_units_input", infix, "rdata", sep=".")   )
       if ( !file.exists(p$datadir)) dir.create( p$datadir, recursive=TRUE, showWarnings=FALSE )
 
       xydata = NULL
