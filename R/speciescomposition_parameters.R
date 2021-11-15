@@ -139,7 +139,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_constraint_ntarget= length(p$yrs),
       nAU_min = 30,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
-      carstm_model_label = "default",
+      carstm_model_label = "1970_present",
       carstm_inputs_prefilter = "rawdata"
     )
 
