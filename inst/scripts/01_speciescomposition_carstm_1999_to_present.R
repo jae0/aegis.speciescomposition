@@ -54,15 +54,15 @@ p0 = speciescomposition_parameters(
   carstm_lookup_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-    temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", carstm_model_label="1999_present", yrs=yrs ) 
+    temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", yrs=yrs, carstm_model_label=runlabel ) 
   ) ,
   theta0 = list(   
-    pca1 = c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   ),
-    pca2 = c(  7.489, 9.459, 9.793, -1.068, 10.057, 3.389, 6.656, 8.062, 4.225  ),
-    pca3 = c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096  ),
-    ca1 =  c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   ),
-    ca2 =  c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   ),
-    ca3 =  c(  6.153, 6.896, 10.297, -1.661, 9.733, 3.300, 5.314, 4.355, 4.096   )
+    pca1 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
+    pca2 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
+    pca3 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
+    ca1 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
+    ca2 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
+    ca3 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    )
   )
 )
 

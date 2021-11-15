@@ -150,7 +150,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$carstm_lookup_parameters = parameters_add_without_overwriting( p$carstm_lookup_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=p$yrs ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=p$yrs, carstm_model_label="1970_present" ) 
         )
     }
 
