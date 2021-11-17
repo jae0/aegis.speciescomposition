@@ -1,5 +1,5 @@
 
-  speciescomposition_db = function( DS="", p=NULL, redo=FALSE ) {
+  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, ev_template=NULL ) {
 
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
@@ -54,7 +54,7 @@
       # due simply to CPU speed issues
 
       sc$zscore = NA 
-      sc$density = sc$totwgt_adjusted / sc$sa_towdistance
+      sc$density = sc$totwgt_adjusted / sc$sa_towdistance  ### <<< --- using towed distance due to inconsistant sa for groundfish from RV surveys
 
 
       if (0) {
@@ -106,30 +106,21 @@
 
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
+  
+       cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
+      cm[ is.na(cm) ] = 0  # reset to 0
 
-      corel = cor( m, use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
-      corel[ is.na(corel) ] = 0  # reset to 0
-      s = svd(corel)  # eigenanalysis via singular value decomposition
+      pca.out = pca_basic( cm=cm, indat=m, nfactors=3 )
 
-      # scores = matrix.multiply (m, s$v)  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
-      # m[which(!is.finite(m))] = 0
-      scores = m %*% s$v  # i.e., b %*% s$v  .. force a multiplication ignoring NAs
-
-      evec = s$v
-      ev = s$d
-      x = cbind( scores[,1] / sqrt(ev[1] ), scores[,2] / sqrt( ev[2]), scores[,3] / sqrt(ev[3] ) )
-      y = cbind( evec[,1] * sqrt(ev[1] ) , evec[,2] * sqrt( ev[2]),  evec[,3] * sqrt( ev[3]) )
-      rownames(y) = colnames(m)
-
-      scores = data.frame( id=rownames(m), pca1=as.numeric(x[,1]), pca2=as.numeric(x[,2]), pca3=as.numeric(x[,3]), stringsAsFactors=FALSE )
+      scores = data.frame( id=rownames(m), pca1=pca.out$scores$PC1, pca2=pca.out$scores$PC2, pca3=pca.out$scores$PC3, stringsAsFactors=FALSE )
       set = merge(set, scores, by="id", all.x=T, all.y=F, sort=FALSE)
-      pca.out = list( scores=scores, eignenvectors=evec, eigenvalues=ev, cscores=y )
+
       save( pca.out, file=fn.pca, compress=TRUE)
 
 
       # Correpsondence analysis
       require(vegan)
-      n = m * 0
+      n = m[] * 0
       n[ which( m > cthreshold ) ] = 1
       ord = cca( n )
       sp.sc = scores(ord, choices=c(1:3))$species
