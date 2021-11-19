@@ -107,7 +107,7 @@
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
   
-       cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
+      cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
       cm[ is.na(cm) ] = 0  # reset to 0
 
       pca.out = pca_basic( cm=cm, indat=m, nfactors=3 )
