@@ -65,12 +65,12 @@
 
       # NOTE:: non-zero catches are not recorded in cat, also 
       # distribution of density is very long tailed .. use quantile -> normal transformtiom
-      surveys = unique(sc$data.source)
+      gears = unique(sc$gear)
       taxa = unique(sc$spec_bio)
-      for ( s in surveys ) {
+      for ( g in gears ) {
         for ( tx in taxa ) {
-          ii = which( sc$data.source==s & sc$spec_bio== tx & sc$density > 0 )
-          if (length(ii) > 5 ) {
+          ii = which( sc$gear==g & sc$spec_bio== tx & sc$density > 0 )
+          if (length(ii) > 30 ) {
             sc$zscore[ii] = quantile_to_normal(  quantile_estimate( sc$density[ii] ) ) # convert to quantiles, by survey
           }
         }
@@ -87,9 +87,8 @@
 
       m = as.matrix(m[]) 
       dimnames(m)[[1]] = id
-
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0.001  # 0.01%  -> 97;  0.05 => 44 species; 0.001 => 228 species; 0.005 -> 139 
+      cthreshold = 0.005  # 0.01%  -> 97;  0.05 => 44 species; 0.001 => 228 species; 0.005 -> 146 
       m [ m < cthreshold ] = 0
       m [ !is.finite(m) ] = 0
 
@@ -108,11 +107,12 @@
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
   
       cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
+       
       cm[ is.na(cm) ] = 0  # reset to 0
 
       pca.out = pca_basic( cm=cm, indat=m, nfactors=3 )
 
-      scores = data.frame( id=rownames(m), pca1=pca.out$scores$PC1, pca2=pca.out$scores$PC2, pca3=pca.out$scores$PC3, stringsAsFactors=FALSE )
+      scores = data.frame( id=rownames(m), pca1=pca.out$scores[, "PC1"], pca2=pca.out$scores[, "PC2"], pca3=pca.out$scores[, "PC3"], stringsAsFactors=FALSE )
       set = merge(set, scores, by="id", all.x=T, all.y=F, sort=FALSE)
 
       save( pca.out, file=fn.pca, compress=TRUE)

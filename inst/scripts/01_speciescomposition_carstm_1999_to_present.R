@@ -55,15 +55,16 @@ p0 = speciescomposition_parameters(
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
     temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", yrs=yrs, carstm_model_label=runlabel ) 
-  ) ,
-  theta0 = list(   
-    pca1 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
-    pca2 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
-    pca3 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
-    ca1 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
-    ca2 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
-    ca3 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    )
-  )
+  ) 
+  # ,
+  # theta0 = list(   
+  #   pca1 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
+  #   pca2 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
+  #   pca3 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
+  #   ca1 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
+  #   ca2 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
+  #   ca3 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    )
+  # )
 )
 
 
@@ -84,7 +85,7 @@ if (0) {
     # to recreate the underlying data
     xydata = speciescomposition_db(p=p0, DS="areal_units_input", redo=TRUE)
 
-    sppoly = areal_units( p=p0, redo=TRUE, hull_alpha=20, verbose=TRUE )   
+    sppoly = areal_units( p=p0, redo=TRUE, verbose=TRUE )   
   
     plot(sppoly["AUID"])
 
