@@ -268,7 +268,6 @@
       M$dyear = M$tiyr - M$year
  
       M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, 
-            lookup_parameters = p$carstm_lookup_parameters,
             vars_to_retain=vars_to_retain,
             vars_to_drop ="speciescomposition" )  # drop dummy variable
  
