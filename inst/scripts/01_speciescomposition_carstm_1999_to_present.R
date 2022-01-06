@@ -54,7 +54,7 @@ p0 = speciescomposition_parameters(
   carstm_lookup_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-    temperature = aegis.temperature::temperature_parameters( project_class="carstm",  spatial_domain="canada.east", yrs=yrs, carstm_model_label=runlabel ) 
+    temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=yrs, carstm_model_label=runlabel ) 
   ) 
   # ,
   # theta0 = list(   
