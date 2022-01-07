@@ -1,5 +1,5 @@
 
-  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, ev_template=NULL ) {
+  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, cthreshold = 0.005, ev_template=NULL ) {
 
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
@@ -88,10 +88,11 @@
       m = as.matrix(m[]) 
       dimnames(m)[[1]] = id
       # remove low counts (absence) in the timeseries  .. species (cols) only
-      cthreshold = 0.005  # 0.01%  -> 97;  0.05 => 44 species; 0.001 => 228 species; 0.005 -> 146 
+      # cthreshold = 0.005  # 0.01%  -> 97;  0.05 => 44 species; 0.001 => 228 species; 0.005 -> 146 
       m [ m < cthreshold ] = 0
       m [ !is.finite(m) ] = 0
 
+      # remove taxa/locations with very low counts (~cthreshold)
       finished = FALSE
       while( !(finished) ) {
         oo = colSums( ifelse( is.finite(m), 1, 0 ), na.rm=TRUE)

@@ -116,7 +116,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
       control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
-      redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
+      redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
      )
        
