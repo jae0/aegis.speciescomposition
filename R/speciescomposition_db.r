@@ -1,5 +1,5 @@
 
-  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, cthreshold = 0.005, ev_template=NULL ) {
+  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, cthreshold = 0.005, ev_template=NULL, sppoly=NULL ) {
 
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
@@ -119,7 +119,7 @@
       save( pca.out, file=fn.pca, compress=TRUE)
 
 
-      # Correpsondence analysis
+      # Correpsondence analysis (on presence-absence)
       require(vegan)
       n = m[] * 0
       n[ which( m > cthreshold ) ] = 1
@@ -214,7 +214,7 @@
 
       # prediction surface
       crs_lonlat = st_crs(projection_proj4string("lonlat_wgs84"))
-      sppoly = areal_units( p=p )  # will redo if not found
+      if (is.null(sppoly))  sppoly = areal_units( p=p )  # will redo if not found
       sppoly = st_transform(sppoly, crs=crs_lonlat )
       areal_units_fn = attributes(sppoly)[["areal_units_fn"]]
       
@@ -281,6 +281,7 @@
       if (length(jj) > 0 ) {
         M$substrate.grainsize[jj] = median( M$substrate.grainsize[-jj] )
       }
+      M$log.substrate.grainsize = log( M$substrate.grainsize )
 
       attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
       attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")

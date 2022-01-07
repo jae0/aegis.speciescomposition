@@ -23,14 +23,14 @@
     pca = speciescomposition_db( DS="pca", p=p )  # analsysis
     ca  = speciescomposition_db( DS="ca", p=p )  # analsysis
 
-    toplot = as.data.frame( pca$cscores )
+    toplot = as.data.frame( pca$loadings )
     toplot$vern = taxonomy.recode( from="spec", to="taxa", tolookup=rownames( toplot ) )$vern
 
-    plot(V2 ~ V1, toplot, type="n")
-    text( V2 ~ V1, labels=vern, data=toplot )
+    plot( PC2 ~ PC1, toplot, type="n")
+    text( PC2 ~ PC1, labels=vern, data=toplot )
 
-    plot(V3 ~ V1, toplot, type="n")
-    text( V3 ~ V1, labels=vern, data=toplot )
+    plot( PC3 ~ PC1, toplot, type="n")
+    text( PC3 ~ PC1, labels=vern, data=toplot )
 
   }
 
@@ -99,7 +99,7 @@ if (0) {
  
 # do this once for the default (1970:present) ... the shorter are subset from it 
 # .. if not then this needs to be rerun for the full set if years do not span chosen subset
-M = speciescomposition_db( p=p0, DS="carstm_inputs", redo=TRUE  )  # will redo if not found .. .
+M = speciescomposition_db( p=p0, DS="carstm_inputs", sppoly=areal_units( p=p0), redo=TRUE  )  # will redo if not found .. .
 str(M); 
 M= NULL; gc()
 

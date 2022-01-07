@@ -133,7 +133,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_timeperiod = "none",
       tus="yr",
       fraction_todrop = 1/11,
-      fraction_cv = 0.75,
+      fraction_cv = 0.7,
       fraction_good_bad = 0.9,
       areal_units_constraint_nmin=3,  # best compromise
       areal_units_constraint_ntarget= length(p$yrs),
@@ -165,7 +165,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',
             ' + f( inla.group( t, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( inla.group( z, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-            ' + f( inla.group( log.substrate.grainsize, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',  # causes issues due to limited spatial range ?
+#            ' + f( inla.group( log.substrate.grainsize, method="quantile", n=11 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',  # causes issues due to limited spatial range ?
             ' + f( space_time, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, group=time_space, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
