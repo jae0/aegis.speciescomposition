@@ -93,8 +93,8 @@ if (0) {
  
 # do this once for the default (all years) ... the shorter are subset from it 
 # .. if not then this needs to be rerun for the full set if years do not span chosen subset
-
-M = speciescomposition_db( p=p0, DS="carstm_inputs", sppoly=areal_units( p=p0), redo=TRUE  )  # will redo if not found .. .
+sppoly = areal_units( p=p0)
+M = speciescomposition_db( p=p0, DS="carstm_inputs", sppoly=sppoly , redo=TRUE  )  # will redo if not found .. .
 str(M); 
 M= NULL; gc()
 
@@ -116,11 +116,11 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
-      control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
-      redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
+      # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
+      redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
-     )
-       
+    )
+
     
     # extract results
     if (0) {
