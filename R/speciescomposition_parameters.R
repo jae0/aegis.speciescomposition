@@ -121,6 +121,16 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     p$inputdata_spatial_discretization_planar_km = 0.5  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
     p$inputdata_temporal_discretization_yr = 1/52  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
 
+    if (p$carstm_model_label == "1999_present"){
+        p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
+        p$areal_units_constraint_nmin = 3   # n time slices req in each au
+        p$areal_units_timeperiod = p$carstm_model_label 
+  } else if (p$carstm_model_label == "1970_present"){
+        p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
+        p$areal_units_constraint_nmin = 10   # n time slices req in each au
+        p$areal_units_timeperiod = p$carstm_model_label 
+    }
+
 
     # defaults in case not provided ...
     p = parameters_add_without_overwriting( p,
@@ -134,7 +144,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       tus="yr",
       fraction_todrop = 1/11,
       fraction_cv = 0.7,
-      fraction_good_bad = 0.9,
+      fraction_good_bad = 1.0,
       areal_units_constraint_nmin=3,  # best compromise
       areal_units_constraint_ntarget= length(p$yrs),
       nAU_min = 50,
