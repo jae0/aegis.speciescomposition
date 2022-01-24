@@ -198,7 +198,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     vn=c( "random", "space", "combined" )
    
     fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
-    fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
+    fn = file.path( oustputdir, paste(fn_root, "png", sep=".") )
 
     carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
