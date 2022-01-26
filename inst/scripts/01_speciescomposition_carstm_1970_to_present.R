@@ -57,7 +57,7 @@ p0 = speciescomposition_parameters(
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
   areal_units_type = "tesselation",    
   areal_units_overlay = "none",
-  carstm_lookup_parameters = list( 
+  carstm_prediction_surface_parameters = list( 
       bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
       substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
       temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=yrs, carstm_model_label=runlabel ) 
