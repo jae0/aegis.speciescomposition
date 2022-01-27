@@ -56,16 +56,17 @@ p0 = speciescomposition_parameters(
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
     temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=yrs, carstm_model_label=runlabel ) 
   ) 
-  # ,
-  # theta0 = list(   
-  #   pca1 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
-  #   pca2 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
-  #   pca3 = c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535   ),
-  #   ca1 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
-  #   ca2 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    ),
-  #   ca3 =  c( 5.641 4.872 5.361 3.233 6.205 2.314 5.259 3.867 5.360 2.130 3.535    )
-  # )
+  ,
+  theta = list(   
+    pca1 = c( 6.472, 4.722, -2.850, 10.114, 1.824, 11.038, 7.385, 6.352, 5.891, 3.618 ),  # good
+    pca2 = c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   ), 
+    pca3 = c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614  ),
+    ca1 =  c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   ),
+    ca2 =  c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   ),
+    ca3 =  c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   )
+  )
 )
+
 
 
 if (0) { 
@@ -99,7 +100,7 @@ str(M);
 M= NULL; gc()
 
 
-for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
+for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
@@ -107,8 +108,14 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     
     # construct basic parameter list defining the main characteristics of the study
     p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
-    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel, yrs=p0$yrs, runlabel=runlabel,
-      mc.cores=2, theta=p0$theta0[[variabletomodel]]
+    p = speciescomposition_parameters( 
+      p=p0, 
+      project_class="carstm", 
+      variabletomodel = variabletomodel, 
+      yrs=p0$yrs, 
+      runlabel=runlabel,
+      mc.cores=2, 
+      theta=p0$theta[[variabletomodel]]
     )  
     
     # run model and obtain predictions
@@ -116,6 +123,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
+      # control.inla = list( strategy='laplace'),
       # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       verbose=TRUE 
@@ -163,8 +171,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
     }
 
-
-    outputdir = file.path( gsub( ".rdata", "", carstm_filenames(p, returntype="carstm_modelled_fit") ), "figures" )
+    outputdir = file.path(p$data_root, "maps", p$carstm_model_label )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
 
     vn="predictions"
@@ -172,24 +179,25 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     qn = quantile(  carstm_results_unpack( res, vn )[,,"mean"], probs=c(0.1, 0.9), na.rm=TRUE  )
     brks = pretty( qn ) 
 
-    graphics.off()
+    # graphics.off()
+
+    # SLOW: FASTER TO RUN year of interest and then take a screenshot
 
     for (y in res$time ){
       tmatch = as.character(y) 
       fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
-      fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
-
+      outfilename = file.path( outputdir, paste(fn_root, "png", sep=".") )
     
-      carstm_map(  res=res, vn=vn, tmatch=tmatch , 
+      tmout = carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
         plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         map_mode="view",
         tmap_zoom= c(map_centre, map_zoom),
         background=background, 
-        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) ,
-        outfilename=fn
+        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) 
       )
+      mapview::mapshot( tmap_leaflet(tmout), file=outfilename, vwidth = 1600, vheight = 1200 )  # very slow: consider 
 
     }
 
@@ -198,18 +206,18 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     vn=c( "random", "space", "combined" )
    
     fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
-    fn = file.path( oustputdir, paste(fn_root, "png", sep=".") )
+    outfilename = file.path( outputdir, paste(fn_root, "png", sep=".") )
 
-    carstm_map(  res=res, vn=vn, tmatch=tmatch , 
+    tmout = carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
         plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         map_mode="view",
         tmap_zoom= c(map_centre, map_zoom),
         background=background, 
-        title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) ,
-        outfilename=fn
+        title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) 
     )
+    mapview::mapshot( tmap_leaflet(tmout), file=outfilename, vwidth = 1600, vheight = 1200 )  # very slow: consider 
 
 
 

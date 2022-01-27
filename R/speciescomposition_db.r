@@ -36,7 +36,7 @@
  
       require(data.table)
 
-      # catch info by species and set 
+      # catch info by species and set ; NOTE: id = paste( x$trip, x$set, sep="." )
       sc = survey_db( p=p, DS="cat.filter"  ) 
       sc = sc[ , c("id", "totno_adjusted", "totwgt_adjusted",  "spec_bio" )]
       sc_species = unique(  sc$id[ taxonomy.filter.taxa( sc$spec_bio, method=p$taxa, outtype="internalcodes" ) ] )
@@ -76,10 +76,12 @@
         }
       }
 
+
+
       m = data.table::dcast( setDT(sc), 
         formula =  id ~ spec_bio, value.var="zscore", 
         fun.aggregate=mean, fill=NA, drop=FALSE, na.rm=TRUE
-      )
+      )  # mean is just to keep dcast happy
 
       id = m$id 
       m$id = NULL
@@ -92,7 +94,7 @@
       m [ m < cthreshold ] = 0
       m [ !is.finite(m) ] = 0
 
-      # remove taxa/locations with very low counts (~cthreshold)
+      # reduce:: remove taxa/locations with very low counts (~cthreshold)
       finished = FALSE
       while( !(finished) ) {
         oo = colSums( ifelse( is.finite(m), 1, 0 ), na.rm=TRUE)
@@ -106,7 +108,7 @@
 
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
-  
+      message("TODO: currently using simple Pearson, using a model-based AC-adjusted cor is better")
       cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
        
       cm[ is.na(cm) ] = 0  # reset to 0
