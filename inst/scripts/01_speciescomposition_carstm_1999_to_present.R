@@ -58,16 +58,16 @@ p0 = speciescomposition_parameters(
   ) 
   ,
   theta = list(   
-    pca1 = c( 6.472, 4.722, -2.850, 10.114, 1.824, 11.038, 7.385, 6.352, 5.891, 3.618 ),  # good
-    pca2 = c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   ), 
-    pca3 = c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614  ),
-    ca1 =  c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   ),
-    ca2 =  c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   ),
-    ca3 =  c( 6.449, 7.220, 3.039, 9.254, 0.763, 10.064, 6.564, 6.284, 4.477, 3.614   )
+    pca1 = c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614 ),  # good
+    pca2 = c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   ), 
+    pca3 = c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614  ),
+    ca1 =  c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   ),
+    ca2 =  c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   ),
+    ca3 =  c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   )
   )
 )
 
-
+ 
 
 if (0) { 
     # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
@@ -123,9 +123,11 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
-      # control.inla = list( strategy='laplace'),
+      control.inla = list( strategy='laplace'),
       # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
+      # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
+      # debug = TRUE,
       verbose=TRUE 
     )
 
