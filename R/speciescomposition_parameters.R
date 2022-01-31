@@ -26,12 +26,12 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=FALSE, recursive=TRUE )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=FALSE, recursive=TRUE )
 
-  p = parameters_add_without_overwriting( p, runlabel="1970_present" )
+  p = parameters_add_without_overwriting( p, runlabel="1999_present" )
 
   p = parameters_add_without_overwriting( p,
     spatial_domain = "SSE",  # canada.east.highres and canada.east.superhighres result in memory overflow
     spatial_domain_subareas = c( "SSE", "SSE.mpa" , "snowcrab"),  # this is for bathymetry_db, not stmv
-    aegis_dimensionality="space-year"
+    aegis_dimensionality="space-year"  # of predictions
   )
 
   p$quantile_bounds =c(0.005, 0.995) # trim upper bounds
@@ -47,7 +47,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     p$year.assessment = lubridate::year(lubridate::now())
   }
   
-  yrs_default = 1970:p$year.assessment
+  yrs_default = 1999:p$year.assessment
   p = parameters_add_without_overwriting( p, yrs=yrs_default, timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
 
@@ -127,10 +127,14 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
           p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
           p$areal_units_constraint_nmin = 3   # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
+          p$yrs = 1999:p$year.assessment
+          p = temporal_parameters(p=p)
       } else if (p$carstm_model_label == "1970_present"){
           p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
           p$areal_units_constraint_nmin = 10   # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
+          p$yrs = 1970:p$year.assessment
+          p = temporal_parameters(p=p)
       }
     }
 
@@ -151,7 +155,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_constraint_ntarget= length(p$yrs),
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
-      carstm_model_label = "1970_present",
+      carstm_model_label = "1999_present",
       carstm_inputs_prefilter = "rawdata"
     )
 
@@ -162,7 +166,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$carstm_prediction_surface_parameters = parameters_add_without_overwriting( p$carstm_prediction_surface_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm",   yrs=p$yrs, carstm_model_label="1970_present" ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm",  carstm_model_label="1999_present" ) 
         )
     }
 
