@@ -1,5 +1,13 @@
 
 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+STOP::: This is for research purposes ....
+STOP::: Note also, species composition is erratic prior to 1999 .. 
+STOP::: Groundfish surveys would only sporatically reord by catch
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
   # -----------------------------
   # ordination of all years 1970 to present
   yrs = 1970:2021

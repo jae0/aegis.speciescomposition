@@ -58,14 +58,15 @@ p0 = speciescomposition_parameters(
   ) 
   ,
   theta = list(   
-    pca1 = c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614 ),  # good
-    pca2 = c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   ), 
-    pca3 = c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614  ),
-    ca1 =  c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   ),
-    ca2 =  c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   ),
-    ca3 =  c(  6.491, 4.839, 6.010, 4.198, 10.129, 2.411, 6.239, 7.862, 7.837, 6.444, 4.352, 3.614   )
+    pca1 = c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541 ),  # good
+    pca2 = c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ), 
+    pca3 = c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541  ),
+    ca1 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ),
+    ca2 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ),
+    ca3 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   )
   )
 )
+
 
  
 
@@ -200,7 +201,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) 
       )
       mapview::mapshot( tmap_leaflet(tmout), file=outfilename, vwidth = 1600, vheight = 1200 )  # very slow: consider 
-
+      print(outfilename)
     }
 
   
@@ -219,6 +220,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
         background=background, 
         title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) 
     )
+    print(outfilename)
     mapview::mapshot( tmap_leaflet(tmout), file=outfilename, vwidth = 1600, vheight = 1200 )  # very slow: consider 
 
 
