@@ -58,7 +58,7 @@ p0 = speciescomposition_parameters(
   ) 
   ,
   theta = list(   
-    pca1 = c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541 ),  # good
+    pca1 = c(  6.502, 6.274, 6.920, 3.247, 9.126, 2.932, 12.019, 7.808, 6.398, 4.631, 3.499 ),  # good
     pca2 = c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ), 
     pca3 = c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541  ),
     ca1 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ),
@@ -68,7 +68,7 @@ p0 = speciescomposition_parameters(
 )
 
 
- 
+  
 
 if (0) { 
     # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
@@ -149,7 +149,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
 
     map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
-    map_zoom = 7
+    map_zoom = 5
     background = tmap::tm_basemap(leaflet::providers$CartoDB.Positron, alpha=0.8 )
 
     if (0) {
