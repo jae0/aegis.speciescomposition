@@ -1,7 +1,9 @@
  
 # -----------------------------
 # ordination of all years 1970 to present
-yrs = 1999:2021
+year.assessment = 2021
+
+yrs = 1999:year.assessment
 runlabel="1999_present"
 
 require(aegis.speciescomposition)
@@ -54,7 +56,7 @@ p0 = speciescomposition_parameters(
   carstm_prediction_surface_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-    temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=yrs, carstm_model_label=runlabel ) 
+    temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=1970:year.assessment, carstm_model_label="1970_present" ) 
   ) 
   ,
   theta = list(   

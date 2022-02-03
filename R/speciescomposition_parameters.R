@@ -124,16 +124,16 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     if (exists("carstm_model_label", p)) {
 
       if (p$carstm_model_label == "1999_present"){
+          p$yrs = 1999:p$year.assessment
           p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
           p$areal_units_constraint_nmin = 3   # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
-          p$yrs = 1999:p$year.assessment
           p = temporal_parameters(p=p)
       } else if (p$carstm_model_label == "1970_present"){
+          p$yrs = 1970:p$year.assessment
           p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
           p$areal_units_constraint_nmin = 10   # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
-          p$yrs = 1970:p$year.assessment
           p = temporal_parameters(p=p)
       }
     }
@@ -159,14 +159,13 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       carstm_inputs_prefilter = "rawdata"
     )
 
-
     if ( !exists("carstm_prediction_surface_parameters", p))  {
         # generics using "default" carstm models and stmv solutions for spatial effects
         p$carstm_prediction_surface_parameters = list()
         p$carstm_prediction_surface_parameters = parameters_add_without_overwriting( p$carstm_prediction_surface_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm", year.assessment=p$year.assessment, carstm_model_label="1970_present" ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:p$year.assessment, carstm_model_label="1970_present" ) 
         )
     }
 
