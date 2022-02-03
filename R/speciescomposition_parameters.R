@@ -147,6 +147,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       # areal_units_proj4string_planar_km = projection_proj4string("omerc_nova_scotia")  # coord system to use for areal estimation and gridding for carstm
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
+      hull_alpha=20,
       tus="yr",
       fraction_todrop = 1/11,
       fraction_cv = 0.7,

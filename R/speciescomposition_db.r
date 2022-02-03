@@ -44,7 +44,7 @@
       # trip/set loc information by set
       set = survey_db( p=p, DS="filter"  ) 
       set = set[ which( set$id %in% sc_species), ]
-      set = set[ , c("id", "yr", "dyear", "sa", "sa_towdistance", "lon", "lat", 
+      set = set[ , c("id", "yr", "dyear", "sa", "sa_towdistance", "lon", "lat", "z", "t",
         "timestamp", "gear", "vessel", "data.source" )]
   
       sc = merge(sc, set, by="id", all.x=TRUE, all.y=FALSE) 
@@ -272,7 +272,7 @@
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
  
-      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, 
+      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, NA_remove=FALSE,
             vars_to_retain=vars_to_retain,
             vars_to_drop ="speciescomposition" )  # drop dummy variable
  
