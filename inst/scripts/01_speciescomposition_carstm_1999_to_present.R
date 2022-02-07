@@ -88,10 +88,12 @@ if (0) {
 
     # to recreate the underlying data
     xydata = speciescomposition_db(p=p0, DS="areal_units_input", redo=TRUE)
+
+    xydata = speciescomposition_db(p=p0, DS="areal_units_input" )
     xydata = xydata[ which(xydata$yr %in% p$yrs), ]
     sppoly = areal_units( p=p0, xydata=xydata, hull_alpha=20, redo=TRUE )  # to force create
  
-    plot(sppoly["AUID"])
+    plot(sppoly["npts"])
 
 }
  
