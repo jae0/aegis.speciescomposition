@@ -128,7 +128,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
-      control.inla = list( strategy='laplace'),
+      # control.inla = list( strategy='laplace'),
       # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
@@ -151,6 +151,24 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     fit = NULL; gc()
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
+
+
+
+    carstm_plotxy( res, vn=c( "res", "random", "time" ), 
+      type="b", ylim=c(-0.1, 0.1), xlab="Year", ylab=variabletomodel  )
+
+    carstm_plotxy( res, vn=c( "res", "random", "cyclic" ), 
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.025, 0.025),
+      xlab="Season", ylab=variabletomodel, h=0.5  )
+
+    carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), 
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.015, 0.01) ,
+      xlab="Bottom temperature (degrees Celcius)", ylab=variabletomodel   )
+
+    carstm_plotxy( res, vn=c( "res", "random", "inla.group(z, method = \"quantile\", n = 9)" ), 
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.02, 0.02) ,
+      xlab="Depth (m)", ylab=variabletomodel   )
+ 
 
     map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
     map_zoom = 7.4
@@ -180,6 +198,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
     outputdir = file.path(p$data_root, "maps", p$carstm_model_label )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
+
 
     vn="predictions"
 
@@ -230,7 +249,6 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
 
   }
-
 
 
 # end
