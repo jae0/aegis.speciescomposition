@@ -158,7 +158,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       type="b", ylim=c(-0.1, 0.1), xlab="Year", ylab=variabletomodel  )
 
     carstm_plotxy( res, vn=c( "res", "random", "cyclic" ), 
-      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.025, 0.025),
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.03, 0.03),
       xlab="Season", ylab=variabletomodel, h=0.5  )
 
     carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), 
