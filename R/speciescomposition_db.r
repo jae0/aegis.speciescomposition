@@ -1,5 +1,5 @@
 
-  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, cthreshold = 0.005, ev_template=NULL, sppoly=NULL ) {
+  speciescomposition_db = function( DS="", p=NULL, redo=FALSE, species=NULL, cm=NULL, rotate="none", nfactors=2, cthreshold = 0.001, ev_template=NULL, sppoly=NULL ) {
 
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
