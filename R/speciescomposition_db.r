@@ -175,8 +175,7 @@
         }
       }
 
-      imperative = c( "pca1", "pca2",  "pca3", "ca1", "ca2", "ca3" )
-      ii = which( is.finite( rowSums( SC[,imperative ] ) ) )
+      ii = which( is.finite( rowSums( SC[,c( "pca1", "pca2",  "pca3", "ca1", "ca2", "ca3" ) ] ) ) )
       if (length(ii) == 0) stop( "No data .. something went wrong")
       SC = SC[ii,]
 
