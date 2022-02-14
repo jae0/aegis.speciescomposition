@@ -149,10 +149,10 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_timeperiod = "none",
       hull_alpha=20,
       tus="yr",
-      fraction_todrop = 1/11,
-      fraction_cv = 0.7,
+      fraction_todrop = 0.05,
+      fraction_cv = 1,
       fraction_good_bad = 1.0,
-      areal_units_constraint_nmin=3,  # best compromise
+      areal_units_constraint_nmin=5,  # best compromise
       areal_units_constraint_ntarget= length(p$yrs),
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
