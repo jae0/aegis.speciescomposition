@@ -126,17 +126,15 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       if (p$carstm_model_label == "1999_present"){
           p$yrs = 1999:p$year.assessment
           p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
-          p$areal_units_constraint_nmin = 3   # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
-          p = temporal_parameters(p=p)
       } else if (p$carstm_model_label == "1970_present"){
           p$yrs = 1970:p$year.assessment
           p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
-          p$areal_units_constraint_nmin = 10   # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
-          p = temporal_parameters(p=p)
       }
     }
+
+    p = temporal_parameters(p=p)  # redo in case of user-specificed params
 
     # defaults in case not provided ...
     p = parameters_add_without_overwriting( p,
@@ -149,8 +147,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_timeperiod = "none",
       hull_alpha=20,
       tus="yr",
-      fraction_todrop = 0.05,
-      fraction_cv = 1,
+      fraction_todrop = 0.1,
+      fraction_cv = 0.9,
       fraction_good_bad = 1.0,
       areal_units_constraint_nmin=5,  # best compromise
       areal_units_constraint_ntarget= length(p$yrs),
