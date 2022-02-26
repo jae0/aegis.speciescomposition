@@ -105,6 +105,16 @@ str(M);
 M= NULL; gc()
 
 
+# bbox = c(-71.5, 41, -52.5,  50.5 )
+additional_features = additional_features_tmap( 
+    p=p0, 
+    isobaths=c( 10, 100, 200, 300, 500, 1000 ), 
+    coastline =  c("canada"), 
+    xlim=c(-80,-40), 
+    ylim=c(38, 60) 
+)
+
+
 for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
@@ -196,9 +206,10 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
     }
 
+
+    
     outputdir = file.path(p$data_root, "maps", p$carstm_model_label )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
-
 
     vn="predictions"
 
@@ -206,9 +217,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     brks = pretty( qn ) 
 
     # graphics.off()
-
-    # SLOW: FASTER TO RUN year of interest and then take a screenshot
-
+ 
     for (y in res$time ){
       tmatch = as.character(y) 
       fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
@@ -216,15 +225,12 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     
       tmout = carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         palette="RdYlBu",
-        breaks = seq(-0.3, 0.3, by=0.1),
-        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
-        map_mode="view",
-        tmap_zoom= c(map_centre, map_zoom),
-        background=background, 
-        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) 
+        breaks = brks,
+        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ), 
+        plot_elements=c(  "compass", "scale_bar", "legend" ),
+        additional_features=additional_features,
+        outfilename=outfilename
       )
-      mapview::mapshot( tmap_leaflet(tmout), file=outfilename, vwidth = 1600, vheight = 1200 )  # very slow: consider 
-      print(outfilename)
     }
 
   
@@ -234,17 +240,19 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
     outfilename = file.path( outputdir, paste(fn_root, "png", sep=".") )
 
-    tmout = carstm_map(  res=res, vn=vn, tmatch=tmatch , 
+    toplot = carstm_results_unpack( res, vn )
+    brks = pretty(  quantile(toplot[,"mean"], probs=c(0.025, 0.975), na.rm=TRUE )  )
+
+    tmout = carstm_map(  res=res, vn=vn, 
+        sppoly = sppoly, 
         palette="RdYlBu",
-        breaks = seq(-0.3, 0.3, by=0.1),
-        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
-        map_mode="view",
-        tmap_zoom= c(map_centre, map_zoom),
-        background=background, 
-        title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) 
+        breaks = brks,
+        plot_elements=c( "compass", "scale_bar", "legend" ),
+        title=paste("Species composition: ", variabletomodel, "persistent spatial effect" ), 
+        additional_features=additional_features,
+        outfilename=outfilename
     )
-    print(outfilename)
-    mapview::mapshot( tmap_leaflet(tmout), file=outfilename, vwidth = 1600, vheight = 1200 )  # very slow: consider 
+    tmout
 
 
 
