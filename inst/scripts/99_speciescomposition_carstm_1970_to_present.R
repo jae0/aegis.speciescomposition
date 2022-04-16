@@ -3,7 +3,7 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 STOP::: This is for research purposes ....
 STOP::: Note also, species composition is erratic prior to 1999 .. 
-STOP::: Groundfish surveys would only sporatically reord by catch
+STOP::: Groundfish surveys would only sporatically record by catch
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -132,6 +132,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       num.threads="6:2",  # adjust for your machine
       control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
+      # debug="summary",
       verbose=TRUE 
      )
        
