@@ -1,9 +1,10 @@
  
 # -----------------------------
 # ordination of all years 1970 to present
-year.assessment = 2021
+year.assessment = 2022
 
 yrs = 1999:year.assessment
+ 
 runlabel="1999_present"
 
 require(aegis.speciescomposition)
@@ -173,7 +174,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
     carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), 
       type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.015, 0.01) ,
-      xlab="Bottom temperature (degrees Celcius)", ylab=variabletomodel   )
+      xlab="Bottom temperature (degrees Celsius)", ylab=variabletomodel   )
 
     carstm_plotxy( res, vn=c( "res", "random", "inla.group(z, method = \"quantile\", n = 9)" ), 
       type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.02, 0.02) ,
@@ -182,7 +183,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
     map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
     map_zoom = 7.4
-    background = tmap::tm_basemap(leaflet::providers$CartoDB.Positron, alpha=0.8 )
+
 
     if (0) {
       # map all :
@@ -200,7 +201,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
         breaks = seq(-0.2, 0.1 , by=0.05),
         plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         tmap_zoom= c(map_centre, map_zoom),
-        background = background,
+        additional_features=additional_features,
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
       )
 

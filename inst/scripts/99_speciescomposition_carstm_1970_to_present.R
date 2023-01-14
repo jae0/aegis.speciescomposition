@@ -10,7 +10,7 @@ STOP::: Groundfish surveys would only sporatically record by catch
 
   # -----------------------------
   # ordination of all years 1970 to present
-  yrs = 1970:2021
+  yrs = 1970:2022
   runlabel="1970_present"
 
   require(aegis.speciescomposition)
@@ -112,6 +112,16 @@ str(M);
 M= NULL; gc()
 
 
+# bbox = c(-71.5, 41, -52.5,  50.5 )
+additional_features = additional_features_tmap( 
+    p=p0, 
+    isobaths=c( 10, 100, 200, 300, 500, 1000 ), 
+    coastline =  c("canada"), 
+    xlim=c(-80,-40), 
+    ylim=c(38, 60) 
+)
+
+
 for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
@@ -154,7 +164,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
     map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
     map_zoom = 7
-    background = tmap::tm_basemap(leaflet::providers$CartoDB.Positron, alpha=0.8 )
+ 
 
     if (0) {
       # map all :
@@ -172,16 +182,16 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
         breaks = seq(-0.2, 0.1 , by=0.05),
         plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         tmap_zoom= c(map_centre, map_zoom),
-        background = background,
+        additional_features = additional_features,
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
       )
 
     }
 
-
-    outputdir = file.path( gsub( ".rdata", "", carstm_filenames(p, returntype="carstm_modelled_fit") ), "figures" )
+ 
+    outputdir = file.path(p$data_root, "maps", p$carstm_model_label )
     if ( !file.exists(outputdir)) dir.create( outputdir, recursive=TRUE, showWarnings=FALSE )
-
+ 
     vn="predictions"
     
     qn = quantile(  carstm_results_unpack( res, vn )[,,"mean"], probs=c(0.1, 0.9), na.rm=TRUE  )
@@ -201,7 +211,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
         plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         map_mode="view",
         tmap_zoom= c(map_centre, map_zoom),
-        background=background, 
+        additional_features=additional_features, 
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) ,
         outfilename=fn
       )
@@ -220,7 +230,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
         plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
         map_mode="view",
         tmap_zoom= c(map_centre, map_zoom),
-        background=background, 
+        additional_features=additional_features, 
         title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) ,
         outfilename=fn
     )

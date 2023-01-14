@@ -121,6 +121,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     p$inputdata_spatial_discretization_planar_km = 0.5  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
     p$inputdata_temporal_discretization_yr = 1/52  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
 
+    if (!exists("carstm_model_label", p)) p$carstm_model_label = "1970_present"
+
     if (exists("carstm_model_label", p)) {
 
       if (p$carstm_model_label == "1999_present"){
