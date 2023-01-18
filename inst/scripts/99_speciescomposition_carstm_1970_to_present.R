@@ -10,7 +10,9 @@ STOP::: Groundfish surveys would only sporatically record by catch
 
   # -----------------------------
   # ordination of all years 1970 to present
-  yrs = 1970:2022
+  year.assessment = 2022
+
+  yrs = 1970:year.assessment
   runlabel="1970_present"
 
   require(aegis.speciescomposition)
@@ -130,8 +132,14 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     
     # construct basic parameter list defining the main characteristics of the study
     p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
-    p = speciescomposition_parameters( p=p0, project_class="carstm", variabletomodel = variabletomodel, yrs=p0$yrs, runlabel=runlabel,
-      mc.cores=2, theta=p0$theta0[[variabletomodel]]
+    p = speciescomposition_parameters( 
+      p=p0, 
+      project_class="carstm", 
+      variabletomodel = variabletomodel, 
+      yrs=p0$yrs, 
+      runlabel=runlabel,
+      mc.cores=2, 
+      theta=p0$theta0[[variabletomodel]]
     )  
     
     # run model and obtain predictions
