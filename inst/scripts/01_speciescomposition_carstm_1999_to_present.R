@@ -48,7 +48,7 @@ p0 = speciescomposition_parameters(
   inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
   year.assessment = max(yrs),
   yrs = yrs,
-  aegis_dimensionality="space-year",
+  dimensionality="space-time",
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
   areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
@@ -57,7 +57,7 @@ p0 = speciescomposition_parameters(
   carstm_prediction_surface_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-    temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=1970:year.assessment, carstm_model_label="1970_present" ) 
+    temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=1999:year.assessment, carstm_model_label="1999_present" ) 
   ) 
   ,
   theta = list(   
@@ -92,7 +92,7 @@ if (0) {
 
     xydata = speciescomposition_db(p=p0, DS="areal_units_input" )
     xydata = xydata[ which(xydata$yr %in% p$yrs), ]
-    sppoly = areal_units( p=p0, xydata=xydata, hull_alpha=20, redo=TRUE )  # to force create
+    sppoly = areal_units( p=p0, xydata=xydata,  redo=TRUE )  # to force create
  
     plot(sppoly["npts"])
 
@@ -109,7 +109,7 @@ M= NULL; gc()
 # bbox = c(-71.5, 41, -52.5,  50.5 )
 additional_features = additional_features_tmap( 
     p=p0, 
-    isobaths=c( 10, 100, 200, 300, 500, 1000 ), 
+    isobaths=c( 100, 200, 300, 400, 500  ), 
     coastline =  c("canada"), 
     xlim=c(-80,-40), 
     ylim=c(38, 60) 
@@ -135,7 +135,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     )  
     
     # run model and obtain predictions
-    fit = carstm_model( 
+    res = carstm_model( 
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       num.threads="6:2",  # adjust for your machine
@@ -144,6 +144,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       # debug = TRUE,
+      compress=FALSE, # this slows it down more but if storage size is an issue .. set to TRUE
       verbose=TRUE 
     )
 
@@ -157,13 +158,12 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
       plot(fit)
       plot(fit, plot.prior=TRUE, plot.hyperparameters=TRUE, plot.fixed.effects=FALSE )
+      
+      fit = NULL; gc()
     }
 
-    fit = NULL; gc()
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
-
-
 
     carstm_plotxy( res, vn=c( "res", "random", "time" ), 
       type="b", ylim=c(-0.1, 0.1), xlab="Year", ylab=variabletomodel  )
