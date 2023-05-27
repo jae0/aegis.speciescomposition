@@ -47,8 +47,7 @@ p0 = speciescomposition_parameters(
   inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
   inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
   year.assessment = max(yrs),
-  yrs = yrs,
-  dimensionality="space-time-cyclic",
+  yrs = yrs, 
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
   areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
@@ -162,7 +161,26 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       fit = NULL; gc()
     }
 
+}
 
+
+
+for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
+    
+    # variabletomodel = "pca1"
+    # variabletomodel = "pca2"
+    # variabletomodel = "pca3"
+    
+    # construct basic parameter list defining the main characteristics of the study
+    p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
+    p = speciescomposition_parameters( 
+      p=p0, 
+      project_class="carstm", 
+      variabletomodel = variabletomodel, 
+      yrs=p0$yrs, 
+      runlabel=runlabel 
+    )  
+ 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
 
     carstm_plotxy( res, vn=c( "res", "random", "time" ), 
@@ -206,7 +224,6 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       )
 
     }
-
 
     
     outputdir = file.path(p$data_root, "maps", p$carstm_model_label )
