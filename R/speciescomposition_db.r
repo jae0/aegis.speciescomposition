@@ -250,17 +250,16 @@
       M = speciescomposition_db( p=p, DS="speciescomposition"  )
       setDT(M)
       
-      vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3", "gear", "data.source", "vessel" )
-#      , 
-#        "t", "z", "substrate.grainsize", "sal", "oxyml" )
+      vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3", "gear", "data.source", "vessel" , 
+        "t", "z", "substrate.grainsize") # , "sal", "oxyml" )
 
 
       # # INLA does not like duplicates ... causes optimizer to crash frequently
-      # oo = which(duplicated( M[, p$variabletomodel] ))
-      # if ( length(oo)> 0) {
-      #   eps = exp( log( .Machine$double.eps ) / 2)  # ~ 1.5e-8
-      #   M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
-      # }
+      oo = which(duplicated( M[, p$variabletomodel] ))
+      if ( length(oo)> 0) {
+        eps = exp( log( .Machine$double.eps ) / 2)  # ~ 1.5e-8
+        M[oo, p$variabletomodel]  = M[oo, p$variabletomodel]  + runif( length(oo), -eps, eps )
+      }
 
       M = planar2lonlat(M, proj.type=p$aegis_proj4string_planar_km) # get planar projections of lon/lat in km
       
