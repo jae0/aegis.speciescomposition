@@ -105,15 +105,6 @@ str(M);
 M= NULL; gc()
 
 
-# bbox = c(-71.5, 41, -52.5,  50.5 )
-additional_features = additional_features_tmap( 
-    p=p0, 
-    isobaths=c( 10, 100, 200, 300, 400, 500  ), 
-    coastline =  c("canada"), 
-    xlim=c(-80,-40), 
-    ylim=c(38, 60) 
-)
-
 
 for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
@@ -137,13 +128,13 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     res = carstm_model( 
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
-      num.threads="6:2",  # adjust for your machine
-      # control.inla = list( strategy='laplace'),
-      # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
+      num.threads="6:2",  # adjust for your machine
       # debug = TRUE,
-      compress=FALSE, # this slows it down more but if storage size is an issue .. set to TRUE
+      # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
+      # control.inla = list( strategy='laplace'),
+      # control.inla=list(cmin=0),
       verbose=TRUE 
     )
 
@@ -163,6 +154,15 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
 }
 
+
+# bbox = c(-71.5, 41, -52.5,  50.5 )
+additional_features = additional_features_tmap( 
+    p=p0, 
+    isobaths=c( 10, 100, 200, 300, 400, 500  ), 
+    coastline =  c("canada"), 
+    xlim=c(-80,-40), 
+    ylim=c(38, 60) 
+)
 
 
 for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {

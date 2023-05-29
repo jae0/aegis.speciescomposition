@@ -31,7 +31,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   p = parameters_add_without_overwriting( p,
     spatial_domain = "SSE",  # canada.east.highres and canada.east.superhighres result in memory overflow
     spatial_domain_subareas = c( "SSE", "SSE.mpa" , "snowcrab"),  # this is for bathymetry_db, not stmv
-    dimensionality="space-time-cyclic"   # dimensionality of predictions (season is modelled but only a single slice kept for storage issues)
+    dimensionality="space-time", # dimensionality of output data predictions (season is modelled but only a single slice kept for storage issues)
   )
 
   p$quantile_bounds =c(0.005, 0.995) # trim upper bounds
@@ -50,6 +50,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   yrs_default = 1999:p$year.assessment
   p = parameters_add_without_overwriting( p, yrs=yrs_default, timezone="America/Halifax" )  # default
   p = temporal_parameters(p=p)
+
 
   p$discretization = discretizations(p=p$discretization)  # key for discretization levels
 

@@ -270,11 +270,12 @@
       M = M[ which(M$year %in% p$yrs), ]
       M$tiyr = lubridate::decimal_date ( M$timestamp )
       M$dyear = M$tiyr - M$year
- 
-      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, NA_remove=FALSE,
-            vars_to_retain=vars_to_retain,
-            vars_to_drop ="speciescomposition" )  # drop dummy variable
- 
+      
+      M = carstm_prepare_inputdata( p=p, M=M, sppoly=sppoly, 
+        NA_remove=FALSE,
+        vars_to_retain=vars_to_retain,
+        vars_to_drop ="speciescomposition" )  # drop dummy variable
+
       jj = which(!is.finite(M$t))
       if (length(jj) > 0 ) {
         M$t[jj] = median( M$t[-jj] )
