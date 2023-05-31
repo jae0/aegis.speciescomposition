@@ -287,12 +287,14 @@
       }
       M$log.substrate.grainsize = log( M$substrate.grainsize )
 
-  
       M$space = M$AUID
-      M$time = M$year    
       M$space_time = M$space  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
+
+      M$time = M$year    
       M$time_space = M$time  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
 
+      cyclic_levels = factor(p$dyears + diff(p$dyears)[1]/2, ordered=TRUE )
+      M$cyclic = factor( as.character( M$dyri ), levels =levels(cyclic_levels) )   # copy for carstm/INLA
 
       attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
       attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")
