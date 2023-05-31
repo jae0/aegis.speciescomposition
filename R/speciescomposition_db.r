@@ -287,7 +287,7 @@
       }
       M$log.substrate.grainsize = log( M$substrate.grainsize )
 
-      M$space = M$AUID
+      M$space = match( M$AUID, sppoly$AUID) 
       M$space_time = M$space  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
 
       M$time = M$year    
