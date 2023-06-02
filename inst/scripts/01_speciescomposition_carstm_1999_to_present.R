@@ -104,6 +104,7 @@ M = speciescomposition_db( p=p0, DS="carstm_inputs", sppoly=sppoly , redo=TRUE  
 str(M); 
 M= NULL; gc()
 
+cyclic_levels = factor(p0$dyears + diff(p0$dyears)[1]/2, ordered=TRUE )
 
 
 for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
@@ -119,6 +120,10 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       project_class="carstm", 
       variabletomodel = variabletomodel, 
       yrs=p0$yrs, 
+      # required
+      space_id = sppoly$AUID,
+      time_id = p0$yrs,
+      cyclic_id = cyclic_levels,
       runlabel=runlabel,
       mc.cores=2, 
       theta=p0$theta[[variabletomodel]]

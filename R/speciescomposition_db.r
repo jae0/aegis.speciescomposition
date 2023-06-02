@@ -291,7 +291,7 @@
       M$space_time = M$space  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
 
       M$time = M$year    
-      M$time_space = M$time  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
+      M$time_space = match( M$time, p$yrs ) # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
 
       cyclic_levels = factor(p$dyears + diff(p$dyears)[1]/2, ordered=TRUE )
       M$cyclic = factor( as.character( M$dyri ), levels =levels(cyclic_levels) )   # copy for carstm/INLA
