@@ -138,6 +138,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     }
 
     p = temporal_parameters(p=p)  # redo in case of user-specificed params
+    
+
 
     # defaults in case not provided ...
     p = parameters_add_without_overwriting( p,
