@@ -120,9 +120,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       variabletomodel = variabletomodel, 
       yrs=p0$yrs, 
       # required
-      runlabel=runlabel,
-      mc.cores=2, 
-      theta=p0$theta[[variabletomodel]]
+      runlabel=runlabel
     )  
     
     # run model and obtain predictions
@@ -132,7 +130,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       space_id = sppoly$AUID,
       time_id = p$yrs,
       cyclic_id = p$cyclic_levels,
-      # redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
+      theta=p$theta[[variabletomodel]],
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       num.threads="6:2",  # adjust for your machine
       # debug = TRUE,
@@ -191,7 +189,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       type="b", ylim=c(-0.1, 0.1), xlab="Year", ylab=variabletomodel  )
 
     carstm_plotxy( res, vn=c( "res", "random", "cyclic" ), 
-      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.03, 0.03),
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.5, 0.5),
       xlab="Season", ylab=variabletomodel, h=0.5  )
 
     carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), 

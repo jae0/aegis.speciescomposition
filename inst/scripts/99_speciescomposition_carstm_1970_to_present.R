@@ -138,19 +138,21 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
       variabletomodel = variabletomodel, 
       yrs=p0$yrs, 
       runlabel=runlabel,
-      mc.cores=2, 
       theta=p0$theta0[[variabletomodel]]
     )  
     
     # run model and obtain predictions
     
-    fit = carstm_model( 
+    res = carstm_model( 
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
-      num.threads="6:2",  # adjust for your machine
-      control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
-      redo_fit=TRUE, # to start optim from a solution close to the final in 2021 ... 
+      space_id = sppoly$AUID,
+      time_id = p$yrs,
+      cyclic_id = p$cyclic_levels,
+      theta=p$theta[[variabletomodel]],
+      # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       # debug="summary",
+      control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       verbose=TRUE 
      )
        
