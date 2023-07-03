@@ -91,7 +91,7 @@ if (0) {
 
     xydata = speciescomposition_db(p=p0, DS="areal_units_input" )
     xydata = xydata[ which(xydata$yr %in% p$yrs), ]
-    sppoly = areal_units( p=p0, xydata=xydata,  redo=TRUE )  # to force create
+    sppoly = areal_units( p=p0, xydata=xydata, spbuffer=5, n_iter_drop=3, redo=TRUE, verbose=TRUE )  # to force create
  
     plot(sppoly["npts"])
 

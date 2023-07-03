@@ -101,7 +101,7 @@ if (0) {
     # to recreate the underlying data
     xydata = speciescomposition_db(p=p0, DS="areal_units_input", redo=TRUE)
 
-    sppoly = areal_units( p=p0, redo=TRUE, hull_alpha=20, verbose=TRUE )   
+    sppoly = areal_units( p=p0, redo=TRUE, verbose=TRUE )   
   
     plot(sppoly["AUID"])
 

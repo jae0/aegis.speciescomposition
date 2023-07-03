@@ -150,9 +150,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       # areal_units_proj4string_planar_km = projection_proj4string("omerc_nova_scotia")  # coord system to use for areal estimation and gridding for carstm
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
-      hull_alpha=20,
       tus="yr",
-      fraction_todrop = 0.1,
+      fraction_todrop = 0.05,
       fraction_cv = 0.9,
       fraction_good_bad = 1.0,
       areal_units_constraint_nmin=5,  # best compromise
@@ -184,7 +183,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',
             ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
             ' + f( inla.group( z, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
-         #   ' + f( inla.group( log.substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',  # causes issues due to limited spatial range ?
+            ' + f( inla.group( log.substrate.grainsize, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',  # causes issues due to limited spatial range ?
             ' + f( space_time, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, group=time_space, hyper=H$bym2, control.group=list(model="ar1", hyper=H$ar1_group))'
           ) )
       }
