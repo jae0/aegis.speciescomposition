@@ -34,6 +34,7 @@ if (0) {
 
 }
 
+ 
 
 # -----------------------------
 # carstm predictions / analysis
@@ -57,19 +58,18 @@ p0 = speciescomposition_parameters(
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
     temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=1999:year.assessment, carstm_model_label="1999_present" ) 
-  ) 
-  ,
+  ), 
   theta = list(   
-    pca1 = c(  6.697, 5.542, 7.158, 3.173, 9.136, 2.731, 9.650, 6.221, 6.592, 4.893, 3.360   ),  # good
-    pca2 = c(  6.700, 6.285, 7.287, 3.170, 9.129, 2.947, 10.969, 6.497, 6.613, 5.079, 3.263  ), 
-    pca3 = c(  7.015, 5.512, 4.224, 6.496, 9.345, 2.784, 9.745, 7.924, 6.678, 4.771, 3.531   ),
-    ca1 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ),
-    ca2 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   ),
-    ca3 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 6.479, 4.650, 3.541   )
+    pca1 = c( 6.686, 5.109, 8.107, 2.381, 11.378, 0.904, 14.436, 6.303, 12.532, 6.403, 5.102, 3.396  ),   
+    pca2 = c( 6.706, 4.418, 5.699, 4.607, 12.418, -0.980, 10.007, 7.243, 9.587, 6.443, 6.012, 3.413  ), 
+    pca3 = c( 6.975, 5.199, 8.451, 2.831, 11.627, -0.795, 12.553, 7.798, 10.443, 6.649, 6.055, 3.594 ),
+    ca1 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   ),
+    ca2 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   ),
+    ca3 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   )
   )
 )
 
-
+ 
    
 
 if (0) { 
@@ -130,6 +130,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       space_id = sppoly$AUID,
       time_id = p$yrs,
       cyclic_id = p$cyclic_levels,
+      nposteriors=5000,
+      posterior_simulations_to_retain=c( "summary", "random_spatial", "predictions"), 
       theta=p$theta[[variabletomodel]],
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       num.threads="6:2",  # adjust for your machine
