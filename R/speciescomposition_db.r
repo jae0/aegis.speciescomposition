@@ -289,11 +289,18 @@
 
       M$space = match( M$AUID, sppoly$AUID) # for bym/car .. must be numeric index matching neighbourhood graphs
       M$space_time = M$space  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
+      M$space_cyclic = M$space  # copy for space_time component (INLA does not like to re-use the same variable in a model formula) 
 
-      M$time = M$year    
-      M$time_space = match( M$time, p$yrs ) # copy for space_time component .. for groups, must be numeric index
-      M$cyclic = factor( as.character( M$dyri ), levels =levels(p$cyclic_levels) )   # copy for carstm/INLA
+      M$time = match( M$year, p$yrs ) # copy for space_time component .. for groups, must be numeric index
+      M$time_space = M$time    
+      
 
+      # as numeric is simpler
+      cyclic_levels = p$dyears + diff(p$dyears)[1]/2 
+
+      M$cyclic = match( M$dyri, discretize_data( cyclic_levels, seq( 0, 1, by=0.1 ) ) ) 
+      M$cyclic_space = M$cyclic # copy cyclic for space - cyclic component .. for groups, must be numeric index
+    
       attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
       attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")
 

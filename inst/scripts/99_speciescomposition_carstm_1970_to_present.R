@@ -84,6 +84,16 @@ p0 = speciescomposition_parameters(
 )
    
 
+p0$space_name = sppoly$AUID 
+p0$space_id = 1:nrow(sppoly)  # must match M$space
+
+p0$time_name = as.character(p0$yrs)
+p0$time_id =  1:p0$ny
+
+p0$cyclic_name = as.character(p0$cyclic_levels)
+p0$cyclic_id = 1:p0$nw
+
+
 if (0) { 
     # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
     # p0$fraction_cv = 0.7 #sd/mean no.
@@ -115,7 +125,7 @@ M= NULL; gc()
 
 
 # bbox = c(-71.5, 41, -52.5,  50.5 )
-additional_features = additional_features_tmap( 
+additional_features = features_to_add( 
     p=p0, 
     isobaths=c( 10, 100, 200, 300, 500, 1000 ), 
     coastline =  c("canada"), 
@@ -146,9 +156,6 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     res = carstm_model( 
       p=p, 
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
-      space_id = sppoly$AUID,
-      time_id = p$yrs,
-      cyclic_id = p$cyclic_levels,
       theta=p$theta[[variabletomodel]],
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       # debug="summary",
@@ -171,9 +178,6 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     fit = NULL; gc()
 
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
-
-    map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
-    map_zoom = 7
  
 
     if (0) {
@@ -188,10 +192,8 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
       carstm_map(  res=res, vn=vn, tmatch=tmatch, 
         plot_crs = "+proj=omerc +lat_0=44.5 +lonc=-63.5 +gamma=0.0 +k=1 +alpha=332 +x_0=0 +y_0=0 +ellps=WGS84 +units=km" ,
-        palette="RdYlBu",
         breaks = seq(-0.2, 0.1 , by=0.05),
-        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
-        tmap_zoom= c(map_centre, map_zoom),
+        colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
         additional_features = additional_features,
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
       )
@@ -216,11 +218,8 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
     
       carstm_map(  res=res, vn=vn, tmatch=tmatch , 
-        palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
-        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
-        map_mode="view",
-        tmap_zoom= c(map_centre, map_zoom),
+        colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
         additional_features=additional_features, 
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ) ,
         outfilename=fn
@@ -235,11 +234,8 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
 
     carstm_map(  res=res, vn=vn, tmatch=tmatch , 
-        palette="RdYlBu",
         breaks = seq(-0.3, 0.3, by=0.1),
-        plot_elements=c( "isobaths", "compass", "scale_bar", "legend" ),
-        map_mode="view",
-        tmap_zoom= c(map_centre, map_zoom),
+        colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
         additional_features=additional_features, 
         title=paste("Species composition: ", variabletomodel, "  ", "spatial_effect" ) ,
         outfilename=fn
