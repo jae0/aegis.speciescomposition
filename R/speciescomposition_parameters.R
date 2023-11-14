@@ -128,11 +128,11 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
       if (p$carstm_model_label == "1999_present"){
           p$yrs = 1999:p$year.assessment
-          p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
+          p$areal_units_constraint_ntarget =  floor(length(p$yrs)/2)  # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
       } else if (p$carstm_model_label == "1970_present"){
           p$yrs = 1970:p$year.assessment
-          p$areal_units_constraint_ntarget =  length(p$yrs)  # n time slices req in each au
+          p$areal_units_constraint_ntarget =  floor(length(p$yrs)/2)  # n time slices req in each au
           p$areal_units_timeperiod = p$carstm_model_label 
       }
     }
@@ -155,7 +155,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       fraction_cv = 0.9,
       fraction_good_bad = 1.0,
       areal_units_constraint_nmin=5,  # best compromise
-      areal_units_constraint_ntarget= length(p$yrs),
+      areal_units_constraint_ntarget= floor(length(p$yrs)/2),
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "1999_present",
@@ -309,7 +309,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
             + f(space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, constr=TRUE, hyper=H$bym2),
           family = "gaussian",
           data= dat,
-          inla.mode="experimental",
+          inla.mode="compact",
           control.compute=list(dic=TRUE, waic=TRUE, cpo=FALSE, config=FALSE), return.marginals.predictor=TRUE,  # config=TRUE if doing posterior simulations
           control.predictor=list(compute=FALSE, link=1 ),
           control.fixed=H$fixed,  # priors for fixed effects, generic is ok

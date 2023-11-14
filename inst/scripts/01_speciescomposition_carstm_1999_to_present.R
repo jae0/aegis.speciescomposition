@@ -6,7 +6,7 @@ year.assessment = 2022
 yrs = 1999:year.assessment
  
 runlabel="1999_present"
-
+require(aegis)
 require(aegis.speciescomposition)
 
 p = speciescomposition_parameters( yrs=yrs, runlabel=runlabel )
@@ -192,19 +192,23 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
  
     res = carstm_model( p=p, DS="carstm_modelled_summary"  ) # to load currently saved results
 
-    carstm_plotxy( res, vn=c( "res", "random", "time" ), 
-      type="b", ylim=c(-0.1, 0.1), xlab="Year", ylab=variabletomodel  )
+    dir.create( file.path(p$data_root, "figures"), recursive=TRUE, showWarnings=FALSE)
+    fnp = file.path(p$data_root, "figures", paste(variabletomodel, "_timeseries.png", sep="") )
+    png(filename=fnp, width=800,height=600, res=144)
+    carstm_plotxy( res, vn=c( "res", "random", "time" ), reverse=TRUE, # reverse is to match maps colors .. they are also reversed
+      type="b", xlab="Year", ylab=variabletomodel  )
+    dev.off()
 
-    carstm_plotxy( res, vn=c( "res", "random", "cyclic" ), 
+    carstm_plotxy( res, vn=c( "res", "random", "cyclic" ), reverse=TRUE,
       type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.5, 0.5),
       xlab="Season", ylab=variabletomodel, h=0.5  )
 
-    carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), 
-      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.015, 0.01) ,
+    carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), reverse=TRUE,
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5  ,
       xlab="Bottom temperature (degrees Celsius)", ylab=variabletomodel   )
 
-    carstm_plotxy( res, vn=c( "res", "random", "inla.group(z, method = \"quantile\", n = 9)" ), 
-      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.02, 0.02) ,
+    carstm_plotxy( res, vn=c( "res", "random", "inla.group(z, method = \"quantile\", n = 9)" ), reverse=TRUE,
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5  ,
       xlab="Depth (m)", ylab=variabletomodel   )
  
 
@@ -251,7 +255,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       plt = carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         breaks = brks,
         title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ), 
-        colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
+        colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),  #RdYlBu BuYlRd
         additional_features=additional_features,
         outfilename=outfilename
       )
@@ -267,9 +271,10 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     toplot = carstm_results_unpack( res, vn )
     brks = pretty(  quantile(toplot[,"mean"], probs=c(0.025, 0.975), na.rm=TRUE )  )
 
+  ##NOTE: color scale is reversed for red=hot
     plt = carstm_map(  res=res, vn=vn, 
         sppoly = sppoly, 
-        colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
+        colors= (RColorBrewer::brewer.pal(5, "RdYlBu")),
         breaks = brks,
         title=paste("Species composition: ", variabletomodel, "persistent spatial effect" ), 
         additional_features=additional_features,

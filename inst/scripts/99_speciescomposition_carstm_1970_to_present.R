@@ -211,7 +211,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
     graphics.off()
 
-    for (y in res$time ){
+    for (y in res$time_name ){
       tmatch = as.character(y) 
       fn_root = paste( "speciescomposition", variabletomodel, paste0(tmatch, collapse=" - "), sep="_" )
       fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
