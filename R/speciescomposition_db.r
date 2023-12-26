@@ -40,8 +40,7 @@
       res = survey_data_prepare(p=p, cthreshold = 0.005)
       
       # unpack
-      m = res$m
-      sc = res$sc
+      m = res$m 
       set = res$set
       res = NULL
 

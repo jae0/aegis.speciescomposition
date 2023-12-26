@@ -1,7 +1,7 @@
  
 # -----------------------------
 # ordination of all years 1970 to present
-year.assessment = 2022
+year.assessment = 2023
 
 yrs = 1999:year.assessment
  
@@ -54,6 +54,9 @@ p0 = speciescomposition_parameters(
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
   areal_units_type = "tesselation",       
   areal_units_overlay = "none",
+  spbuffer=5, lenprob=0.95,   # these are domain boundary options for areal_units
+  n_iter_drop=0, sa_threshold_km2=4, 
+  areal_units_constraint_ntarget=8, areal_units_constraint_nmin=1,  # granularity options for areal_units
   carstm_prediction_surface_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
@@ -91,7 +94,7 @@ if (0) {
 
     xydata = speciescomposition_db(p=p0, DS="areal_units_input" )
     xydata = xydata[ which(xydata$yr %in% p$yrs), ]
-    sppoly = areal_units( p=p0, xydata=xydata, spbuffer=5, n_iter_drop=3, redo=TRUE, verbose=TRUE )  # to force create
+    sppoly = areal_units( p=p0, xydata=xydata, redo=TRUE, verbose=TRUE )  # to force create
  
     plot(sppoly["npts"])
 
