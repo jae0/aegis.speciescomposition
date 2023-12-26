@@ -135,6 +135,16 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       }
     }
 
+    # variabletomodel = "pca1"
+    # variabletomodel = "pca2"
+    # variabletomodel = "pca3"
+    
+    # construct basic parameter list defining the main characteristics of the study
+    p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
+    p = speciescomposition_parameters( 
+      p=p0, 
+      project_class="carstm", 
+      variabletomodel = variabletomodel, 
 
     p = temporal_parameters(p=p)  # redo in case of user-specificed params
     
@@ -177,7 +187,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
         p$formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
-            ' + f( cyclic, model="seasonal", scale.model=TRUE, season.length=10, hyper=H$iid  ) ',
+            ' + f( cyclic, model="ar1",  hyper=H$ar1  ) ',
             ' + f( time, model="ar1",  hyper=H$ar1 ) ',
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',
             ' + f( inla.group( t, method="quantile", n=9 ), model="rw2", scale.model=TRUE, hyper=H$rw2)',
