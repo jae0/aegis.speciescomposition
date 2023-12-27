@@ -134,18 +134,8 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
           p$areal_units_timeperiod = p$carstm_model_label 
       }
     }
-
-    # variabletomodel = "pca1"
-    # variabletomodel = "pca2"
-    # variabletomodel = "pca3"
-    
-    # construct basic parameter list defining the main characteristics of the study
-    p0$formula = NULL  # MUST reset to force a new formulae to be created on the fly below 
-    p = speciescomposition_parameters( 
-      p=p0, 
-      project_class="carstm", 
-      variabletomodel = variabletomodel, 
-
+ 
+ 
     p = temporal_parameters(p=p)  # redo in case of user-specificed params
     
 
