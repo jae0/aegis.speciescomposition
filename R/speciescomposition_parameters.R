@@ -187,6 +187,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
 
         p$formula = as.formula( paste(
          p$variabletomodel, ' ~ 1',
+#            ' + f( cyclic, model="seasonal", scale.model=TRUE, season.length=10, hyper=H$iid  ) ',  # cannot use seasonal as missing data in some levels
             ' + f( cyclic, model="ar1",  hyper=H$ar1  ) ',
             ' + f( time, model="ar1",  hyper=H$ar1 ) ',
             ' + f( space, model="bym2", graph=slot(sppoly, "nb"), scale.model=TRUE, hyper=H$bym2 ) ',

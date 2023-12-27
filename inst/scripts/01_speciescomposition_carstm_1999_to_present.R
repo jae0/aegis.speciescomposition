@@ -55,8 +55,8 @@ p0 = speciescomposition_parameters(
   areal_units_type = "tesselation",       
   areal_units_overlay = "none",
   spbuffer=5, lenprob=0.95,   # these are domain boundary options for areal_units
-  n_iter_drop=0, sa_threshold_km2=4, 
-  areal_units_constraint_ntarget=8, areal_units_constraint_nmin=1,  # granularity options for areal_units
+  n_iter_drop=0, sa_threshold_km2=5, 
+  areal_units_constraint_ntarget=10, areal_units_constraint_nmin=1,  # granularity options for areal_units
   carstm_prediction_surface_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
