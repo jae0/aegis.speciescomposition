@@ -167,7 +167,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$carstm_prediction_surface_parameters = parameters_add_without_overwriting( p$carstm_prediction_surface_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1970:p$year.assessment, carstm_model_label="1970_present" ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1999:p$year.assessment, carstm_model_label="1970_present" ) 
         )
     }
 

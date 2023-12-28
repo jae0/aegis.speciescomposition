@@ -50,25 +50,25 @@ p0 = speciescomposition_parameters(
   year.assessment = max(yrs),
   yrs = yrs, 
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
-  areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
   areal_units_type = "tesselation",       
-  areal_units_overlay = "none",
-  spbuffer=5, lenprob=0.95,   # these are domain boundary options for areal_units
-  n_iter_drop=0, sa_threshold_km2=5, 
-  areal_units_constraint_ntarget=10, areal_units_constraint_nmin=1,  # granularity options for areal_units
+  #areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
+  # areal_units_overlay = "none",
+  # spbuffer=5, lenprob=0.95,   # these are domain boundary options for areal_units
+  # n_iter_drop=0, sa_threshold_km2=5, 
+  # areal_units_constraint_ntarget=10, areal_units_constraint_nmin=1,  # granularity options for areal_units
   carstm_prediction_surface_parameters = list( 
     bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
     substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
     temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=1999:year.assessment, carstm_model_label="1999_present" ) 
   ), 
-  theta = list(   
-    pca1 = c( 6.686, 5.109, 8.107, 2.381, 11.378, 0.904, 14.436, 6.303, 12.532, 6.403, 5.102, 3.396  ),   
-    pca2 = c( 6.706, 4.418, 5.699, 4.607, 12.418, -0.980, 10.007, 7.243, 9.587, 6.443, 6.012, 3.413  ), 
-    pca3 = c( 6.975, 5.199, 8.451, 2.831, 11.627, -0.795, 12.553, 7.798, 10.443, 6.649, 6.055, 3.594 ),
-    ca1 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   ),
-    ca2 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   ),
-    ca3 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   )
+  theta = list(     
+    pca1 = c( 6.596, 9.250, 0.013, 8.114, 2.547, 12.028, 0.039, 13.987, 6.422, 12.998, 6.650, 5.292, 3.444  ),   
+    pca2 = c( 6.613, 6.758, 2.117, 7.785, 2.909, 13.631, -1.938, 9.406, 5.407, 10.801, 6.426, 6.341, 3.391 ),
+    pca3 = c( 7.001, 8.069, 0.073, 3.958, -6.423, 7.670, 4.010, 11.813, 7.701, 12.266, 7.635, 3.808, 2.474  )#, 
+    # ca1 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   ),
+    # ca2 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   ),
+    # ca3 =  c(  6.512, 5.082, 6.983, 3.188, 9.191, 2.793, 9.261, 7.840, 12.532, 6.479, 4.650, 3.541   )
   )
 )
 
@@ -117,7 +117,7 @@ p0$cyclic_name = as.character(p0$cyclic_levels)
 p0$cyclic_id = 1:p0$nw
 
 
-for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
+for ( variabletomodel in c(  "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
@@ -140,7 +140,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       nposteriors=5000,
       posterior_simulations_to_retain=c(  "random_spatial", "predictions"), 
-      # theta=p$theta[[variabletomodel]],
+     # theta=p$theta[[variabletomodel]],
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       num.threads="6:2",  # adjust for your machine
       # debug = TRUE,
