@@ -150,16 +150,17 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
       tus="yr",
-      fraction_todrop = 0.05,
-      fraction_cv = 0.9,
+      fraction_todrop = 0.025,
+      fraction_cv = 0.95,
       fraction_good_bad = 1.0,
-      areal_units_constraint_ntarget=10, 
+      areal_units_constraint_ntarget=8, 
       areal_units_constraint_nmin=1,  # granularity options for areal_units
       # areal_units_constraint_ntarget =  floor(length(p$yrs)/2),  # n time slices req in each au
       # areal_units_constraint_nmin=5,  # best compromise
       spbuffer=5, 
       lenprob=0.95,   # these are domain boundary options for areal_units
-      n_iter_drop=0, sa_threshold_km2=16, 
+      n_iter_drop=0, 
+      sa_threshold_km2=16, 
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "1999_present",
