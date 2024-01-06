@@ -117,7 +117,7 @@ p0$cyclic_name = as.character(p0$cyclic_levels)
 p0$cyclic_id = 1:p0$nw
 
 
-for ( variabletomodel in c(  "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
+for ( variabletomodel in c( "pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
     
     # variabletomodel = "pca1"
     # variabletomodel = "pca2"
@@ -140,7 +140,7 @@ for ( variabletomodel in c(  "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "c
       data="speciescomposition_db( p=p, DS='carstm_inputs' ) ", 
       nposteriors=5000,
       posterior_simulations_to_retain=c(  "random_spatial", "predictions"), 
-     # theta=p$theta[[variabletomodel]],
+      theta=p$theta[[variabletomodel]],
       # redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       num.threads="6:2",  # adjust for your machine
       # debug = TRUE,
@@ -171,9 +171,8 @@ for ( variabletomodel in c(  "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2",   "c
 additional_features = features_to_add( 
     p=p0, 
     isobaths=c( 100, 200, 300, 400, 500  ), 
-    coastline =  c("canada"), 
     xlim=c(-80,-40), 
-    ylim=c(38, 60) 
+    ylim=c(38, 60) , redo=TRUE
 )
 
 
@@ -283,10 +282,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
         additional_features=additional_features,
         outfilename=outfilename
     )
-    plt
-
-
-
+ 
   }
 
 

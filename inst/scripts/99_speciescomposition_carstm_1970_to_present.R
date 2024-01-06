@@ -128,7 +128,6 @@ M= NULL; gc()
 additional_features = features_to_add( 
     p=p0, 
     isobaths=c( 10, 100, 200, 300, 500, 1000 ), 
-    coastline =  c("canada"), 
     xlim=c(-80,-40), 
     ylim=c(38, 60) 
 )
