@@ -233,7 +233,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
         colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
         breaks = seq(-0.2, 0.1 , by=0.05),
         additional_features=additional_features,
-        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
+        legend.position=c( 0.1, 0.9 ),
+        annotation=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") )  
       )
 
     }
@@ -256,7 +257,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     
       plt = carstm_map(  res=res, vn=vn, tmatch=tmatch , 
         breaks = brks,
-        title=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ), 
+        annotation=paste("Species composition: ", variabletomodel, "  ", paste0(tmatch, collapse="-") ), 
+        legend.position=c( 0.1, 0.9 ),
         colors=rev(RColorBrewer::brewer.pal(5, "RdYlBu")),  #RdYlBu BuYlRd
         additional_features=additional_features,
         outfilename=outfilename
@@ -278,7 +280,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
         sppoly = sppoly, 
         colors= (RColorBrewer::brewer.pal(5, "RdYlBu")),
         breaks = brks,
-        title=paste("Species composition: ", variabletomodel, "persistent spatial effect" ), 
+        annotation=paste("Species composition: ", variabletomodel, "persistent spatial effect" ), 
+        legend.position=c( 0.1, 0.9 ),
         additional_features=additional_features,
         outfilename=outfilename
     )
