@@ -155,6 +155,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       fraction_good_bad = 1.0,
       areal_units_constraint_ntarget=8, 
       areal_units_constraint_nmin=1,  # granularity options for areal_units
+      areal_units_constraint="none",
       # areal_units_constraint_ntarget =  floor(length(p$yrs)/2),  # n time slices req in each au
       # areal_units_constraint_nmin=5,  # best compromise
       spbuffer=5, 

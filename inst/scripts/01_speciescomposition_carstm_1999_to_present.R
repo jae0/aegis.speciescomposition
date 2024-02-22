@@ -51,7 +51,8 @@ p0 = speciescomposition_parameters(
   yrs = yrs, 
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
   areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
-  areal_units_type = "tesselation",       
+  areal_units_type = "tesselation",     
+  areal_units_constraint="none",
   #areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
   # areal_units_overlay = "none",
   # spbuffer=5, lenprob=0.95,   # these are domain boundary options for areal_units
@@ -198,21 +199,32 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     fnp = file.path(p$data_root, "figures", paste(variabletomodel, "_timeseries.png", sep="") )
     png(filename=fnp, width=800,height=600, res=144)
     carstm_plotxy( res, vn=c( "res", "random", "time" ), reverse=TRUE, # reverse is to match maps colors .. they are also reversed
-      type="b", xlab="Year", ylab=variabletomodel  )
+      type="b", xlab="Year", ylab=variabletomodel, xv=p$yrs, ylim=c(-0.05, 0.05)  )  # override xv (x-values)
     dev.off()
 
+ 
+    fnp = file.path(p$data_root, "figures", paste(variabletomodel, "_cyclic.png", sep="") )
+    png(filename=fnp, width=800,height=600, res=144)
     carstm_plotxy( res, vn=c( "res", "random", "cyclic" ), reverse=TRUE,
-      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.5, 0.5),
+      type="b", col="slategray", pch=19, lty=1, lwd=2.5, ylim=c(-0.065, 0.065),
       xlab="Season", ylab=variabletomodel, h=0.5  )
+    dev.off()
 
+    fnp = file.path(p$data_root, "figures", paste(variabletomodel, "_temperature.png", sep="") )
+    png(filename=fnp, width=800,height=600, res=144)
     carstm_plotxy( res, vn=c( "res", "random", "inla.group(t, method = \"quantile\", n = 9)" ), reverse=TRUE,
       type="b", col="slategray", pch=19, lty=1, lwd=2.5  ,
       xlab="Bottom temperature (degrees Celsius)", ylab=variabletomodel   )
+    dev.off()
 
+
+    fnp = file.path(p$data_root, "figures", paste(variabletomodel, "_depth.png", sep="") )
+    png(filename=fnp, width=800,height=600, res=144)
     carstm_plotxy( res, vn=c( "res", "random", "inla.group(z, method = \"quantile\", n = 9)" ), reverse=TRUE,
       type="b", col="slategray", pch=19, lty=1, lwd=2.5  ,
       xlab="Depth (m)", ylab=variabletomodel   )
- 
+    dev.off()
+
 
     map_centre = c( (p$lon0+p$lon1)/2  , (p$lat0+p$lat1)/2   )
     map_zoom = 7.4
