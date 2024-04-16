@@ -8,12 +8,14 @@ yrs = 1999:year.assessment
 runlabel="1999_present"
 require(aegis)
 require(aegis.speciescomposition)
+require(vegan)
 
 p = speciescomposition_parameters( yrs=yrs, runlabel=runlabel )
 
 
 # -----------------------------
 # prepare data
+
 speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
 
 speciescomposition_db( DS="speciescomposition.redo", p=p  ) # compute planar coords and remove dups
@@ -106,6 +108,12 @@ if (0) {
 sppoly = areal_units( p=p0)
 M = speciescomposition_db( p=p0, DS="carstm_inputs", sppoly=sppoly , redo=TRUE  )  # will redo if not found .. .
 str(M); 
+
+# update data files for external programs (e.g., carstm_julia)
+outputfile = file.path(p$datadir, "sps_comp.RData")  # alther this to suite your needs
+save( sppoly, M, file=outputfile )
+
+
 M= NULL; gc()
 
 p0$space_name = sppoly$AUID 
