@@ -109,9 +109,6 @@ sppoly = areal_units( p=p0)
 M = speciescomposition_db( p=p0, DS="carstm_inputs", sppoly=sppoly , redo=TRUE  )  # will redo if not found .. .
 str(M); 
 
-# update data files for external programs (e.g., carstm_julia)
-outputfile = file.path(p$datadir, "sps_comp.RData")  # alther this to suite your needs
-save( sppoly, M, file=outputfile )
 
 
 M= NULL; gc()
@@ -240,8 +237,8 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
     if (0) {
       # map all :
-      vn=c( "random", "space", "combined" )
-      vn=c( "random", "spacetime", "combined" )
+      vn=c( "random", "space", "re" )
+      vn=c( "random", "spacetime", "re" )
       vn="predictions"
       tmatch="1999"
 
@@ -287,7 +284,7 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
 
   
     # pure spatial effect
-    vn=c( "random", "space", "combined" )
+    vn=c( "random", "space", "re" )
    
     fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
     outfilename = file.path( outputdir, paste(fn_root, "png", sep=".") )
@@ -295,10 +292,9 @@ for ( variabletomodel in c("pca1", "pca2", "pca3")) { #  , "pca3" , "ca1", "ca2"
     toplot = carstm_results_unpack( res, vn )
     brks = pretty(  quantile(toplot[,"mean"], probs=c(0.025, 0.975), na.rm=TRUE )  )
 
-  ##NOTE: color scale is reversed for red=hot
     plt = carstm_map(  res=res, vn=vn, 
         sppoly = sppoly, 
-        colors= (RColorBrewer::brewer.pal(5, "RdYlBu")),
+        colors= rev(RColorBrewer::brewer.pal(5, "RdYlBu")),
         breaks = brks,
         annotation=paste("Species composition: ", variabletomodel, "persistent spatial effect" ), 
         legend.position=c( 0.1, 0.9 ),

@@ -181,8 +181,8 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
 
     if (0) {
       # map all :
-      vn=c( "random", "space", "combined" )
-      vn=c( "random", "spacetime", "combined" )
+      vn=c( "random", "space", "re" )
+      vn=c( "random", "spacetime", "re" )
       vn="predictions"
       tmatch="2015"
 
@@ -227,7 +227,7 @@ for ( variabletomodel in c("pca1", "pca2")) { #  , "pca3" , "ca1", "ca2",   "ca3
     }
 
     # pure spatial effect
-    vn=c( "random", "space", "combined" )
+    vn=c( "random", "space", "re" )
    
     fn_root = paste( "speciescomposition", variabletomodel, "spatial_effect", sep="_" )
     fn = file.path( outputdir, paste(fn_root, "png", sep=".") )
