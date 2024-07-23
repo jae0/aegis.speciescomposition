@@ -43,8 +43,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if (!exists("year.assessment", p )) if (exists("yrs", p)) p$year.assessment=max(p$yrs)
 
   if (!exists("year.assessment", p )) {
-    message("probably want to assign current year.assessment, using current year for now")
-    p$year.assessment = lubridate::year(lubridate::now())
+    stop("Require year.assessment")
   }
   
   yrs_default = 1999:p$year.assessment
@@ -174,7 +173,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$carstm_prediction_surface_parameters = parameters_add_without_overwriting( p$carstm_prediction_surface_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm", carstm_model_label="default" ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm", carstm_model_label="default", yrs=p$yrs ) 
         )
     }
 
