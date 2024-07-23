@@ -19,7 +19,7 @@ survey_data_prepare = function(p,  cthreshold = 0.005){
     # of course if misses out on the high abundance period from the 1980s but no model-based solution possible at this point 
     # due simply to CPU speed issues
 
-    sc$zscore = NA 
+    sc$qscore = NA 
     sc$density = sc$totwgt_adjusted / sc$sa_towdistance  ### <<< --- using towed distance due to inconsistant sa for groundfish from RV surveys
 
 
@@ -37,13 +37,13 @@ survey_data_prepare = function(p,  cthreshold = 0.005){
       for ( tx in taxa ) {
         ii = which( sc$gear==g & sc$spec_bio== tx & sc$density > 0 )
         if (length(ii) > 30 ) {
-          sc$zscore[ii] = quantile_to_normal(  quantile_estimate( sc$density[ii] ) ) # convert to quantiles, by survey
+          sc$qscore[ii] = quantile_to_normal(  quantile_estimate( sc$density[ii] ) ) # convert to quantiles, by survey
         }
       }
     }
  
     m = data.table::dcast( setDT(sc), 
-      formula =  id ~ spec_bio, value.var="zscore", 
+      formula =  id ~ spec_bio, value.var="qscore", 
       fun.aggregate=mean, fill=NA, drop=FALSE, na.rm=TRUE
     )  # mean is just to keep dcast happy
 

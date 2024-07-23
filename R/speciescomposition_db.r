@@ -4,7 +4,7 @@
     ddir = project.datadirectory( "aegis", "speciescomposition" )
     dir.create( ddir, showWarnings=FALSE, recursive=TRUE )
 
-    infix = paste( p$spatial_domain,  p$taxa, p$runlabel, sep=".")
+    infix = paste( p$spatial_domain,  p$taxa, p$carstm_model_label, sep=".")
     if (p$spatial_domain == "snowcrab" ) {
       infix = paste( "SSE",  p$taxa, sep=".")  # just one domain for now
     }
@@ -47,17 +47,26 @@
       # PCA
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
       message("TODO: currently using simple Pearson, using a model-based AC-adjusted cor is better")
-      cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs
-       
+      cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs (and low incidence)
+ 
       cm[ is.na(cm) ] = 0  # reset to 0
-
-      pca.out = pca_basic( cm=cm, indat=m, nfactors=3 )
+      m2 = (m - mean(m, na.rm=TRUE)) 
+      pca.out = pca_basic( cm=cm, indat=m2, nfactors=3 )
 
       scores = data.frame( id=rownames(m), pca1=pca.out$scores[, "PC1"], pca2=pca.out$scores[, "PC2"], pca3=pca.out$scores[, "PC3"], stringsAsFactors=FALSE )
       set = merge(set, scores, by="id", all.x=T, all.y=F, sort=FALSE)
 
       save( pca.out, file=fn.pca, compress=TRUE)
 
+      if (0) {
+
+        toplot = as.data.frame( pca.out$loadings )
+        toplot$vern = taxonomy.recode( from="spec", to="taxa", tolookup=rownames( toplot ) )$vern
+
+        plot( PC2 ~ PC1, toplot, type="n")
+        text( PC2 ~ PC1, labels=vern, data=toplot )
+
+      }
 
       # Correpsondence analysis (on presence-absence)
       require(vegan)
@@ -189,7 +198,7 @@
       setDT(M)
       
       vars_to_retain = c("pca1", "pca2", "pca3", "ca1", "ca2", "ca3", "gear", "data.source", "vessel" , 
-        "t", "z", "substrate.grainsize") # , "sal", "oxyml" )
+        "t", "z", "substrate.grainsize", "id") # , "sal", "oxyml" )
 
 
       # # INLA does not like duplicates ... causes optimizer to crash frequently
@@ -213,6 +222,9 @@
         NA_remove=FALSE,
         vars_to_retain=vars_to_retain,
         vars_to_drop ="speciescomposition" )  # drop dummy variable
+
+      jj = which(is.na(M$id))
+      M$id[jj] = "dummyvalue"
 
       jj = which(!is.finite(M$t))
       if (length(jj) > 0 ) {

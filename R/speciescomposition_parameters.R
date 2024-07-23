@@ -26,7 +26,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
   if ( !file.exists(p$datadir) ) dir.create( p$datadir, showWarnings=FALSE, recursive=TRUE )
   if ( !file.exists(p$modeldir) ) dir.create( p$modeldir, showWarnings=FALSE, recursive=TRUE )
 
-  p = parameters_add_without_overwriting( p, runlabel="1999_present" )
+  p = parameters_add_without_overwriting( p, carstm_model_label="default" )
 
   p = parameters_add_without_overwriting( p,
     spatial_domain = "SSE",  # canada.east.highres and canada.east.superhighres result in memory overflow
@@ -122,11 +122,11 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     p$inputdata_spatial_discretization_planar_km = 0.5  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
     p$inputdata_temporal_discretization_yr = 1/52  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
 
-    if (!exists("carstm_model_label", p)) p$carstm_model_label = "1970_present"
+    if (!exists("carstm_model_label", p)) p$carstm_model_label = "default"
 
     if (exists("carstm_model_label", p)) {
 
-      if (p$carstm_model_label == "1999_present"){
+      if (p$carstm_model_label == "default"){
           p$yrs = 1999:p$year.assessment
           p$areal_units_timeperiod = p$carstm_model_label 
       } else if (p$carstm_model_label == "1970_present"){
@@ -164,7 +164,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       sa_threshold_km2=16, 
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
-      carstm_model_label = "1999_present",
+      carstm_model_label = "default",
       carstm_inputs_prefilter = "rawdata"
     )
 
@@ -174,7 +174,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
         p$carstm_prediction_surface_parameters = parameters_add_without_overwriting( p$carstm_prediction_surface_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm", yrs=1999:p$year.assessment, carstm_model_label="1970_present" ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm", carstm_model_label="default" ) 
         )
     }
 
