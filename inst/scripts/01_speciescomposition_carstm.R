@@ -138,8 +138,9 @@ for ( variabletomodel in c( "pca1", "pca2" )) { # "pca1", "pca2", "pca3" , "ca1"
       #redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       num.threads="4:2",  # adjust for your machine
       # debug = TRUE,
-      control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
-      # control.inla = list( strategy='laplace'),
+      # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
+      control.inla = list( strategy="laplace", optimiser="gsl", restart=1 ),  # gsl = gsl::bfgs2
+      # control.inla = list( strategy='auto'),
       # control.inla=list(cmin=0),
       verbose=TRUE 
     )
