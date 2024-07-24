@@ -144,7 +144,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_xydata = "speciescomposition_db(p=p, DS='areal_units_input')",
       areal_units_type = "tesselation", # "stmv_fields" to use ageis fields instead of carstm fields ... note variables are not the same
       areal_units_resolution_km = 1, # default in case not provided ... 25 km dim of lattice ~ 1 hr; 5km = 79hrs; 2km = ?? hrs
-      areal_units_proj4string_planar_km =  p$aegis_proj4string_planar_km,  # coord system to use for areal estimation and gridding for carstm
+      areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
       # areal_units_proj4string_planar_km = projection_proj4string("omerc_nova_scotia")  # coord system to use for areal estimation and gridding for carstm
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
@@ -152,7 +152,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       fraction_todrop = 0.025,
       fraction_cv = 0.95,
       fraction_good_bad = 1.0,
-      areal_units_constraint_ntarget=8, 
+      areal_units_constraint_ntarget=10, 
       areal_units_constraint_nmin=1,  # granularity options for areal_units
       areal_units_constraint="none",
       # areal_units_constraint_ntarget =  floor(length(p$yrs)/2),  # n time slices req in each au
@@ -160,20 +160,20 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       spbuffer=5, 
       lenprob=0.95,   # these are domain boundary options for areal_units
       n_iter_drop=0, 
-      sa_threshold_km2=16, 
+      sa_threshold_km2=1, 
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
       carstm_inputs_prefilter = "rawdata"
     )
-
+     
     if ( !exists("carstm_prediction_surface_parameters", p))  {
         # generics using "default" carstm models and stmv solutions for spatial effects
         p$carstm_prediction_surface_parameters = list()
         p$carstm_prediction_surface_parameters = parameters_add_without_overwriting( p$carstm_prediction_surface_parameters,
           bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
           substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-          temperature = aegis.temperature::temperature_parameters( project_class="carstm", carstm_model_label="default", yrs=p$yrs ) 
+          temperature = aegis.temperature::temperature_parameters( project_class="carstm", carstm_model_label="default", yrs=p$yrs, spatial_domain="canada.east" ) 
         )
     }
 

@@ -47,29 +47,9 @@ p0 = speciescomposition_parameters(
   data_root = project.datadirectory( "aegis", "speciescomposition" ),
   variabletomodel = "",  # will be over-ridden .. this brings in all pca's and ca's
   carstm_model_label = carstm_model_label,
-  inputdata_spatial_discretization_planar_km = 0.5,  # km controls resolution of data prior to modelling to reduce data set and speed up modelling
-  inputdata_temporal_discretization_yr = 1/52,  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
   year.assessment = max(yrs),
   yrs = yrs, 
   spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
-  areal_units_proj4string_planar_km = aegis::projection_proj4string("utm20"),  # coord system to use for areal estimation and gridding for carstm
-  areal_units_type = "tesselation",     
-  areal_units_constraint="none",
-  areal_units_resolution_km = 1, # km dim of lattice ~ 1 hr
-  areal_units_overlay = "none",
-  areal_units_constraint_ntarget=10, 
-  areal_units_constraint_nmin=1,  # granularity options for areal_units
-  fraction_todrop = 1/12, # aggressiveness of solution finding ( fraction of counts to drop each iteration)
-  fraction_cv = 0.9, #sd/mean no.
-  spbuffer=5, 
-  lenprob=0.95,    
-  n_iter_drop=0, 
-  sa_threshold_km2=1, 
-  carstm_prediction_surface_parameters = list( 
-    bathymetry = aegis.bathymetry::bathymetry_parameters( project_class="stmv" ),
-    substrate = aegis.substrate::substrate_parameters(   project_class="stmv" ),
-    temperature = aegis.temperature::temperature_parameters( project_class="carstm", spatial_domain="canada.east", yrs=1999:year.assessment, carstm_model_label="default" ) 
-  ), 
   theta = list(     
     pca1 = c(3.6110,6.1471,0.0875,5.1708,2.3268,10.0566,-0.6076,11.2549,3.5392,9.9422,3.5000,3.7251,3.6416 ),   
     pca2 = c( 4.3355, 4.7796, 1.2823, 6.0580, 2.5184, 9.9576, -0.5588, 7.5028, 3.5334, 9.8473, 3.9602, 5.6906, 3.5997 ),
