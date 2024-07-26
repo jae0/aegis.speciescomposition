@@ -122,22 +122,20 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
     p$inputdata_temporal_discretization_yr = 1/52  # ie., every 1 weeks .. controls resolution of data prior to modelling to reduce data set and speed up modelling
 
     if (!exists("carstm_model_label", p)) p$carstm_model_label = "default"
-
-    if (exists("carstm_model_label", p)) {
-
-      if (p$carstm_model_label == "default"){
-          p$yrs = 1999:p$year.assessment
-          p$areal_units_timeperiod = p$carstm_model_label 
-      } else if (p$carstm_model_label == "1970_present"){
-          p$yrs = 1970:p$year.assessment
-          p$areal_units_timeperiod = p$carstm_model_label 
+   
+    if (!exists("yrs", p)) {
+      if (exists("carstm_model_label", p)) {
+        if (p$carstm_model_label == "default"){
+            p$yrs = 1999:p$year.assessment
+        } else if (p$carstm_model_label == "1970_present"){
+            p$yrs = 1970:p$year.assessment
+        } else if (p$carstm_model_label == "1950_present"){
+            p$yrs = 1950:p$year.assessment
+        }
       }
+      p = temporal_parameters(p=p)  # reset in case yrs changed
     }
- 
- 
-    p = temporal_parameters(p=p)  # redo in case of user-specificed params
-    
-
+   
 
     # defaults in case not provided ...
     p = parameters_add_without_overwriting( p,
