@@ -1,5 +1,5 @@
 
-survey_data_prepare = function(p,  cthreshold = 0.005){
+survey_data_prepare = function(p,  cthreshold = 0.005, ci=0.999){
     require(data.table)
 
     # catch info by species and set ; NOTE: id = paste( x$trip, x$set, sep="." )
@@ -16,7 +16,7 @@ survey_data_prepare = function(p,  cthreshold = 0.005){
     sc = merge(sc, set, by="id", all.x=TRUE, all.y=FALSE) 
       
     # NOTE:: the US 4 seam behaves very differently and has a shorter standard tow .. treat as a separate data source 
-    # of course if misses out on the high abundance period from the 1980s but no model-based solution possible at this point 
+    # of course it misses out on the high abundance period from the 1980s but no model-based solution possible at this point 
     # due simply to CPU speed issues
 
     sc$qscore = NA 
@@ -24,20 +24,23 @@ survey_data_prepare = function(p,  cthreshold = 0.005){
 
 
     if (0) {
-      qi = quantile(sc$density, 0.999, na.rm=TRUE)
+      qi = quantile(sc$density, ci, na.rm=TRUE)
       ii = which( sc$density > qi )
       hist( log(sc$density[ii]) )
     }
 
     # NOTE:: non-zero catches are not recorded in cat, also 
-    # distribution of density is very long tailed .. use quantile -> normal transformtiom
+    # distribution of density is very long tailed .. 
+    # use quantile -> normal transformatiom to fit 
+    # the 99.9% CI (ci=0.999 probability) to be between (0, 1)
     gears = unique(sc$gear)
     taxa = unique(sc$spec_bio)
     for ( g in gears ) {
       for ( tx in taxa ) {
         ii = which( sc$gear==g & sc$spec_bio== tx & sc$density > 0 )
         if (length(ii) > 30 ) {
-          sc$qscore[ii] = quantile_to_normal(  quantile_estimate( sc$density[ii] ) ) # convert to quantiles, by survey
+          qnts = quantile_estimate( sc$density[ii] )
+          sc$qscore[ii] = quantile_to_normal( qnts, mean=0.5, ci=ci ) # convert to quantiles, by survey to have prob=ci to fit between 0,1
         }
       }
     }
