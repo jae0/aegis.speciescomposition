@@ -17,14 +17,14 @@ p = speciescomposition_parameters( yrs=yrs, carstm_model_label=carstm_model_labe
 # -----------------------------
 # prepare data
 
-speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analsysis
+speciescomposition_db( DS="speciescomposition.ordination.redo", p=p )  # analysis
 
 speciescomposition_db( DS="speciescomposition.redo", p=p  ) # compute planar coords and remove dups
 
 if (0) { 
   # extract summaries and plot
-  pca = speciescomposition_db( DS="pca", p=p )  # analsysis
-  ca  = speciescomposition_db( DS="ca", p=p )  # analsysis
+  pca = speciescomposition_db( DS="pca", p=p )   
+  ca  = speciescomposition_db( DS="ca", p=p )   
 
   toplot = as.data.frame( pca$loadings )
   toplot$vern = taxonomy.recode( from="spec", to="taxa", tolookup=rownames( toplot ) )$vern
@@ -49,17 +49,17 @@ p0 = speciescomposition_parameters(
   carstm_model_label = carstm_model_label,
   year.assessment = max(yrs),
   yrs = yrs, 
-  spatial_domain = "SSE",  # defines spatial area, currenty: "snowcrab" or "SSE"
-  theta = list(     
-    pca1 = c( 3.6110, 6.1471, 0.0875, 5.1708, 2.3268, 10.0566, -0.6076, 11.2549, 3.5392, 9.9422, 3.5000, 3.7251, 3.6416 ),    
+  spatial_domain = "SSE"  # defines spatial area, currenty: "snowcrab" or "SSE"
+)
+
+p0$theta = list(     
+    pca1 = c( 2.1994, 4.7342, 0.1171, 3.7580, 2.3414, 9.8365, -0.6316, 10.8258, 1.4179, 9.5390, 2.3215, 4.6702, 3.5082 ),    
     pca2 = c( 4.2390, 4.9744, 1.2366, 5.7960, 2.1610, 8.8300, 1.5064, 8.0334, 3.4148, 6.1092, 4.1335, 5.8514, 3.4182 ),
     pca3 = c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 ), 
     ca1 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575),
     ca2 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 ),
     ca3 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 )
-  )
-)
-
+) 
  
    
 
@@ -134,11 +134,11 @@ for ( variabletomodel in c( "pca1", "pca2" )) { # "pca1", "pca2", "pca3" , "ca1"
       sppoly=sppoly,
       toget = c("summary", "random_spatial", "predictions"),
       # posterior_simulations_to_retain = c("predictions"),  # not used at the moment
-      theta=p$theta[[variabletomodel]],
+      # theta=p$theta[[variabletomodel]],
       #redo_fit=FALSE, # to start optim from a solution close to the final in 2021 ... 
       num.threads="4:2",  # adjust for your machine
       # debug = TRUE,
-      control.inla = list( strategy="laplace", int.strategy='eb', cmin=0 ),  # gsl == gsl::bfgs2
+      # control.inla = list(  int.strategy='eb', cmin=0, optimiser="gsl" ),  # gsl == gsl::bfgs2
       # control.inla = list( strategy="laplace", optimiser="gsl", restart=1 ),  # gsl = gsl::bfgs2
       # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
       # control.inla = list( strategy='auto'),
