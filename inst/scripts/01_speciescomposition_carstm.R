@@ -201,7 +201,6 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  , "pca3" , "ca1", "ca2",   "ca
     carstm_plot_marginaleffects(  p=p, outputdir=oeffdir, fn_root_prefix=fn_root_prefix ) 
 
     # maps 
-    ## >>>>>>>>>>>> reconsider file save locations / names:  <<<<<<<<<<<<<<
     outputdir = file.path(p$data_root, p$carstm_model_label, "maps" )
   
     carstm_plot_map( p=p, outputdir=outputdir, fn_root_prefix=variabletomodel,

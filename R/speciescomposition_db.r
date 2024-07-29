@@ -37,7 +37,7 @@
  
       require(data.table)
  
-      res = survey_data_prepare(p=p, cthreshold = 0.005)  # drop species that are rare (frequency of occurance in surveys < 0.005)
+      res = survey_data_prepare(p=p, cthreshold = cthreshold)  # drop species that are rare (frequency of occurance in surveys < 0.005)
       
       # unpack
       m = res$m 
@@ -50,7 +50,8 @@
       cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs (and low incidence)
  
       cm[ is.na(cm) ] = 0  # reset to 0
-      m2 = (m - 0.5) * 2.0  # convert from (0,1) -> (-1, 1) 
+      m2 = (m - mean(m, na.rm=TRUE))   
+      m2 = m2 / sd(m2, na.rm=TRUE)
       pca.out = pca_basic( cm=cm, indat=m2, nfactors=3 )
 
       scores = data.frame( id=rownames(m), pca1=pca.out$scores[, "PC1"], pca2=pca.out$scores[, "PC2"], pca3=pca.out$scores[, "PC3"], stringsAsFactors=FALSE )
