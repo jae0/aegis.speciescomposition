@@ -194,15 +194,14 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  , "pca3" , "ca1", "ca2",   "ca
       o = carstm_prior_posterior_compare( hypers=res$hypers, all.hypers=res$all.hypers, vn=names(res$hypers)[i] )  
       dev.new(); print(o)
     }
- 
-    # oeffdir = file.path(p$data_root, "figures")  # old ... delete files ..todo
-    oeffdir = file.path(p$data_root, p$carstm_model_label, "figures") #new ...
+  
+    oeffdir = file.path(p$modeldir, p$carstm_model_label, "figures") 
     fn_root_prefix = variabletomodel
     carstm_plot_marginaleffects(  p=p, outputdir=oeffdir, fn_root_prefix=fn_root_prefix ) 
 
     # maps 
-    outputdir = file.path(p$data_root, p$carstm_model_label, "maps" )
-  
+    outputdir = file.path(p$modeldir, p$carstm_model_label, "maps" )
+
     carstm_plot_map( p=p, outputdir=outputdir, fn_root_prefix=variabletomodel,
       toplot="random_spatial", probs=c(0.025, 0.975),    
       additional_features=additional_features, 
