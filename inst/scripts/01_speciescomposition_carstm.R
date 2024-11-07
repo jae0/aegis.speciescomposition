@@ -189,12 +189,12 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  , "pca3" , "ca1", "ca2",   "ca
     # EXAMINE POSTERIORS AND PRIORS
     res = carstm_model(  p=p, DS="carstm_summary" )  # parameters in p and direct summary
  
-    names(res$hypers)
-    for (i in 1:length(names(res$hypers)) ){
-      o = carstm_prior_posterior_compare( hypers=res$hypers, all.hypers=res$all.hypers, vn=names(res$hypers)[i] )  
+    res_vars = c( names( res$hypers), names(res$fixed) )
+    for (i in 1:length(res_vars) ) {
+      o = carstm_prior_posterior_compare( res, vn=res_vars[i] )  
       dev.new(); print(o)
-    }
-  
+    }     
+
     oeffdir = file.path(p$modeldir, p$carstm_model_label, "figures") 
     fn_root_prefix = variabletomodel
     carstm_plot_marginaleffects(  p=p, outputdir=oeffdir, fn_root_prefix=fn_root_prefix ) 
