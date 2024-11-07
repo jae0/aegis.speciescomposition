@@ -10,7 +10,7 @@
     }
 
 
-    if (DS %in% c( "speciescomposition.ordination", "speciescomposition.ordination.redo", "pca.out", "ca") ) {
+    if (DS %in% c( "speciescomposition.ordination", "speciescomposition.ordination.redo", "pca", "ca") ) {
 
       fn.set = file.path( ddir, paste( "speciescomposition.by.set", infix, "rdata", sep=".") )
       fn.pca = file.path( ddir, paste( "pca", infix, "rdata", sep=".") )
@@ -48,7 +48,7 @@
       # no need to correct for gear types/surveys .. assuming no size-specific bias .. perhaps wrong but simpler
       message("TODO: currently using simple Pearson, using a model-based AC-adjusted cor is better")
       cm = cor( ifelse(m > cthreshold, 1, NA) * m , use="pairwise.complete.obs" ) # set up a correlation matrix ignoring NAs (and low incidence)
-
+ 
       cm[ is.na(cm) ] = 0  # reset to 0
       m2 = (m - mean(m, na.rm=TRUE))   
       m2 = m2 / sd(m2, na.rm=TRUE)
