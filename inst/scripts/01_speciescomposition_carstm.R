@@ -2,7 +2,7 @@
 # -----------------------------
 # ordination of all years 1970 to present
 year.start = 1999
-year.assessment = 2023
+year.assessment = 2024
 
 yrs = year.start:year.assessment
  
@@ -140,7 +140,7 @@ for ( variabletomodel in c( "pca1", "pca2" )) { # "pca1", "pca2", "pca3" , "ca1"
       # debug = TRUE,
       # control.inla = list(  int.strategy='eb', cmin=0, optimiser="gsl" ),  # gsl == gsl::bfgs2
       # control.inla = list( strategy="laplace", optimiser="gsl", restart=1 ),  # gsl = gsl::bfgs2
-      # control.inla = list( strategy='adaptive', int.strategy='eb' ),  # "eb" required for stabilization
+      control.inla = list( strategy='auto', int.strategy='eb' ),  # "eb" required for stabilization
       # control.inla = list( strategy='auto'),
       # control.inla=list(cmin=0),
       verbose=TRUE 
