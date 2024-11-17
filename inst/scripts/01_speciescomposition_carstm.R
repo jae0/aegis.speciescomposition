@@ -52,15 +52,17 @@ p0 = speciescomposition_parameters(
   spatial_domain = "SSE"  # defines spatial area, currenty: "snowcrab" or "SSE"
 )
 
-p0$theta = list(     
-    pca1 = c( 2.1994, 4.7342, 0.1171, 3.7580, 2.3414, 9.8365, -0.6316, 10.8258, 1.4179, 9.5390, 2.3215, 4.6702, 3.5082 ),    
-    pca2 = c( 4.2390, 4.9744, 1.2366, 5.7960, 2.1610, 8.8300, 1.5064, 8.0334, 3.4148, 6.1092, 4.1335, 5.8514, 3.4182 ),
-    pca3 = c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 ), 
-    ca1 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575),
-    ca2 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 ),
-    ca3 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 )
-) 
- 
+if (0) {
+  # to define initial conditions ... can help but sometimes not ...
+  p0$theta = list(     
+      pca1 = c( 0.0638, 2.4629, 0.0118, 1.2646, 2.4722, 2.8717, 2.4273, 5.1163, -0.0306, 3.6522, -0.1221, 3.7763, 3.4105 ),    
+      pca2 = c( 0.7048, 1.3976, 0.9669, 2.6315, 1.9560, 1.6976, 4.6339, 4.5336, -0.3107, 4.7019, 0.6593, 5.1955, 3.0487 ),
+      pca3 = c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 ), 
+      ca1 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575),
+      ca2 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 ),
+      ca3 =  c( 3.6170, 6.0820, 0.0889, 5.3414, 2.3956, 10.1444, -0.5991, 11.2819, 3.5499, 10.0855, 3.5549, 3.4580, 3.5575 )
+  ) 
+}  
    
 
 if (0) { 
@@ -140,7 +142,7 @@ for ( variabletomodel in c( "pca1", "pca2" )) { # "pca1", "pca2", "pca3" , "ca1"
       # debug = TRUE,
       # control.inla = list(  int.strategy='eb', cmin=0, optimiser="gsl" ),  # gsl == gsl::bfgs2
       # control.inla = list( strategy="laplace", optimiser="gsl", restart=1 ),  # gsl = gsl::bfgs2
-      control.inla = list( strategy='auto', int.strategy='eb' ),  # "eb" required for stabilization
+      #control.inla = list( strategy='auto', int.strategy='eb' ),  # "eb" required for stabilization
       # control.inla = list( strategy='auto'),
       # control.inla=list(cmin=0),
       verbose=TRUE 
@@ -189,9 +191,11 @@ for ( variabletomodel in c("pca1", "pca2" )) { #  , "pca3" , "ca1", "ca2",   "ca
     # EXAMINE POSTERIORS AND PRIORS
     res = carstm_model(  p=p, DS="carstm_summary" )  # parameters in p and direct summary
  
+    outputdir = file.path(p$modeldir, p$carstm_model_label)
+
     res_vars = c( names( res$hypers), names(res$fixed) )
     for (i in 1:length(res_vars) ) {
-      o = carstm_prior_posterior_compare( res, vn=res_vars[i] )  
+      o = carstm_prior_posterior_compare( res, vn=res_vars[i],  outputdir=outputdir )  
       dev.new(); print(o)
     }     
 
