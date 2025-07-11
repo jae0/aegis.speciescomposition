@@ -12,25 +12,25 @@
 
     if (DS %in% c( "speciescomposition.ordination", "speciescomposition.ordination.redo", "pca", "ca") ) {
 
-      fn.set = file.path( ddir, paste( "speciescomposition.by.set", infix, "rdata", sep=".") )
-      fn.pca = file.path( ddir, paste( "pca", infix, "rdata", sep=".") )
-      fn.ca  = file.path( ddir, paste( "ca",  infix, "rdata", sep=".") )
+      fn.set = file.path( ddir, paste( "speciescomposition.by.set", infix, "rdz", sep=".") )
+      fn.pca = file.path( ddir, paste( "pca", infix, "rdz", sep=".") )
+      fn.ca  = file.path( ddir, paste( "ca",  infix, "rdz", sep=".") )
 
       if (DS=="speciescomposition.ordination") {
         set = NULL
-        if (file.exists( fn.set) ) load( fn.set)
+        if (file.exists( fn.set) ) set = read_write_fast( fn.set)
         return ( set )
       }
 
       if (DS=="pca") {
         pca.out = NULL
-        if (file.exists( fn.pca) ) load( fn.pca)
+        if (file.exists( fn.pca) ) pca.out = read_write_fast( fn.pca)
         return ( pca.out )
       }
 
       if (DS=="ca") {
         ca.out = NULL
-        if (file.exists( fn.ca) ) load( fn.ca)
+        if (file.exists( fn.ca) ) ca.out = read_write_fast( fn.ca)
         return ( ca.out )
       }
 
@@ -57,7 +57,7 @@
       scores = data.frame( id=rownames(m), pca1=pca.out$scores[, "PC1"], pca2=pca.out$scores[, "PC2"], pca3=pca.out$scores[, "PC3"], stringsAsFactors=FALSE )
       set = merge(set, scores, by="id", all.x=T, all.y=F, sort=FALSE)
 
-      save( pca.out, file=fn.pca, compress=TRUE)
+      read_write_fast( pca.out, file=fn.pca)
 
       if (0) {
 
@@ -81,8 +81,8 @@
       set = merge(set, scores, by="id", all.x=T, all.y=F, sort=F)
       ca.out = list( scores=scores, ca=ord, variances=variances )
 
-      save( ca.out, file=fn.ca, compress=T)
-      save( set, file=fn.set, compress=T )
+      read_write_fast( ca.out, file=fn.ca)
+      read_write_fast( set, file=fn.set )
 
       return (fn.set)
     }
@@ -95,11 +95,11 @@
 
     if (DS %in% c( "speciescomposition", "speciescomposition.redo" ) ) {
       # remove dups and in planar coords
-      fn = file.path( ddir, paste( "speciescomposition", infix, "rdata", sep=".") )
+      fn = file.path( ddir, paste( "speciescomposition", infix, "rdz", sep=".") )
 
 			if (DS=="speciescomposition") {
         SC = NULL
-        if (file.exists( fn) ) load( fn )
+        if (file.exists( fn) ) loSC = read_write_fast( fn )
         return ( SC )
 			}
 
@@ -127,7 +127,7 @@
       if (length(ii) == 0) stop( "No data .. something went wrong")
       SC = SC[ii,]
 
-      save( SC, file=fn, compress=T )
+      read_write_fast( SC, file=fn )
 			return (fn)
 		}
 
@@ -138,13 +138,13 @@
 
       
       outdir = file.path( p$data_root, "modelled", p$carstm_model_label ) 
-      fn = file.path( outdir, "areal_units_input.rdata"  )
+      fn = file.path( outdir, "areal_units_input.rdz"  )
       if ( !file.exists(outdir)) dir.create( outdir, recursive=TRUE, showWarnings=FALSE )
 
       xydata = NULL
       if (!redo)  {
         if (file.exists(fn)) {
-          load( fn)
+          xydata = read_write_fast( fn)
           return( xydata )
         }
       }
@@ -153,7 +153,7 @@
       names(xydata)[which(names(xydata)=="z.mean" )] = "z"
       xydata = xydata[ geo_subset( spatial_domain=p$spatial_domain, Z=xydata ) , ] # need to be careful with extrapolation ...  filter depths
       xydata = xydata[ , c("lon", "lat", "yr" )]
-      save(xydata, file=fn, compress=TRUE )
+      read_write_fast(xydata, file=fn )
       return( xydata )
     }
 
@@ -185,7 +185,7 @@
       M = NULL
       if (!redo)  {
         if (file.exists(fn)) {
-          load( fn)
+          M = read_write_fast( fn)
           M = M[ which( M$yr %in% p$yrs), ]
           return( M )
         }
@@ -251,7 +251,7 @@
       attr( M, "proj4string_planar" ) =  p$aegis_proj4string_planar_km
       attr( M, "proj4string_lonlat" ) =  projection_proj4string("lonlat_wgs84")
 
-      save( M, file=fn, compress=TRUE )
+      read_write_fast( M, file=fn )
 
       M = M[ which( M$yr %in% p$yrs), ]
 
