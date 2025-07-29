@@ -96,10 +96,10 @@
     if (DS %in% c( "speciescomposition", "speciescomposition.redo" ) ) {
       # remove dups and in planar coords
       fn = file.path( ddir, paste( "speciescomposition", infix, "rdz", sep=".") )
-
+ 
 			if (DS=="speciescomposition") {
         SC = NULL
-        if (file.exists( fn) ) loSC = read_write_fast( fn )
+        if (file.exists( fn) ) SC = read_write_fast( fn )
         return ( SC )
 			}
 
