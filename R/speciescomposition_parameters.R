@@ -158,7 +158,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       spbuffer=5, 
       lenprob=0.95,   # these are domain boundary options for areal_units
       n_iter_drop=0, 
-      sa_threshold_km2=1, 
+      sa_threshold_km2=9, 
       nAU_min = 50,
       carstm_modelengine = "inla",  # {model engine}.{label to use to store}
       carstm_model_label = "default",
