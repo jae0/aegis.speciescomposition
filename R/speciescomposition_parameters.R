@@ -155,8 +155,7 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_constraint="none",
       # areal_units_constraint_ntarget =  floor(length(p$yrs)/2),  # n time slices req in each au
       # areal_units_constraint_nmin=5,  # best compromise
-      spbuffer=5, 
-      lenprob=0.95,   # these are domain boundary options for areal_units
+      hull_boundary_ratio = 0.1,
       n_iter_drop=0, 
       sa_threshold_km2=9, 
       nAU_min = 50,
