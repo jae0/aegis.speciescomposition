@@ -7,6 +7,7 @@ year.assessment = 2024
 yrs = year.start:year.assessment
  
 carstm_model_label="default"
+
 require(aegis)
 require(aegis.speciescomposition)
 require(vegan)
@@ -52,6 +53,17 @@ p0 = speciescomposition_parameters(
   spatial_domain = "SSE"  # defines spatial area, currenty: "snowcrab" or "SSE"
 ) 
 
+
+
+# bbox = c(-71.5, 41, -52.5,  50.5 )
+additional_features = features_to_add( 
+    p=p0, 
+    isobaths=c( 100, 200, 300, 400, 500  ), 
+    xlim=c(-80,-40), 
+    ylim=c(38, 60) , redo=TRUE
+)
+
+
 if (0) { 
  
     # p0$fraction_todrop = 1/11 # aggressiveness of solution finding ( fraction of counts to drop each iteration)
@@ -59,9 +71,7 @@ if (0) {
     # p0$fraction_good_bad = 0.9
     # p0$areal_units_constraint_nmin =  3
     # p0$areal_units_constraint_ntarget = 15  # length(p0$yrs)
-
-    # p$nAU_min = 100
-
+ 
     # # adjust based upon RAM requirements and ncores
     # require(INLA)
     # inla.setOption(num.threads= floor( parallel::detectCores() / 2) )
@@ -74,7 +84,11 @@ if (0) {
  
     sppoly = areal_units( p=p0, xydata=xydata, redo=TRUE, verbose=TRUE )  # to force create
     dim(sppoly)
-    plot(sppoly["npts"])
+    
+    plt = areal_units( sppoly=sppoly, xydata=xydata, additional_features=additional_features, plotit=TRUE )
+    
+    (plt)
+
 
 }
  
@@ -137,14 +151,6 @@ for ( variabletomodel in c( "pca1", "pca2" )) { # "pca1", "pca2", "pca3" , "ca1"
  
 }
 
-
-# bbox = c(-71.5, 41, -52.5,  50.5 )
-additional_features = features_to_add( 
-    p=p0, 
-    isobaths=c( 100, 200, 300, 400, 500  ), 
-    xlim=c(-80,-40), 
-    ylim=c(38, 60) , redo=TRUE
-)
 
 
 for ( variabletomodel in c("pca1", "pca2" )) { #  , "pca3" , "ca1", "ca2",   "ca3"))  {
