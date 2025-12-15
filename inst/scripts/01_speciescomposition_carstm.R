@@ -101,16 +101,7 @@ str(M);
 
 
 M= NULL; gc()
-
-p0$space_name = sppoly$AUID 
-p0$space_id = 1:nrow(sppoly)  # must match M$space
-
-p0$time_name = as.character(p0$yrs)
-p0$time_id =  1:p0$ny
-
-p0$cyclic_name = as.character(p0$cyclic_levels)
-p0$cyclic_id = 1:p0$nw
-
+ 
 
 for ( variabletomodel in c( "pca1", "pca2" )) { # "pca1", "pca2", "pca3" , "ca1", "ca2",   "ca3"))  {
     
