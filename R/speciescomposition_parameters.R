@@ -147,10 +147,10 @@ speciescomposition_parameters = function( p=list(), project_name="speciescomposi
       areal_units_overlay = "none",
       areal_units_timeperiod = "none",
       tus="yr",
-      fraction_todrop = 0.025,
-      fraction_cv = 0.95,
+      fraction_todrop = 0.05,
+      fraction_cv = 1.0,
       fraction_good_bad = 1.0,
-      areal_units_constraint_ntarget=8, 
+      areal_units_constraint_ntarget=6, 
       areal_units_constraint_nmin=1,  # granularity options for areal_units
       areal_units_constraint="none",
       # areal_units_constraint_ntarget =  floor(length(p$yrs)/2),  # n time slices req in each au
