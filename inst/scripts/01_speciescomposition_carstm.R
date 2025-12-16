@@ -2,7 +2,7 @@
 # -----------------------------
 # ordination of all years 1970 to present
 year.start = 1999
-year.assessment = 2024
+year.assessment = 2025
 
 yrs = year.start:year.assessment
  
@@ -60,7 +60,8 @@ additional_features = features_to_add(
     p=p0, 
     isobaths=c( 100, 200, 300, 400, 500  ), 
     xlim=c(-80,-40), 
-    ylim=c(38, 60) , redo=TRUE
+    ylim=c(38, 60) , 
+    redo=TRUE
 )
 
 
@@ -82,7 +83,9 @@ if (0) {
 
     xydata = speciescomposition_db(p=p0, DS="areal_units_input" )
  
-    sppoly = areal_units( p=p0, xydata=xydata, redo=TRUE, verbose=TRUE )  # to force create
+    sppoly = areal_units( p=p0, xydata=xydata, redo=TRUE, verbose=TRUE, return_crs=st_crs(projection_proj4string("lonlat_wgs84")) )  # to force create
+
+    sppoly = st_transform(sppoly, crs=st_crs(projection_proj4string("lonlat_wgs84")))
     dim(sppoly)
     
     plt = areal_units( sppoly=sppoly, xydata=xydata, additional_features=additional_features, plotit=TRUE )
